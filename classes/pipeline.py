@@ -1,5 +1,5 @@
 # Imports
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Literal
 import re
 
 # Dependencies
@@ -44,7 +44,7 @@ class	VanguardScrapper:
 	def	__init__(self, api: MediaWikiAPI):
 		self.api = api
 
-	def	obtain_main_sets(self, data: JSONType):
+	def	obtain_links(self, data: JSONType):
 		sets = []
 		for link in data["parse"]["links"]:
 			if (link.get("ns") == 0):
@@ -65,9 +65,31 @@ class	VanguardParser:
 			if i in sets:
 				sets.remove(i)
 	
-	def	make_url(self, node: list[str], empty_list: list):
-		for element in node:
-			empty_list.append(element.replace(" ", "_"))
+	def __dict_construct(self, consult: Union[Literal["consult", "get"]], lst: list):
+		if (consult == "consult"):
+			return {
+				i: {
+				"action": "query",
+				"format": "json",
+				"prop": "revisions",
+				"titles": value,
+				"rvprop": "content",
+				"rvslots": "main"
+			}
+			for i, value in enumerate(lst)
+		}
+		else:
+			return {
+				i: {
+					"action": "parse",
+					"page": value,
+					"format": "json"
+				}
+				for i, value in enumerate(lst)
+			}
+	
+	def make_consults(self, consult: Union[Literal["consult", "get"]], lst: list):
+		return (self.__dict_construct(consult, lst))
 
 class	VanguardClassifier:
 	def	__init__(self, rules: Union[list[Tuple[str, str]]]):
@@ -114,13 +136,6 @@ class	VanguardStorage:
 		self.v =		[]
 		self.d =		[]
 		self.dz	=		[]
-	
-		self.lb_url =	[]
-		self.ll_url =	[]
-		self.g_url =	[]
-		self.v_url =	[]
-		self.d_url =	[]
-		self.dz_url	=	[]
 
 	def _add_item(self, key: str, item: str):
 		if item not in self.seen[key]:

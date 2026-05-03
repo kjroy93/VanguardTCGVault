@@ -1,5 +1,5 @@
 # Import
-from typing import Literal, Optional
+from typing import Literal, Optional, Annotated, Union
 
 # Dependencies
 from pydantic import BaseModel, Field
@@ -46,3 +46,8 @@ class	NormalOrder(Order):
 
 class	BlitzOrder(Order):
 	order_type:		Literal["blitz"]
+
+CardUnion = Annotated[
+	Union[Trigger, NormalOrder, BlitzOrder],
+	Field(discriminator="card_type")
+]
