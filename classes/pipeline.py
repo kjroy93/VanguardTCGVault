@@ -50,9 +50,21 @@ class	VanguardScrapper:
 			if (link.get("ns") == 0):
 				sets.append(link["*"])
 		return (sets)
+	
+	def	obtain_cards(self, table_with_cards: dict):
+		pass
 
 class	VanguardParser:
-	def separate_boosters(self, data: list):
+	def	__init__(self):
+		self._KEYWORD = {
+			"trial", "title", "technical",
+			"structure", "start", "special",
+			"revival", "legend", "deck", "fighters",
+			"extra", "collector's", "clan",
+			"character", "combination", "thailand"
+		}
+
+	def separate_urls(self, data: list):
 		no_main_sets = []
 		for i in range(len(data) - 1, -1, -1):
 			value = data[i]
@@ -62,7 +74,7 @@ class	VanguardParser:
 
 	def remove_from_list(self, sets: list, to_delete: list):
 		for i in to_delete:
-			if i in sets:
+			if (i in sets):
 				sets.remove(i)
 	
 	def __dict_construct(self, consult: Union[Literal["consult", "get"]], lst: list):
@@ -80,20 +92,43 @@ class	VanguardParser:
 		}
 		else:
 			return {
-				i: {
+				value: {
 					"action": "parse",
 					"page": value,
 					"format": "json"
 				}
-				for i, value in enumerate(lst)
+				for _, value in enumerate(lst)
 			}
+	
+	def __cleaners_construct(self, curl_parsed: list):
+		self.key_cleaners = {}
+		for k, v in enumerate(curl_parsed):
+			match = next(
+				(w for w in curl_parsed[k].lower().split() if w in self._KEYWORD),
+				None
+			)
+			self.key_cleaners[v] = match.capitalize() if match else None
 	
 	def make_consults(self, consult: Union[Literal["consult", "get"]], lst: list):
 		return (self.__dict_construct(consult, lst))
+	
+	def	clean_trash_from_set(self, curl_parsed: list, crude: list, index: int):
+		self.__cleaners_construct(curl_parsed)
+		key = curl_parsed[index]
+		for i in range(len(crude) - 1, -1, -1):
+			value = crude[i]
+			if (self.key_cleaners[key] not in value):
+				crude.remove(value)
 
 class	VanguardClassifier:
-	def	__init__(self, rules: Union[list[Tuple[str, str]]]):
-		self.rules = rules
+	def	__init__(self):
+		self._rules = [
+			(r"^DZ", "DZ"),
+			(r"^D", "D"),
+			(r"^G", "G"),
+			(r"^V", "V"),
+			(r"^Booster", "LB")
+		]
 
 	def	obtain_set_number(self, play_set: str):
 		number = ""
@@ -104,22 +139,11 @@ class	VanguardClassifier:
 				break
 		return (int(number))
 
-	def	sort_sets(self, lst: list, element: str):
-		num = self.obtain_set_number(element)
-		i = 0
-		while (i < len(lst)):
-			if (self.obtain_set_number(lst[i]) > num):
-				break
-			i += 1
-		if (element in lst):
-			return ("")
-		lst.insert(i, element)
-
 	def	classify(self, name: str) -> str:
 		num = self.obtain_set_number(name)
-		if (num in (16, 17)):
+		if (num in (16, 17) and "Booster" in name):
 			return ("LL")
-		for pattern, key in self.rules:
+		for pattern, key in self._rules:
 			if (re.match(pattern, name)):
 				return (key)
 		return ("LB")
