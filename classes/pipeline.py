@@ -1,5 +1,17 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    pipeline.py                                        :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2026/05/04 16:19:46 by marvin            #+#    #+#              #
+#    Updated: 2026/05/04 16:19:46 by marvin           ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 # Imports
-from typing import List, Union, Tuple, Literal
+from typing import List, Union, Literal
 import re
 
 # Dependencies
@@ -51,9 +63,26 @@ class	VanguardScrapper:
 				sets.append(link["*"])
 		return (sets)
 	
-	def	obtain_cards(self, table_with_cards: dict):
-		pass
+	def	obtain_wikitex(self, curl: JSONType) -> str:
+		"""
+		Function to obtain the content of a not parsed curl request to the MediaWikiAPI request.
+		This function only work if the cards label information it's the same in this function
+		('query', 'pages', 'revisions', 'slots', 'main', '*')
+		* -> has cards info
+		
+		Parameters:
+			curl: answer of the API.
 
+		Returns:
+			String with the wikidex information
+		"""
+		try:
+			pages = curl.get("query", {}).get("pages", {})
+			page = next(iter(pages.values()))
+			return (page.get("revisions", {})[0].get("slots", {}).get("main", {}).get("*"))
+		except (StopIteration, IndexError):
+			return (None)
+	
 class	VanguardParser:
 	def	__init__(self):
 		self._KEYWORD = {
@@ -73,9 +102,7 @@ class	VanguardParser:
 		return (no_main_sets)
 
 	def remove_from_list(self, sets: list, to_delete: list):
-		for i in to_delete:
-			if (i in sets):
-				sets.remove(i)
+		return ([s for s in sets if not any(pattern in s for pattern in to_delete)])
 	
 	def __dict_construct(self, consult: Union[Literal["consult", "get"]], lst: list):
 		if (consult == "consult"):
