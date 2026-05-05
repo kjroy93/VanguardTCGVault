@@ -10,7 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
-from classes.pipeline import VanguardClassifier, VanguardStorage
+from classifier.vanguard_classifier import VanguardClassifier
+from data.vanguard_data import VanguardStorage
 
 def	process_items(data: list, classifier: VanguardClassifier,
 					storage: VanguardStorage):
@@ -18,9 +19,9 @@ def	process_items(data: list, classifier: VanguardClassifier,
 		key = classifier.classify(i)
 		storage._add_item(key, i)
 
-def	sort_storage_list(attributes: list[str], classifier: VanguardClassifier,
-						storage: VanguardStorage):
+def	sort_storage_list(attributes: list[str],
+					classifier: VanguardClassifier,
+					storage: VanguardStorage):
 	for atrribute in attributes:
 		lst = getattr(storage, atrribute.lower())
 		lst.sort(key=classifier.obtain_set_number)
-
