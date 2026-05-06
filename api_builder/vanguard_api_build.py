@@ -15,6 +15,11 @@ from typing import List, Union
 
 # Dependencies
 import requests
+import mwparserfromhell
+from mwparserfromhell.wikicode import Wikicode
+
+# Libraries
+from utils.utils import remove_from_list
 
 # Definitions
 JSONType = dict[str]
@@ -37,7 +42,8 @@ class	MediaWikiAPI:
 		must define ther correct HTTP parameter. The returned data will have a json structure.
 
 		Parameters:
-			params: necesary parameters to make a request to the API. Please consult https://www.mediawiki.org/wiki/API:Action_API.
+			params: necesary parameters to make a request to the API.
+			Please consult https://www.mediawiki.org/wiki/API:Action_API.
 			headers: HTTP headers (such as User-Agent).
 
 		Returns:
@@ -78,6 +84,16 @@ class	VanguardScrapper:
 		try:
 			pages = curl.get("query", {}).get("pages", {})
 			page = next(iter(pages.values()))
-			return (page.get("revisions", {})[0].get("slots", {}).get("main", {}).get("*"))
+			return (mwparserfromhell.parse(page.get("revisions", {})[0].get("slots", {}).get("main", {}).get("*")))
 		except (StopIteration, IndexError):
 			return (None)
+	
+	def	make_cardlist_from_str(self, wikitex: Wikicode):
+		lst = []
+		for tpl in wikitex.filter_templates():
+			if ("CardList" in tpl.name):
+				lst.append(tpl)
+		lst = remove_from_list(lst, ["{{CardList/header/D}}",
+							   "{{CardList/footer}}", "{{CardList/header}}"
+							])
+		return (lst)

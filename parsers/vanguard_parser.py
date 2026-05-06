@@ -11,9 +11,9 @@
 # **************************************************************************** #
 
 from typing import Union, Literal
-from api_builder.api_request import dict_construct
-from mwparserfromhell.wikicode import Wikicode
 from mwparserfromhell.nodes import Template
+from mwparserfromhell.wikicode import Wikicode
+from api_builder.api_request import dict_construct
 
 class	VanguardParser:
 	def	__init__(self):
@@ -63,6 +63,7 @@ class	VanguardParser:
 				title = value.lower()
 			elif ("info" in name and title):
 				data[title] = value.replace("<br>", "")
+				data[title] = value.replace("<br/>", "")
 		return (data)
 	
 	def	infobox(self, parsed: Wikicode) -> dict:

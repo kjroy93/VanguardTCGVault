@@ -20,18 +20,20 @@ def	convert_to_int(element: str):
 		return (int(element))
 	raise ValueError
 
-def normalize_length(data: list, lenght: int):
+def normalize_length(data: list, size: int):
 	i = 0
-	while (lenght != 6):
+	lenght = len(data)
+	while (lenght != size):
 		if (data[i] == ''):
 			data.pop(i)
 			i += 1
 		i += 1
+		lenght = len(data)
 	return (data)
 
-def	raw_table_data_prepare(template: list):
+def	raw_table_data_prepare(template: list, size: int):
 	data = []
-	lst = normalize_length(template, len(template))
+	lst = normalize_length(template, size)
 	for i in lst:
 		raw_value = convert_to_str(i)
 		try:

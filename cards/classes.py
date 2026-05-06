@@ -20,16 +20,8 @@ class	ScrapCard(BaseModel):
 	CardNo:			str
 	Name:			str
 	Grade:			Optional[int] = None
-	Race:			str
-	Type:			str | None = None
-	Rarity:			str
-	Release:		str
-
-class	ScrapCardD(BaseModel):
-	CardNo:			str
-	Name:			str
-	Grade:			Optional[int] = None
-	Nation:			str
+	Faction:		str
+	FactionType:	str
 	Type:			str | None = None
 	Rarity:			str
 	Release:		str
@@ -38,16 +30,8 @@ class	ScrapDeck(BaseModel):
 	CardNo:			str
 	Name:			str
 	Grade:			Optional[int] = None
-	Race:			str
-	Type:			str | None = None
-	Rarity:			str
-	Release:		str
-
-class	ScrapDeckD(BaseModel):
-	CardNo:			str
-	Name:			str
-	Grade:			Optional[int] = None
-	Nation:			str
+	Faction:		str
+	FactionType:	str
 	Type:			str | None = None
 	Rarity:			str
 	Release:		str

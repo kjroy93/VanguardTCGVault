@@ -14,14 +14,8 @@
 import re
 
 class	VanguardClassifier:
-	def	__init__(self):
-		self._rules = [
-			(r"^DZ", "DZ"),
-			(r"^D", "D"),
-			(r"^G", "G"),
-			(r"^V", "V"),
-			(r"^Booster", "LB")
-		]
+	def	__init__(self, rules):
+		self._rules = rules
 
 	def	obtain_set_number(self, play_set: str):
 		number = ""
