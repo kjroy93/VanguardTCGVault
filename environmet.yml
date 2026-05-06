@@ -1,0 +1,12 @@
+name: scrap_vanguard
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+  - notebook
+  - pandas=2.0.0
+  - pydantic
+  - pyarrow
+  - fastparquet
+  - aiohttp
+prefix: C:\Users\kmarr\miniconda3\envs\scrap_vanguard

@@ -14,7 +14,7 @@
 from typing import List, Union
 
 # Dependencies
-import requests
+import aiohttp
 import mwparserfromhell
 from mwparserfromhell.wikicode import Wikicode
 
@@ -32,9 +32,15 @@ class	MediaWikiAPI:
 	API_URL = "https://cardfight.fandom.com/api.php"
 
 	def	__init__(self):
-		self.session = requests.Session()
+		self.session = None
+	
+	async def	init_session(self):
+		self.session = aiohttp.ClientSession()
+	
+	async def	close_session(self):
+		await self.session.close()
 
-	def	get(self,
+	async def	get(self,
 			params: dict[str, Union[str, List[str]]],
 			headers: dict[str, str]) -> JSONType:
 		"""
@@ -49,13 +55,12 @@ class	MediaWikiAPI:
 		Returns:
 			JSONType: If the request was succesful, you will have a json file with the desired information.
 		"""
-		return (
-			self.session.get(	
+		async with self.session.get(
 			self.API_URL,
 			params=params,
 			headers=headers
-			).json()
-		)
+		) as response:
+			return (await response.json())
 
 class	VanguardScrapper:
 	def	__init__(self, api: MediaWikiAPI):
