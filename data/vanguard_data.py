@@ -17,7 +17,7 @@ from parsers.normalizers import normalize_length, raw_table_data_prepare
 
 class	VanguardStorage:
 	def __init__(self):
-		self.seen = {
+		self._seen = {
 			"LB": set(), "LL": set(), "G": set(),
 			"V": set(), "D": set(), "DZ": set()
 		}

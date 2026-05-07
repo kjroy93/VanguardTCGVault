@@ -9,8 +9,22 @@
 #    Updated: 2026/05/05 15:18:17 by marvin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+# Imports
+import re
 
+# Dependencies
 from mwparserfromhell.nodes import Template
+
+def	construct_rules(rule: str):
+	param = f"^{re.escape(rule)}"
+	rules = [
+		(r"^DZ", "DZ"),
+		(r"^D", "D"),
+		(r"^G", "G"),
+		(r"^V", "V"),
+		(param, "LB")
+	]
+	return (rules)
 
 def	convert_to_str(element: Template):
 	return (str(element.value).strip())

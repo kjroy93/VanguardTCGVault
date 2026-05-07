@@ -15,11 +15,6 @@ from typing import Union, Literal
 header = {
 	"User-Agent": "VanguardScrapper/1.0 (Python; contact: kmarrero1993@gmail.com)"
 }
-first_param = {
-	"action": "parse",
-	"page": "List of Cardfight!! Vanguard Booster Sets",
-	"format": "json"
-}
 
 def dict_construct(consult: Union[Literal["consult", "get"]], lst: list):
 	if (consult == "consult"):
