@@ -10,7 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
-from fsm.fsm		import State, FSMContext
+# Library
+from fsm.fsm import State, FSMContext
 
 def	parse_answer(user_input: str):
 	options = {
@@ -38,7 +39,7 @@ def parse_main_category(fsm: FSMContext):
 
 def	parse_sub_category(fsm: FSMContext, options: list):
 	for i, option in enumerate(options):
-		print(i, option)
+		print(str(i) + ": ", option)
 	while (True):
 		try:
 			answer = int(input("> "))
@@ -52,3 +53,32 @@ def	parse_sub_category(fsm: FSMContext, options: list):
 	fsm.data["subcategory"] = fsm.subcategory
 	fsm.current_state = State.BUILD_QUERY
 	return (fsm.current_state)
+
+def	main_dispatcher(fsm: FSMContext):
+	prefix = {
+		"other": "List of "
+	}
+	return (prefix.get(
+		fsm.main_category,
+		"List of Cardfight!! Vanguard "
+	))
+
+def sub_dispatcher(fsm: FSMContext):
+	sub_dispatch = {
+		"Unique Booster Sets": fsm.subcategory,
+		"Monthly Bushiroad": fsm.subcategory
+	}
+	if (fsm.subcategory in sub_dispatch):
+		return (sub_dispatch[fsm.subcategory])
+
+def dispatcher(fsm: FSMContext):
+
+	result = sub_dispatcher(fsm)
+
+	if (result is not None):
+		return (result)
+
+	return (
+		main_dispatcher(fsm)
+		+ fsm.subcategory
+	)

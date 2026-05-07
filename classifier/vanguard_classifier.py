@@ -24,6 +24,8 @@ class	VanguardClassifier:
 				number += i
 			elif (number):
 				break
+		if (number == ""):
+			return (None)
 		return (int(number))
 
 	def	classify(self, name: str) -> str:

@@ -10,6 +10,9 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Imports
+
+# Library
 from fsm.fsm		import State, FSMContext
 from fsm			import parser
 
@@ -18,7 +21,7 @@ CATEGORIES = {
 		"Booster Sets",
 		"Extra Booster Sets",
 		"Character Booster Sets",
-		"Combinations Booster Sets",
+		"Combination Booster Sets",
 		"Clan Booster Sets",
 		"Title Booster Sets",
 		"Unique Booster Sets",
@@ -48,6 +51,7 @@ def entry_point(fsm: FSMContext):
 
 	def start_message():
 		print("Welcome to VanguardTCGScrapper")
+		print("\n")
 		print("What info do you need from the website?")
 		print("booster")
 		print("special")
@@ -77,27 +81,21 @@ def	select_subcategory(fsm: FSMContext):
 		"Please, check out dictionary CATEGORIES")
 		fsm.current_state = State.ERROR
 		return (fsm.current_state)
+
 	print("Which subcategory you want to scrap?")
 	print("indentify it with the index number:\n")
 	return (parser.parse_sub_category(fsm, options))
 
 def	make_query(fsm: FSMContext):
-
-	def	dispatcher(main_cateogry: str):
-		prefix = {
-			"other": "List of "
-		}
-		return (prefix.get(
-			main_cateogry,
-			"List of Cardfight!! Vanguard"
-		))
-
-	prefix = dispatcher(fsm.main_category)
+	prefix = parser.dispatcher(fsm)
 	param = {
 		"action": "parse",
-		"page": prefix + " " + fsm.subcategory,
+		"page": f"{prefix}",
 		"format": "json"
 	}
 	fsm.data["param"] = param
 	fsm.current_state = State.FETCH
 	return (fsm.current_state)
+
+def	fetch_routine(fsm: FSMContext):
+	pass

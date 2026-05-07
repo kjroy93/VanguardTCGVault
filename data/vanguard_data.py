@@ -29,8 +29,8 @@ class	VanguardStorage:
 		self.dz	=		[]
 
 	def _add_item(self, key: str, item: str):
-		if item not in self.seen[key]:
-			self.seen[key].add(item)
+		if item not in self._seen[key]:
+			self._seen[key].add(item)
 			getattr(self, key.lower()).append(item)
 	
 	def	__construct_rows(self, data: list[str | int],
