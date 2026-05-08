@@ -14,7 +14,7 @@
 import re
 
 class	VanguardClassifier:
-	def	__init__(self, rules):
+	def _define_rules(self, rules):
 		self._rules = rules
 
 	def	obtain_set_number(self, play_set: str):
@@ -25,7 +25,7 @@ class	VanguardClassifier:
 			elif (number):
 				break
 		if (number == ""):
-			return (None)
+			return (-1)
 		return (int(number))
 
 	def	classify(self, name: str) -> str:

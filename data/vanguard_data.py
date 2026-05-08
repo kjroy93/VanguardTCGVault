@@ -10,10 +10,9 @@
 #                                                                              #
 # **************************************************************************** #
 
-from typing import Union
-from mwparserfromhell.nodes import Template
-from cards.classes import ScrapCard, ScrapDeck
-from parsers.normalizers import normalize_length, raw_table_data_prepare
+from mwparserfromhell.nodes	import Template
+from cards.classes			import ScrapCard, ScrapDeck
+from parsers.normalizers	import normalize_length, raw_table_data_prepare
 
 class	VanguardStorage:
 	def __init__(self):

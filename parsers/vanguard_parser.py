@@ -33,8 +33,8 @@ class	VanguardParser:
 			if (cleaner not in value):
 				crude.remove(value)
 
-	def make_consults(self, consult: Union[Literal["consult", "get"]], lst: list):
-		return (dict_construct(consult, lst))
+	def make_consults(self, lst: list):
+		return (dict_construct("consult", lst))
 	
 	def	__process_infobox(self, tpl: Template, data: dict):
 		title = None

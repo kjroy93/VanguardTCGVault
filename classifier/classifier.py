@@ -10,8 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
-from classifier.vanguard_classifier import VanguardClassifier
 from data.vanguard_data import VanguardStorage
+from classifier.vanguard_classifier import VanguardClassifier
 
 def	process_items(data: list, classifier: VanguardClassifier,
 					storage: VanguardStorage):

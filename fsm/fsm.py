@@ -10,30 +10,34 @@
 #                                                                              #
 # **************************************************************************** #
 
-#Import 
-from enum import Enum, auto
-
-# Library
-
-class	State(Enum):
-	ENTRY_POINT =			auto()
-	SELECT_MAIN_CATEGORY = 	auto()
-	SELECT_SUBCATEGORY =	auto()
-	BUILD_QUERY =			auto()
-	FETCH =					auto()
-	PROCESS =				auto()
-	END =					auto()
-	ERROR =					auto()
-
 class FSMContext:
 	def __init__(self):
 		self.reset()
+
 	
 	def	reset(self):
 		self.data: dict = {}
-		self.query: str | None = None
 		self.answer: str | None = None
-		self.results: list | None = None
 		self.subcategory: str | None = None
 		self.current_state: str | None = None
 		self.main_category: str | None = None
+
+class	FSMConsults:
+	def	__init__(self):
+		self.reset()
+	
+	def reset(self):
+		self.answer: str | None = None
+		self.answer_lb : bool | None = None
+		self.answer_ll : bool | None = None
+		self.answer_g : bool | None = None
+		self.answer_v : bool | None = None
+		self.answer_d : bool | None = None
+		self.answer_dz : bool | None = None
+		self.lb: str | dict = None
+		self.ll: str | dict = None
+		self.g: str | dict = None
+		self.v: str | dict = None
+		self.d: str | dict = None
+		self.dz: str | dict = None
+		self.current_state: str | None = None

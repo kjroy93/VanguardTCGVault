@@ -13,26 +13,26 @@
 # Imports
 
 # Library
-from fsm.fsm		import State, FSMContext
-from fsm			import parser
+from fsm		import parser
+from fsm.fsm	import FSMContext
+from fsm.states	import State
 
 CATEGORIES = {
-	"booster": [
+	"boosters": [
 		"Booster Sets",
 		"Extra Booster Sets",
 		"Character Booster Sets",
-		"Combination Booster Sets",
 		"Clan Booster Sets",
 		"Title Booster Sets",
 		"Unique Booster Sets",
 	],
-	"special": [
+	"specials": [
 		"Fighters Collections",
 		"Revival Collections",
 		"Collector's Sets",
 		"Special Series"
 	],
-	"deck": [
+	"decks": [
 		"Trial Decks",
 		"Legend Decks",
 		"Character Decks",
@@ -40,7 +40,7 @@ CATEGORIES = {
 		"Premiun Fighter Decks",
 		"Structure Decks"
 	],
-	"other": [
+	"others": [
 		"Promo Cards",
 		"V Promo Cards",
 		"Monthly Bushiroad Cards"
@@ -53,15 +53,13 @@ def entry_point(fsm: FSMContext):
 		print("Welcome to VanguardTCGScrapper")
 		print("\n")
 		print("What info do you need from the website?")
-		print("booster")
-		print("special")
-		print("deck")
-		print("other")
 
 	start_message()
 	answer = None
 	while (answer is None):
-		user_input = input("> ").lower()
+		for index, key in enumerate(CATEGORIES):
+			print(index, ":", key)
+		user_input = int(input("> ").lower())
 		answer = parser.parse_answer(user_input)
 		if (answer is None):
 			print("Invalid option. Try again")
@@ -85,17 +83,3 @@ def	select_subcategory(fsm: FSMContext):
 	print("Which subcategory you want to scrap?")
 	print("indentify it with the index number:\n")
 	return (parser.parse_sub_category(fsm, options))
-
-def	make_query(fsm: FSMContext):
-	prefix = parser.dispatcher(fsm)
-	param = {
-		"action": "parse",
-		"page": f"{prefix}",
-		"format": "json"
-	}
-	fsm.data["param"] = param
-	fsm.current_state = State.FETCH
-	return (fsm.current_state)
-
-def	fetch_routine(fsm: FSMContext):
-	pass

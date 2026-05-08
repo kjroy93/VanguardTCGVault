@@ -11,28 +11,20 @@
 # **************************************************************************** #
 
 # Library
-from fsm.fsm import State, FSMContext
+from fsm.fsm import FSMContext
+from fsm.states import State
 
 def	parse_answer(user_input: str):
 	options = {
-		"booster": "booster",
-		"special": "special",
-		"deck": "deck",
-		"other": "other"
+		0: "boosters",
+		1: "specials",
+		2: "decks",
+		3: "others"
 	}
 	return (options.get(user_input))
 
 def parse_main_category(fsm: FSMContext):
-	mapping = {
-		"booster": "booster",
-		"boosters": "booster",
-		"special": "special",
-		"specials": "special",
-		"deck": "deck",
-		"decks": "deck",
-		"other": "other"
-	}
-	fsm.main_category = mapping.get(fsm.answer)
+	fsm.main_category = fsm.answer
 	fsm.data["category"] = fsm.main_category
 	fsm.current_state = State.SELECT_SUBCATEGORY
 	return (fsm.current_state)
@@ -54,31 +46,3 @@ def	parse_sub_category(fsm: FSMContext, options: list):
 	fsm.current_state = State.BUILD_QUERY
 	return (fsm.current_state)
 
-def	main_dispatcher(fsm: FSMContext):
-	prefix = {
-		"other": "List of "
-	}
-	return (prefix.get(
-		fsm.main_category,
-		"List of Cardfight!! Vanguard "
-	))
-
-def sub_dispatcher(fsm: FSMContext):
-	sub_dispatch = {
-		"Unique Booster Sets": fsm.subcategory,
-		"Monthly Bushiroad": fsm.subcategory
-	}
-	if (fsm.subcategory in sub_dispatch):
-		return (sub_dispatch[fsm.subcategory])
-
-def dispatcher(fsm: FSMContext):
-
-	result = sub_dispatcher(fsm)
-
-	if (result is not None):
-		return (result)
-
-	return (
-		main_dispatcher(fsm)
-		+ fsm.subcategory
-	)
