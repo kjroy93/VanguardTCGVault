@@ -9,62 +9,76 @@
 #    Updated: 2026/05/08 17:56:17 by marvin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-from pathlib import Path
 
-from fsm.states import Consult
-from fsm.fsm import FSMConsults, FSMContext
-from parsers.vanguard_parser import VanguardParser
-from data.vanguard_data import VanguardStorage
-from classifier.vanguard_classifier import VanguardClassifier
+from pathlib import Path
 
 SET_PATHS = {
 	"boosters": {
-
 		"main": {
 			"folder": "boosters/booster sets",
 			"prefix": "set"
 		},
-
 		"extra": {
 			"folder": "boosters/extra booster sets",
 			"prefix": "extra"
 		},
-
 		"character": {
 			"folder": "boosters/character booster sets",
 			"prefix": "character"
 		},
-
 		"clan": {
 			"folder": "boosters/clan booster sets",
 			"prefix": "clan"
 		},
-
 		"title": {
 			"folder": "boosters/title booster sets",
 			"prefix": "title"
 		},
-
 		"unique": {
 			"folder": "boosters/unique booster sets",
 			"prefix": "unique"
 		}
 	},
-
 	"decks": {
-		"main": {
-			"folder": "decks",
+		"trial": {
+			"folder": "decks/trial decks",
+			"prefix": "deck"
+		},
+		"legend": {
+			"folder": "dekcs/legend decks",
+			"prefix": "deck"
+		},
+		"start": {
+			"folder": "decks/start decks",
+			"prexix": "deck"
+		},
+		"character": {
+			"folder": "decks/character decks",
+			"prefix": "deck"
+		},
+		"structure": {
+			"folder": "decks/structure decks",
 			"prefix": "deck"
 		}
 	},
-
 	"specials": {
-		"main": {
-			"folder": "specials",
-			"prefix": "special"
+		"fighters": {
+			"folder": "specials/fighters collections",
+			"prefix": "specials"
+		},
+		"revival": {
+			"folder": "specials/revival collections",
+			"prefix": "specials"
+		},
+		"collector's": {
+			"folder": "specials/collector's sets",
+			"prefix": "specials"
+		},
+		"special": {
+			"folder": "specials/special series",
+			"prefix": "specials"
 		}
 	},
-
 	"other": {
 		"main": {
 			"folder": "other",
@@ -80,21 +94,17 @@ def build_set_path(category: str,
 				set_type: str,
 				block: str,
 				set_number: int) -> Path:
-
 	info = SET_PATHS[category][set_type]
-
 	filename = (
 		f"{info['prefix']}_{set_number:02}.parquet"
 	)
-
 	path = (
 		DB_FOLDER
 		/ info["folder"]
 		/ block.lower()
 		/ filename
 	)
-
-	return path
+	return (path)
 
 # def check_database(context: FSMContext,
 # 				   consult: FSMConsults,

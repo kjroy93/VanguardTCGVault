@@ -36,18 +36,29 @@ class	VanguardParser:
 	def make_consults(self, lst: list):
 		return (dict_construct("consult", lst))
 	
-	def	__process_infobox(self, tpl: Template, data: dict):
-		title = None
+	def __process_infobox(self, tpl: Template, data: dict):
+		titles = {}
+		infos = {}
+
 		for param in tpl.params:
 			name = str(param.name).strip().lower()
 			value = str(param.value).strip()
-			if ("title" in name):
-				title = value.lower()
-			elif ("info" in name and title):
-				data[title] = value.replace("<br>", "")
-				data[title] = value.replace("<br/>", "")
-		return (data)
-	
+			value = value.replace("<br/>", "").replace("<br>", "")
+
+			if "title" in name:
+				idx = "".join([c for c in name if c.isdigit()])
+				titles[idx] = value.lower()
+
+			elif "info" in name:
+				idx = "".join([c for c in name if c.isdigit()])
+				infos[idx] = value
+
+		for idx in infos:
+			if idx in titles:
+				data[titles[idx]] = infos[idx]
+
+		return data
+		
 	def	infobox(self, parsed: Wikicode) -> dict:
 		box = {}
 		for tpl in parsed.filter_templates():

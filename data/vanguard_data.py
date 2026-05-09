@@ -36,18 +36,32 @@ class	VanguardStorage:
 					  obj: type[ScrapCard | ScrapDeck],
 					  is_d: bool,
 					  infobox: dict) -> object:
-		row = obj(
-			CardNo =		data[0],
-			Name =			data[1],
-			Grade =			data[2],
-			Faction =		data[3],
-			FactionType =	"Nation" if is_d else "Clan",
-			Type = 			data[4],
-			Rarity = 		data[5],
-			Release = 		infobox.get("release date:", None)
-		)
-		return (row)
-	
+		print(data)
+		try:
+			row = obj(
+				CardNo =		data[0],
+				Name =			data[1],
+				Grade =			data[2],
+				Faction =		data[3],
+				FactionType =	"Nation" if is_d else "Clan",
+				Type = 			data[4],
+				Rarity = 		data[5],
+				Release = 		infobox.get("release date:") or ""
+			)
+			return (row)
+		except (IndexError, ValueError):
+			row = obj(
+				CardNo =		"None",
+				Name =			"None",
+				Grade =			0,
+				Faction =		"None",
+				FactionType =	"None",
+				Type = 			"None",
+				Rarity = 		"None",
+				Release = 		infobox.get("release date:") or "None"
+			)
+			return (row)
+		
 	def	prepare_data(self, list_of_wikitex: list[Template],
 				size: int,
 				is_deck: bool = False,

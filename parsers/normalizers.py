@@ -25,11 +25,14 @@ def normalize_length(data: list, size: int):
 	i = 0
 	lenght = len(data)
 	while (lenght != size):
-		if (data[i] == ''):
-			data.pop(i)
+		try:
+			if (data[i] == ''):
+				data.pop(i)
+				i += 1
 			i += 1
-		i += 1
-		lenght = len(data)
+			lenght = len(data)
+		except IndexError:
+			break
 	return (data)
 
 def	raw_table_data_prepare(template: list, size: int):

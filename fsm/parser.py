@@ -11,8 +11,8 @@
 # **************************************************************************** #
 
 # Library
-from fsm.fsm import FSMContext
 from fsm.states import State
+from fsm.fsm import FSMContext
 
 def	parse_answer(user_input: str):
 	options = {

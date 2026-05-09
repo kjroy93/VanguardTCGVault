@@ -12,14 +12,11 @@
 
 # Imports
 import asyncio
-import time
-
-# Dependencies
-import pandas as pd
 
 # Library
 from fsm import	fsm, menus
 from fsm.states import State
+from fsm.routines import scrap
 from utils.utils import construct_rules
 from fsm.routines.parse import parse_links
 from fsm.routines.fetch import fetch_routine
@@ -29,7 +26,6 @@ from data.vanguard_data import VanguardStorage
 from parsers.vanguard_parser import VanguardParser
 from classifier.vanguard_classifier import VanguardClassifier
 from api_builder.vanguard_api_build import MediaWikiAPI, VanguardScrapper
-from fsm.routines import scrap
 
 async def main():
 	web = MediaWikiAPI()
@@ -67,13 +63,13 @@ async def main():
 				state_machine, pipeline.parser, pipeline.storage,
 				pipeline.scrapper, pipeline.classifier
 			)
-		await scrap.main_scrap_routine(pipeline.parser, pipeline.storage, pipeline.scrapper, pipeline.classifier)
-		print("Do you wish to continue the scrap process? [y]es | [n]o")
-		answer = input("> ").strip().lower()
-		if (answer in ("y", "yes")):
-			state = State.ENTRY_POINT
-		elif (answer in ("n", "no")):
-			state = State.END
+			await scrap.main_scrap_routine(pipeline.parser, pipeline.storage, pipeline.scrapper, pipeline.classifier, state_machine)
+			print("Do you wish to continue the scrap process? [y]es | [n]o")
+			answer = input("> ").strip().lower()
+			if (answer in ("y", "yes")):
+				state = State.ENTRY_POINT
+			elif (answer in ("n", "no")):
+				state = State.END
 	await pipeline.scrapper.api.close_session()
 
 if __name__ == "__main__":

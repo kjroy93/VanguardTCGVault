@@ -10,12 +10,10 @@
 #                                                                              #
 # **************************************************************************** #
 
-# Imports
-
 # Library
+from fsm.states	import State
 from fsm		import parser
 from fsm.fsm	import FSMContext
-from fsm.states	import State
 
 CATEGORIES = {
 	"boosters": [

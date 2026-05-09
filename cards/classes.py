@@ -22,7 +22,7 @@ class	ScrapCard(BaseModel):
 	Grade:			Optional[int] = None
 	Faction:		str
 	FactionType:	str
-	Type:			str | None = None
+	Type:			Optional[str] = None
 	Rarity:			str
 	Release:		str
 
@@ -32,7 +32,7 @@ class	ScrapDeck(BaseModel):
 	Grade:			Optional[int] = None
 	Faction:		str
 	FactionType:	str
-	Type:			str | None = None
+	Type:			Optional[str] = None
 	Rarity:			str
 	Release:		str
 
