@@ -36,17 +36,23 @@ class	VanguardStorage:
 					  obj: type[ScrapCard | ScrapDeck],
 					  is_d: bool,
 					  infobox: dict) -> object:
-		print(data)
+		print(data[0])
+		print(data[1])
+		print(data[2])
+		print(data[3])
+		print(data[4])
+		print(data[5])
 		try:
 			row = obj(
 				CardNo =		data[0],
 				Name =			data[1],
 				Grade =			data[2],
-				Faction =		data[3],
+				Faction =		[data[3]],
 				FactionType =	"Nation" if is_d else "Clan",
 				Type = 			data[4],
 				Rarity = 		data[5],
-				Release = 		infobox.get("release date:") or ""
+				Release = 		infobox.get("release date") or
+									infobox.get("release date:") or ""
 			)
 			return (row)
 		except (IndexError, ValueError):
@@ -54,25 +60,51 @@ class	VanguardStorage:
 				CardNo =		"None",
 				Name =			"None",
 				Grade =			0,
-				Faction =		"None",
+				Faction =		["None"],
 				FactionType =	"None",
 				Type = 			"None",
 				Rarity = 		"None",
-				Release = 		infobox.get("release date:") or "None"
+				Release = 		infobox.get("release date") or
+									infobox.get("release date:") or ""
 			)
 			return (row)
-		
+	
+	def	__prepare_multiple_cards(self,
+							  cards: list[list],
+							  rows: list,
+							  obj: type[ScrapCard | ScrapDeck],
+							  is_d: bool = False,
+							  infobox: dict = None):
+		for lst in cards:
+			parsed_row = raw_table_data_prepare(lst)
+			row = self.__construct_rows(parsed_row, obj, is_d, infobox)
+			rows.append(row)
+	
+	def __prepare_single_card(self,
+							card: list,
+							rows: list,
+							obj: type[ScrapCard | ScrapDeck],
+							is_d: bool = False,
+							infobox: dict = False):
+		parsed_row = raw_table_data_prepare(card)
+		row = self.__construct_rows(parsed_row, obj, is_d, infobox)
+		rows.append(row)
+
 	def	prepare_data(self, list_of_wikitex: list[Template],
 				size: int,
 				is_deck: bool = False,
 				is_d: bool = False,
 				infobox: dict = None) -> list:
 		rows = []
+		handlers = {
+			True: self.__prepare_multiple_cards,
+			False: self.__prepare_single_card,
+		}
+		obj = ScrapDeck if is_deck else ScrapCard
 		for i in range(0, len(list_of_wikitex)):
-			parsed_row = normalize_length(list_of_wikitex[i].params, size)
-			parsed_row = raw_table_data_prepare(list_of_wikitex[i].params, size)
-			obj = ScrapCard if is_deck else ScrapDeck
-			row = self.__construct_rows(parsed_row, obj, is_d, infobox)
-			rows.append(row)
+			n_row = normalize_length(list_of_wikitex[i].params, size)
+			is_multiple = isinstance(n_row[0], list)
+			handler = handlers[is_multiple]
+			handler(n_row, rows, obj, is_d, infobox)
 		data = [obj.model_dump() for obj in rows]
 		return (data)

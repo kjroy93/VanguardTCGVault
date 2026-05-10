@@ -11,7 +11,6 @@
 # **************************************************************************** #
 
 from fsm.fsm import FSMContext
-from fsm.menus import CATEGORIES
 
 def	__main_dispatcher(fsm: FSMContext):
 	prefix = {

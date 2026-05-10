@@ -24,7 +24,6 @@ dict_s = {
 	"boosters": [
 		"List",
 		"Unique",
-		"G Booster Set 14: Divine Dragon Apocrypha",
 		"G Booster Set 5: Ombre Assassine",
 		"G Booster Set 6: Tempesta di Fiori",
 		"G Booster Set 4: La Debolezza è un Peccato",

@@ -45,6 +45,14 @@ CATEGORIES = {
 	]
 }
 
+NATIONS = {
+	"Dragon Empire",
+	"Stoicheia",
+	"Dark States",
+	"Keter Sanctuary",
+	"Brandt Gate"
+}
+
 def entry_point(fsm: FSMContext):
 
 	def start_message():

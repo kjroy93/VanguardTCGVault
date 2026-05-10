@@ -20,7 +20,7 @@ class	ScrapCard(BaseModel):
 	CardNo:			str
 	Name:			str
 	Grade:			Optional[int] = None
-	Faction:		str
+	Faction:		list[str]
 	FactionType:	str
 	Type:			Optional[str] = None
 	Rarity:			str

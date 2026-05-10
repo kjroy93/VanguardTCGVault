@@ -26,6 +26,52 @@ from data.vanguard_data import VanguardStorage
 from parsers.vanguard_parser import VanguardParser
 from classifier.vanguard_classifier import VanguardClassifier
 from api_builder.vanguard_api_build import MediaWikiAPI, VanguardScrapper
+from api_builder.api_request import header
+
+# async def main():
+# 	web = MediaWikiAPI()
+# 	pipeline = VanguardPipeline(
+# 		VanguardScrapper(web),
+# 		VanguardParser(),
+# 		VanguardClassifier(),
+# 		VanguardStorage()
+# 	)
+# 	await pipeline.scrapper.api.init_session()
+# 	state_machine = fsm.FSMContext()
+# 	state = State.ENTRY_POINT
+
+# 	while state != State.END:
+# 		if state == State.ENTRY_POINT:
+# 			state = menus.entry_point(state_machine)
+# 		elif state == State.SELECT_MAIN_CATEGORY:
+# 			state = menus.select_category(state_machine)
+# 		elif state == State.SELECT_SUBCATEGORY:
+# 			state = menus.select_subcategory(state_machine)
+# 		elif state == State.BUILD_QUERY:
+# 			state = make_query(state_machine)
+# 		elif state == State.FETCH:
+# 			rules = construct_rules(
+# 				state_machine.data["page"].split()[4]
+# 			)
+# 			pipeline.classifier._define_rules(rules)
+# 			state = await fetch_routine(
+# 				state_machine,
+# 				pipeline.scrapper
+# 			)
+# 		elif state == State.PARSE:
+# 			pipeline.classifier._define_rules(construct_rules(state_machine.main_category.capitalize()))
+# 			state = parse_links(
+# 				state_machine, pipeline.parser, pipeline.storage,
+# 				pipeline.scrapper, pipeline.classifier
+# 			)
+# 			await scrap.main_scrap_routine(pipeline.parser, pipeline.storage, pipeline.scrapper, pipeline.classifier, state_machine)
+# 			print("Do you wish to continue the scrap process? [y]es | [n]o")
+# 			answer = input("> ").strip().lower()
+# 			if (answer in ("y", "yes")):
+# 				state = State.ENTRY_POINT
+# 			elif (answer in ("n", "no")):
+# 				state = State.END
+# 	await pipeline.scrapper.api.close_session()
 
 async def main():
 	web = MediaWikiAPI()
@@ -38,39 +84,29 @@ async def main():
 	await pipeline.scrapper.api.init_session()
 	state_machine = fsm.FSMContext()
 	state = State.ENTRY_POINT
-
-	while state != State.END:
-		if state == State.ENTRY_POINT:
+	while (state != State.END):
+		if (state == State.ENTRY_POINT):
 			state = menus.entry_point(state_machine)
-		elif state == State.SELECT_MAIN_CATEGORY:
+		elif (state == State.SELECT_MAIN_CATEGORY):
 			state = menus.select_category(state_machine)
-		elif state == State.SELECT_SUBCATEGORY:
+		elif (state == State.SELECT_SUBCATEGORY):
 			state = menus.select_subcategory(state_machine)
-		elif state == State.BUILD_QUERY:
+		elif (state == State.BUILD_QUERY):
 			state = make_query(state_machine)
-		elif state == State.FETCH:
-			rules = construct_rules(
-				state_machine.data["page"].split()[4]
-			)
-			pipeline.classifier._define_rules(rules)
-			state = await fetch_routine(
-				state_machine,
-				pipeline.scrapper
-			)
-		elif state == State.PARSE:
+		elif (state == State.FETCH):
+			state = await fetch_routine(state_machine, pipeline.scrapper)
+		elif (state == State.PARSE):
 			pipeline.classifier._define_rules(construct_rules(state_machine.main_category.capitalize()))
 			state = parse_links(
 				state_machine, pipeline.parser, pipeline.storage,
 				pipeline.scrapper, pipeline.classifier
 			)
-			await scrap.main_scrap_routine(pipeline.parser, pipeline.storage, pipeline.scrapper, pipeline.classifier, state_machine)
-			print("Do you wish to continue the scrap process? [y]es | [n]o")
-			answer = input("> ").strip().lower()
-			if (answer in ("y", "yes")):
-				state = State.ENTRY_POINT
-			elif (answer in ("n", "no")):
-				state = State.END
-	await pipeline.scrapper.api.close_session()
+			dz_consults = pipeline.parser.make_consults(pipeline.storage.g)
+			api_answer = await pipeline.scrapper.api.get(params=dz_consults[13], headers=header)
+			wikitex = pipeline.scrapper.obtain_wikitex(api_answer)
+			data = pipeline.scrapper.make_cardlist_from_str(wikitex=wikitex)
+			infobox = pipeline.parser.infobox(wikitex)
+			data = pipeline.storage.prepare_data([data[2]], 6, infobox=infobox)
 
 if __name__ == "__main__":
 	asyncio.run(main())

@@ -100,6 +100,6 @@ class	VanguardScrapper:
 				lst.append(tpl)
 		lst = remove_from_list(lst, ["{{CardList/header/D}}",
 							   "{{CardList/footer}}", "{{CardList/header}}",
-							   "{{CardList/header}}"
+							   "{{CardList/header/V}}"
 							])
 		return (lst)
