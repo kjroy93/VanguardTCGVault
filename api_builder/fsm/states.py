@@ -14,19 +14,19 @@
 from enum import Enum, auto
 
 class	State(Enum):
-	ENTRY_POINT =			auto()
-	SELECT_MAIN_CATEGORY = 	auto()
-	SELECT_SUBCATEGORY =	auto()
-	BUILD_QUERY =			auto()
-	FETCH =					auto()
-	PARSE =					auto()
-	END =					auto()
-	ERROR =					auto()
+	ENTRY_POINT				=	auto()
+	SELECT_MAIN_CATEGORY	= 	auto()
+	SELECT_SUBCATEGORY		=	auto()
+	BUILD_QUERY				=	auto()
+	FETCH					=	auto()
+	PARSE					=	auto()
+	END						=	auto()
+	ERROR					=	auto()
 
 class	Consult(Enum):
-	CHECK_DATABASE = auto()
-	REQUIRE_DATABASE = auto()
-	MAKE_CONSULT =	auto()
-	READY =			auto()
-	STORE_INFO =	auto()
-	END =			auto()
+	CHECK_DATABASE		=	auto()
+	REQUIRE_DATABASE	=	auto()
+	MAKE_CONSULT 		=	auto()
+	READY				=	auto()
+	STORE_INFO			=	auto()
+	END					=	auto()

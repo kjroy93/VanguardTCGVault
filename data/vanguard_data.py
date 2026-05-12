@@ -10,9 +10,15 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Import
+from typing					import Literal
+
+# Dependencies
 from mwparserfromhell.nodes	import Template
+
+# Library
 from cards.classes			import ScrapCard, ScrapDeck
-from parsers.normalizers	import normalize_length, raw_table_data_prepare
+from cards.fsm				import ParserContext
 
 class	VanguardStorage:
 	def __init__(self):
@@ -26,37 +32,51 @@ class	VanguardStorage:
 		self.v =		[]
 		self.d =		[]
 		self.dz	=		[]
-
-	def _add_item(self, key: str, item: str):
-		if item not in self._seen[key]:
-			self._seen[key].add(item)
-			getattr(self, key.lower()).append(item)
 	
-	def	__construct_rows(self, data: list[str | int],
-					  obj: type[ScrapCard | ScrapDeck],
-					  is_d: bool,
-					  infobox: dict) -> object:
-		print(data[0])
-		print(data[1])
-		print(data[2])
-		print(data[3])
-		print(data[4])
-		print(data[5])
+	def	__construct_decks(self, fsm: ParserContext) -> object:
 		try:
-			row = obj(
-				CardNo =		data[0],
-				Name =			data[1],
-				Grade =			data[2],
-				Faction =		[data[3]],
-				FactionType =	"Nation" if is_d else "Clan",
-				Type = 			data[4],
-				Rarity = 		data[5],
-				Release = 		infobox.get("release date") or
-									infobox.get("release date:") or ""
+			row = fsm.obj(
+				CardNo =		fsm.row[0],
+				Amount =		fsm.row[1],
+				Name =			fsm.row[2],
+				Grade = 		fsm.row[3],
+				Faction =		[fsm.row[4]],
+				FactionType =	"Nation" if fsm.is_d else "Clan",
+				Type = 			fsm.row[5],
+				Release = 		fsm.infobox.get("release date") or
+									fsm.infobox.get("release date:") or ""
 			)
 			return (row)
 		except (IndexError, ValueError):
-			row = obj(
+			row = fsm.obj(
+				CardNo =		"None",
+				Amount =		"None",
+				Name =			"None",
+				Grade = 		0,
+				Faction =		"None",
+				FactionType =	"None",
+				Type = 			"None",
+				Release = 		fsm.infobox.get("release date") or
+									fsm.infobox.get("release date:") or ""
+			)
+			return (row)
+	
+	def	__construct_rows(self, fsm: ParserContext) -> object:
+		try:
+			row = fsm.obj(
+				CardNo =		fsm.row[0],
+				Name =			fsm.row[1],
+				Grade =			fsm.row[2],
+				Faction =		[fsm.row[3]],
+				FactionType =	"Nation" if fsm.is_d else "Clan",
+				Type = 			fsm.row[4],
+				Rarity = 		fsm.row[5],
+				Release = 		fsm.infobox.get("release date") or
+									fsm.infobox.get("release date:") or ""
+			)
+			return (row)
+		except (IndexError, ValueError):
+			row = fsm.obj(
 				CardNo =		"None",
 				Name =			"None",
 				Grade =			0,
@@ -64,41 +84,21 @@ class	VanguardStorage:
 				FactionType =	"None",
 				Type = 			"None",
 				Rarity = 		"None",
-				Release = 		infobox.get("release date") or
-									infobox.get("release date:") or ""
+				Release = 		fsm.infobox.get("release date") or
+									fsm.infobox.get("release date:") or ""
 			)
 			return (row)
-	
-	def	__prepare_multiple_cards(self,
-							  cards: list[list],
-							  rows: list,
-							  obj: type[ScrapCard | ScrapDeck],
-							  is_d: bool = False,
-							  infobox: dict = None):
-		for lst in cards:
-			parsed_row = raw_table_data_prepare(lst)
-			row = self.__construct_rows(parsed_row, obj, is_d, infobox)
-			rows.append(row)
-	
-	def __prepare_single_card(self,
-							card: list,
-							rows: list,
-							obj: type[ScrapCard | ScrapDeck],
-							is_d: bool = False,
-							infobox: dict = False):
-		parsed_row = raw_table_data_prepare(card)
-		row = self.__construct_rows(parsed_row, obj, is_d, infobox)
-		rows.append(row)
 
 	def	prepare_data(self, list_of_wikitex: list[Template],
 				size: int,
 				is_deck: bool = False,
 				is_d: bool = False,
-				infobox: dict = None) -> list:
+				infobox: dict = None,
+				label: Literal["decks"] = None) -> list:
 		rows = []
 		handlers = {
-			True: self.__prepare_multiple_cards,
-			False: self.__prepare_single_card,
+			0: self.__construct_decks,
+			1: self.__construct_rows
 		}
 		obj = ScrapDeck if is_deck else ScrapCard
 		for i in range(0, len(list_of_wikitex)):

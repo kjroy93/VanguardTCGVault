@@ -10,11 +10,10 @@
 #                                                                              #
 # **************************************************************************** #
 
-class FSMContext:
+class	FSMContext:
 	def __init__(self):
 		self.reset()
 
-	
 	def	reset(self):
 		self.data: dict = {}
 		self.answer: str | None = None
@@ -41,3 +40,4 @@ class	FSMConsults:
 		self.d: str | dict = None
 		self.dz: str | dict = None
 		self.current_state: str | None = None
+

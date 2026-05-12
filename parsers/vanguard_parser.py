@@ -10,10 +10,15 @@
 #                                                                              #
 # **************************************************************************** #
 
-from typing import Union, Literal
-from mwparserfromhell.nodes import Template
-from mwparserfromhell.wikicode import Wikicode
-from api_builder.api_request import dict_construct
+# Import
+from typing						import Literal
+
+# Dependencies
+from mwparserfromhell.nodes		import Template
+from mwparserfromhell.wikicode	import Wikicode
+
+# Library
+from api_builder.api_request	import dict_construct
 
 class	VanguardParser:
 	def separate_urls(self, data: list):
@@ -33,8 +38,8 @@ class	VanguardParser:
 			if (cleaner not in value):
 				crude.remove(value)
 
-	def make_consults(self, lst: list):
-		return (dict_construct("consult", lst))
+	def make_consults(self, lst: list, format: Literal["consult", "decks"]):
+		return (dict_construct(format, lst))
 	
 	def __process_infobox(self, tpl: Template, data: dict):
 		titles = {}

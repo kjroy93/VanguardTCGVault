@@ -9,17 +9,23 @@
 #    Updated: 2026/05/08 20:09:12 by marvin           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-import asyncio
+
+# Import
 import random
-import pandas as pd
-from fsm.routines.check_data_base import build_set_path
-from fsm.fsm import FSMContext
-from data.vanguard_data import VanguardStorage
-from parsers.vanguard_parser import VanguardParser
-from classifier.vanguard_classifier import VanguardClassifier
-from api_builder.vanguard_api_build import VanguardScrapper
-from api_builder.api_request import header
-from pathlib import Path
+import asyncio
+from pathlib						import Path
+
+# Dependencies
+import pandas 						as pd
+
+# Library
+from api_builder.api_request		import header
+from api_builder.fsm.fsm			import FSMContext
+from data.check_data_base			import build_set_path
+from parsers.vanguard_parser		import VanguardParser
+from data.vanguard_data				import VanguardStorage
+from api_builder.vanguard_api_build	import VanguardScrapper
+from classifier.vanguard_classifier	import VanguardClassifier
 
 def	get_duplicate_path(path: Path) -> Path:
 	if not path.exists():
@@ -41,7 +47,7 @@ async def	main_scrap_routine(parser: VanguardParser,
 							classifier: VanguardClassifier,
 							fsm: FSMContext):
 	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
-		consult = parser.make_consults(getattr(storage, block.lower()))
+		consult = parser.make_consults(getattr(storage, block.lower()), "consult")
 		for tpl in consult.values():
 			n = random.randint(5, 10)
 			await asyncio.sleep(n)
@@ -50,20 +56,20 @@ async def	main_scrap_routine(parser: VanguardParser,
 				headers=header
 			)
 			wikitex = scrapper.obtain_wikitex(api_result)
-			data = scrapper.make_cardlist_from_str(wikitex=wikitex)
+			crude_cards = scrapper.make_cardlist_from_str(wikitex=wikitex)
 			infobox = parser.infobox(wikitex)
 			is_d = False
 			is_deck = False
 			if (block in ["D", "DZ"]):
 				is_d = True
-			rows = storage.prepare_data(data, 6, is_d=is_d, is_deck=is_deck, infobox=infobox)
+			rows = storage.prepare_data(crude_cards, 6, is_d=is_d, is_deck=is_deck, infobox=infobox)
 			df = pd.DataFrame(rows, columns=[
 				"CardNo", "Name", "Grade", "Faction",
 				"FactionType", "Type", "Rarity", "Release"
 			])
-			print(data)
+			print(crude_cards)
 			set_number = classifier.obtain_set_number(
-				data[0]
+				crude_cards[0]
 			)
 			path = build_set_path(
 				category="boosters",

@@ -11,9 +11,9 @@
 # **************************************************************************** #
 
 # Library
-from fsm.states	import State
-from fsm		import parser
-from fsm.fsm	import FSMContext
+from api_builder.fsm.states	import State
+from api_builder.fsm		import url_parser
+from api_builder.fsm.fsm	import FSMContext
 
 CATEGORIES = {
 	"boosters": [
@@ -66,7 +66,7 @@ def entry_point(fsm: FSMContext):
 		for index, key in enumerate(CATEGORIES):
 			print(index, ":", key)
 		user_input = int(input("> ").lower())
-		answer = parser.parse_answer(user_input)
+		answer = url_parser.parse_answer(user_input)
 		if (answer is None):
 			print("Invalid option. Try again")
 	print("You selected:", answer)
@@ -76,7 +76,7 @@ def entry_point(fsm: FSMContext):
 	return (fsm.current_state)
 
 def	select_category(fsm: FSMContext):
-	return (parser.parse_main_category(fsm))
+	return (url_parser.parse_main_category(fsm))
 
 def	select_subcategory(fsm: FSMContext):
 	options = CATEGORIES.get(fsm.main_category)
@@ -88,4 +88,4 @@ def	select_subcategory(fsm: FSMContext):
 
 	print("Which subcategory you want to scrap?")
 	print("indentify it with the index number:\n")
-	return (parser.parse_sub_category(fsm, options))
+	return (url_parser.parse_sub_category(fsm, options))

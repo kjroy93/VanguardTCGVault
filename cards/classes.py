@@ -28,12 +28,12 @@ class	ScrapCard(BaseModel):
 
 class	ScrapDeck(BaseModel):
 	CardNo:			str
+	Amount:			Optional[int] = None
 	Name:			str
 	Grade:			Optional[int] = None
 	Faction:		str
 	FactionType:	str
 	Type:			Optional[str] = None
-	Rarity:			str
 	Release:		str
 
 class	Card(BaseModel):

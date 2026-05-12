@@ -10,9 +10,36 @@
 #                                                                              #
 # **************************************************************************** #
 
-from fsm.fsm import FSMContext
-from fsm.states import State
-from fsm.dispatcher import dispatcher
+from api_builder.fsm.fsm import FSMContext
+from api_builder.fsm.states import State
+
+def	__main_dispatcher(fsm: FSMContext):
+	prefix = {
+		"other": "List of "
+	}
+	return (prefix.get(
+		fsm.main_category,
+		"List of Cardfight!! Vanguard "
+	))
+
+def __sub_dispatcher(fsm: FSMContext):
+	sub_dispatch = {
+		"Unique Booster Sets": fsm.subcategory,
+		"Monthly Bushiroad": fsm.subcategory
+	}
+	if (fsm.subcategory in sub_dispatch):
+		return (sub_dispatch[fsm.subcategory])
+
+def dispatcher(fsm: FSMContext):
+	result = __sub_dispatcher(fsm)
+
+	if (result is not None):
+		return (result)
+
+	return (
+		__main_dispatcher(fsm)
+		+ fsm.subcategory
+	)
 
 def	make_query(fsm: FSMContext):
 	prefix = dispatcher(fsm)

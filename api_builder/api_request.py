@@ -10,13 +10,14 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Import
 from typing import Union, Literal
 
 header = {
 	"User-Agent": "VanguardScrapper/1.0 (Python; contact: kmarrero1993@gmail.com)"
 }
 
-def dict_construct(consult: Union[Literal["consult", "get"]], lst: list):
+def dict_construct(consult: Union[Literal["consult", "decks"]], lst: list):
 	if (consult == "consult"):
 		return {
 			i: {
@@ -29,6 +30,16 @@ def dict_construct(consult: Union[Literal["consult", "get"]], lst: list):
 		}
 		for i, value in enumerate(lst)
 	}
+	if (consult == "decks"):
+		return {
+			i: {
+			"action": "parse",
+			"page": value,
+			"prop": "text",
+			"format": "json"
+			}
+			for i, value in enumerate(lst)
+		}
 	else:
 		return {
 			value: {
