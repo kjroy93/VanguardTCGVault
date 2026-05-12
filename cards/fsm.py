@@ -29,9 +29,10 @@ class	ParserContext:
 		self.is_deck:		bool = False
 		self.obj:			object = None
 		self.card:			list[str] = None
-		self.rows:			list[object] = None
+		self.rows:			list[object] = []
+		self.links:			list[str] = None
 
-class	CardFsm:
+class	CardFSM:
 	def	__init__(self, fsm_context: FSMContext):
 		self.fsm_context =	fsm_context
 		self.context =		ParserContext()
@@ -63,6 +64,9 @@ class	CardFsm:
 		return (card)
 	
 	def	__promo(self, data: list):
+		pass
+
+	def __decks(self, data: list):
 		pass
 
 	def __normalize_length(self):
@@ -120,7 +124,7 @@ class	CardFsm:
 		self.__normalize_length()
 		nations = sum(
 			1 for nation in self.context.card
-			if (nation in NATIONS)
+			if (str(nation) in NATIONS)
 		)
 
 		if (self.state == ParserState.DUAL_CARD):

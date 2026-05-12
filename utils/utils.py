@@ -12,6 +12,7 @@
 
 # Imports
 import re
+import random
 
 # Dependencies
 from mwparserfromhell.nodes.extras import Parameter
@@ -38,3 +39,7 @@ def	convert_to_int(element: str):
 	if (element.isdigit()):
 		return (int(element))
 	raise ValueError
+
+def	smart_sleep():
+	x = random.randint(2, 6)
+	return (x)

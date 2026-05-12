@@ -13,10 +13,10 @@
 from data.vanguard_data import VanguardStorage
 from classifier.vanguard_classifier import VanguardClassifier
 
-def	process_items(data: list, classifier: VanguardClassifier):
+def	process_items(data: list, classifier: VanguardClassifier, storage: VanguardStorage):
 	for i in data:
 		key = classifier.classify(i)
-		classifier._add_item(key, i)
+		storage._add_item(key, i)
 
 def	sort_storage_list(attributes: list[str],
 					classifier: VanguardClassifier,

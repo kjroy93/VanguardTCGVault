@@ -17,11 +17,6 @@ class	VanguardClassifier:
 	def _define_rules(self, rules):
 		self._rules = rules
 
-	def _add_item(self, key: str, item: str):
-		if item not in self._seen[key]:
-			self._seen[key].add(item)
-			getattr(self, key.lower()).append(item)
-
 	def	obtain_set_number(self, play_set: str):
 		number = ""
 		for i in play_set:

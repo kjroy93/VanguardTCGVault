@@ -11,13 +11,14 @@
 # **************************************************************************** #
 
 # Library
-from api_builder.fsm.fsm						import FSMContext
+from api_builder.fsm.fsm			import FSMContext
 from parsers.vanguard_parser		import VanguardParser
 from data.vanguard_data				import VanguardStorage
 from api_builder.vanguard_api_build	import VanguardScrapper
 from utils.utils					import remove_from_list
 from classifier.vanguard_classifier import VanguardClassifier
 from classifier.classifier 			import process_items, sort_storage_list
+from api_builder.fsm.states			import State
 
 dict_s = {
 	"boosters": [
@@ -55,9 +56,10 @@ def	parse_links(fsm: FSMContext,
 		fsm.data["page"],
 		*dict_s.get(fsm.main_category)
 	])
-	process_items(parsed_links, classifier)
+	process_items(parsed_links, classifier, storage)
 	if (fsm.answer == "boosters"):
 		sort_storage_list(["LB", "G"], classifier, storage)
 	sort_storage_list([], classifier, storage)
 	fsm.data["parsed_links"] = parsed_links
+	fsm.current_state = State.END
 	return (fsm.current_state)

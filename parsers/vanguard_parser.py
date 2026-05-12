@@ -29,14 +29,19 @@ class	VanguardParser:
 				no_main_sets.append(data.pop(i))
 		return (no_main_sets)
 	
-	def	clean_trash_from_set(self, curl_parsed: str, crude: list, index: int):
+	def	clean_trash_from_set(self, curl_parsed: str, crude: list, index: int,
+						  reverse: bool = False):
 		cleaner = curl_parsed.split()[index]
 		if (cleaner is None):
 			return (None)
 		for i in range(len(crude) - 1, -1, -1):
 			value = crude[i]
-			if (cleaner not in value):
-				crude.remove(value)
+			if (not reverse):
+				if (cleaner not in value):
+					crude.remove(value)
+			else:
+				if (cleaner in value):
+					crude.remove(value)
 
 	def make_consults(self, lst: list, format: Literal["consult", "decks"]):
 		return (dict_construct(format, lst))
@@ -62,7 +67,7 @@ class	VanguardParser:
 			if idx in titles:
 				data[titles[idx]] = infos[idx]
 
-		return data
+		return (data)
 		
 	def	infobox(self, parsed: Wikicode) -> dict:
 		box = {}
@@ -70,3 +75,13 @@ class	VanguardParser:
 			if ("Infobox" in tpl.name):
 				box = self.__process_infobox(tpl, box)
 		return (box)
+
+	def	sort_unique_url(self, parsed_cardlist: list[Wikicode], crude_links: list[str]):
+		links = []
+		l = len(parsed_cardlist)
+		for i in range(l):
+			for element in crude_links:
+				if (str(parsed_cardlist[i].params[1].value) in element):
+					break
+			links.append(element)
+		return (links)

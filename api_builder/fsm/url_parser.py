@@ -45,4 +45,3 @@ def	parse_sub_category(fsm: FSMContext, options: list):
 	fsm.data["subcategory"] = fsm.subcategory
 	fsm.current_state = State.BUILD_QUERY
 	return (fsm.current_state)
-

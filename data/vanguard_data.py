@@ -17,8 +17,8 @@ from typing					import Literal
 from mwparserfromhell.nodes	import Template
 
 # Library
+from cards.fsm				import CardFSM
 from cards.classes			import ScrapCard, ScrapDeck
-from cards.fsm				import ParserContext
 
 class	VanguardStorage:
 	def __init__(self):
@@ -32,23 +32,28 @@ class	VanguardStorage:
 		self.v =		[]
 		self.d =		[]
 		self.dz	=		[]
-	
-	def	__construct_decks(self, fsm: ParserContext) -> object:
+
+	def _add_item(self, key: str, item: str):
+		if item not in self._seen[key]:
+			self._seen[key].add(item)
+			getattr(self, key.lower()).append(item)
+
+	def	__construct_decks(self, fsm: CardFSM) -> object:
 		try:
-			row = fsm.obj(
-				CardNo =		fsm.row[0],
-				Amount =		fsm.row[1],
-				Name =			fsm.row[2],
-				Grade = 		fsm.row[3],
-				Faction =		[fsm.row[4]],
-				FactionType =	"Nation" if fsm.is_d else "Clan",
-				Type = 			fsm.row[5],
-				Release = 		fsm.infobox.get("release date") or
-									fsm.infobox.get("release date:") or ""
+			row = fsm.context.obj(
+				CardNo =		fsm.context.row[0],
+				Amount =		fsm.context.row[1],
+				Name =			fsm.context.row[2],
+				Grade = 		fsm.context.row[3],
+				Faction =		[fsm.context.row[4]],
+				FactionType =	"Nation" if fsm.context.is_d else "Clan",
+				Type = 			fsm.context.row[5],
+				Release = 		fsm.context.infobox.get("release date") or
+									fsm.context.infobox.get("release date:") or ""
 			)
 			return (row)
 		except (IndexError, ValueError):
-			row = fsm.obj(
+			row = fsm.context.obj(
 				CardNo =		"None",
 				Amount =		"None",
 				Name =			"None",
@@ -56,27 +61,27 @@ class	VanguardStorage:
 				Faction =		"None",
 				FactionType =	"None",
 				Type = 			"None",
-				Release = 		fsm.infobox.get("release date") or
-									fsm.infobox.get("release date:") or ""
+				Release = 		fsm.context.infobox.get("release date") or
+									fsm.context.infobox.get("release date:") or ""
 			)
 			return (row)
 	
-	def	__construct_rows(self, fsm: ParserContext) -> object:
+	def	__construct_rows(self, fsm: CardFSM) -> object:
 		try:
-			row = fsm.obj(
-				CardNo =		fsm.row[0],
-				Name =			fsm.row[1],
-				Grade =			fsm.row[2],
-				Faction =		[fsm.row[3]],
-				FactionType =	"Nation" if fsm.is_d else "Clan",
-				Type = 			fsm.row[4],
-				Rarity = 		fsm.row[5],
-				Release = 		fsm.infobox.get("release date") or
-									fsm.infobox.get("release date:") or ""
+			row = fsm.context.obj(
+				CardNo =		fsm.context.row[0],
+				Name =			fsm.context.row[1],
+				Grade =			fsm.context.row[2],
+				Faction =		[fsm.context.row[3]],
+				FactionType =	"Nation" if fsm.context.is_d else "Clan",
+				Type = 			fsm.context.row[4],
+				Rarity = 		fsm.context.row[5],
+				Release = 		fsm.context.infobox.get("release date") or
+									fsm.context.infobox.get("release date:") or ""
 			)
 			return (row)
 		except (IndexError, ValueError):
-			row = fsm.obj(
+			row = fsm.context.obj(
 				CardNo =		"None",
 				Name =			"None",
 				Grade =			0,
@@ -84,27 +89,22 @@ class	VanguardStorage:
 				FactionType =	"None",
 				Type = 			"None",
 				Rarity = 		"None",
-				Release = 		fsm.infobox.get("release date") or
-									fsm.infobox.get("release date:") or ""
+				Release = 		fsm.context.infobox.get("release date") or
+									fsm.context.infobox.get("release date:") or ""
 			)
 			return (row)
 
 	def	prepare_data(self, list_of_wikitex: list[Template],
-				size: int,
-				is_deck: bool = False,
-				is_d: bool = False,
-				infobox: dict = None,
-				label: Literal["decks"] = None) -> list:
-		rows = []
+					fsm: CardFSM) -> list:
 		handlers = {
 			0: self.__construct_decks,
 			1: self.__construct_rows
 		}
-		obj = ScrapDeck if is_deck else ScrapCard
+		fsm.context.obj = ScrapDeck if fsm.context.is_deck else ScrapCard
 		for i in range(0, len(list_of_wikitex)):
-			n_row = normalize_length(list_of_wikitex[i].params, size)
-			is_multiple = isinstance(n_row[0], list)
-			handler = handlers[is_multiple]
-			handler(n_row, rows, obj, is_d, infobox)
-		data = [obj.model_dump() for obj in rows]
+			fsm.run(list_of_wikitex[i].params)
+			handler = handlers[fsm.context.prepare_data]
+			fsm.context.row = handler(fsm)
+			fsm.context.rows.append(fsm.context.row)
+		data = [fsm.context.obj.model_dump() for fsm.context.obj in fsm.context.rows]
 		return (data)

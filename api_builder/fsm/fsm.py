@@ -10,6 +10,8 @@
 #                                                                              #
 # **************************************************************************** #
 
+from api_builder.vanguard_api_build import JSONType
+
 class	FSMContext:
 	def __init__(self):
 		self.reset()
@@ -20,6 +22,7 @@ class	FSMContext:
 		self.subcategory: str | None = None
 		self.current_state: str | None = None
 		self.main_category: str | None = None
+		self.api_answer: JSONType | None = None
 
 class	FSMConsults:
 	def	__init__(self):

@@ -10,11 +10,14 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Import
+import asyncio
+
 # Library
 from api_builder.fsm.states						import State
-from api_builder.api_request		import header
+from api_builder.api_request					import header
 from api_builder.fsm.fsm						import FSMContext
-from api_builder.vanguard_api_build	import VanguardScrapper
+from api_builder.vanguard_api_build				import VanguardScrapper
 
 async def	fetch_routine(fsm: FSMContext, scrapper: VanguardScrapper):
 	param = fsm.data["param"]
