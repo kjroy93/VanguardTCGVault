@@ -13,6 +13,7 @@
 # Imports
 import re
 import random
+import asyncio
 
 # Dependencies
 from mwparserfromhell.nodes.extras import Parameter
@@ -40,6 +41,6 @@ def	convert_to_int(element: str):
 		return (int(element))
 	raise ValueError
 
-def	smart_sleep():
+async def	smart_sleep():
 	x = random.randint(2, 6)
-	return (x)
+	await asyncio.sleep(x)

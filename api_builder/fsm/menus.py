@@ -11,47 +11,10 @@
 # **************************************************************************** #
 
 # Library
-from api_builder.fsm.states	import State
-from api_builder.fsm		import url_parser
-from api_builder.fsm.fsm	import FSMContext
-
-CATEGORIES = {
-	"boosters": [
-		"Booster Sets",
-		"Extra Booster Sets",
-		"Character Booster Sets",
-		"Clan Booster Sets",
-		"Title Booster Sets",
-		"Unique Booster Sets",
-	],
-	"specials": [
-		"Fighters Collections",
-		"Revival Collections",
-		"Collector's Sets",
-		"Special Series"
-	],
-	"decks": [
-		"Trial Decks",
-		"Legend Decks",
-		"Character Decks",
-		"Half Decks",
-		"Premiun Fighter Decks",
-		"Structure Decks"
-	],
-	"others": [
-		"Promo Cards",
-		"V Promo Cards",
-		"Monthly Bushiroad Cards"
-	]
-}
-
-NATIONS = {
-	"Dragon Empire",
-	"Stoicheia",
-	"Dark States",
-	"Keter Sanctuary",
-	"Brandt Gate"
-}
+from api_builder.fsm.states		import State
+from api_builder.fsm.fsm		import FSMContext
+from api_builder.fsm.constants	import CATEGORIES
+from api_builder.fsm.url_parser	import parse_answer, parse_main_category, parse_sub_category
 
 def entry_point(fsm: FSMContext):
 
@@ -66,7 +29,7 @@ def entry_point(fsm: FSMContext):
 		for index, key in enumerate(CATEGORIES):
 			print(index, ":", key)
 		user_input = int(input("> ").lower())
-		answer = url_parser.parse_answer(user_input)
+		answer = parse_answer(user_input)
 		if (answer is None):
 			print("Invalid option. Try again")
 	print("You selected:", answer)
@@ -76,7 +39,7 @@ def entry_point(fsm: FSMContext):
 	return (fsm.current_state)
 
 def	select_category(fsm: FSMContext):
-	return (url_parser.parse_main_category(fsm))
+	return (parse_main_category(fsm))
 
 def	select_subcategory(fsm: FSMContext):
 	options = CATEGORIES.get(fsm.main_category)
@@ -88,4 +51,4 @@ def	select_subcategory(fsm: FSMContext):
 
 	print("Which subcategory you want to scrap?")
 	print("indentify it with the index number:\n")
-	return (url_parser.parse_sub_category(fsm, options))
+	return (parse_sub_category(fsm, options))

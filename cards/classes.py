@@ -17,7 +17,7 @@ from typing import Literal, Optional, Annotated, Union
 from pydantic import BaseModel, Field
 
 class	ScrapCard(BaseModel):
-	CardNo:			str
+	Code:			str
 	Name:			str
 	Grade:			Optional[int] = None
 	Faction:		list[str]
@@ -25,9 +25,10 @@ class	ScrapCard(BaseModel):
 	Type:			Optional[str] = None
 	Rarity:			str
 	Release:		str
+	URL:			str | int
 
 class	ScrapDeck(BaseModel):
-	CardNo:			str
+	Code:			str
 	Amount:			Optional[int] = None
 	Name:			str
 	Grade:			Optional[int] = None
@@ -35,6 +36,7 @@ class	ScrapDeck(BaseModel):
 	FactionType:	str
 	Type:			Optional[str] = None
 	Release:		str
+	URL:			str
 
 class	Card(BaseModel):
 	name:			str

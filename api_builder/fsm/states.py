@@ -20,6 +20,7 @@ class	State(Enum):
 	BUILD_QUERY				=	auto()
 	FETCH					=	auto()
 	PARSE					=	auto()
+	SCRAP					=	auto()
 	END						=	auto()
 	ERROR					=	auto()
 

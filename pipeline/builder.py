@@ -10,8 +10,18 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Library
+from parsers.vanguard_parser		import VanguardParser
+from data.vanguard_data				import VanguardStorage
+from api_builder.vanguard_api_build	import VanguardScrapper
+from classifier.vanguard_classifier	import VanguardClassifier
+
 class	VanguardPipeline:
-	def	__init__(self, scrapper, parser, classifier, storage):
+	def	__init__(self,
+			  parser: VanguardParser,
+			  storage: VanguardStorage,
+			  scrapper: VanguardScrapper,
+			  classifier: VanguardClassifier):
 		self.scrapper =	scrapper
 		self.parser = parser
 		self.classifier = classifier

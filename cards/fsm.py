@@ -10,17 +10,21 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Dependencies
+from mwparserfromhell.wikicode import Wikicode
+
 # Library
-from api_builder.fsm.menus	import NATIONS
-from api_builder.fsm.fsm	import FSMContext
-from cards.states			import ParserState
-from cards					import cards_parser
+from api_builder.fsm.constants	import NATIONS
+from api_builder.fsm.fsm		import FSMContext
+from cards.states				import ParserState
+from cards						import cards_parser
 
 class	ParserContext:
 	def	__init__(self):
 		self.reset()
 
 	def	reset(self):
+		self.link_key:		int = 0
 		self.size:			int = 0
 		self.prepare_data:	int = None
 		self.infobox:		dict = None
@@ -30,7 +34,9 @@ class	ParserContext:
 		self.obj:			object = None
 		self.card:			list[str] = None
 		self.rows:			list[object] = []
-		self.links:			list[str] = None
+		self.links:			dict = None
+		self.is_duplicated:	bool = None
+		self.index:			int = 0
 
 class	CardFSM:
 	def	__init__(self, fsm_context: FSMContext):
@@ -117,7 +123,7 @@ class	CardFSM:
 			}
 		}
 
-	def	run(self, card):
+	def	run(self, card: list[Wikicode]):
 		self.__dispatcher()
 		self.context.card = card
 		self.context.size = len(self.context.card)
@@ -141,5 +147,4 @@ class	CardFSM:
 		if (handler["prepare"]):
 			data = handler["prepare"](data)
 		self.context.row = handler["parse"](data)
-		self.prepare_data = handler["cards"]
-		self.context.rows.append(self.context.row)
+		self.context.prepare_data = handler["cards"]

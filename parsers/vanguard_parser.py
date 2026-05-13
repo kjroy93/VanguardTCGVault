@@ -76,12 +76,17 @@ class	VanguardParser:
 				box = self.__process_infobox(tpl, box)
 		return (box)
 
-	def	sort_unique_url(self, parsed_cardlist: list[Wikicode], crude_links: list[str]):
-		links = []
-		l = len(parsed_cardlist)
-		for i in range(l):
-			for element in crude_links:
-				if (str(parsed_cardlist[i].params[1].value) in element):
+	def sort_unique_url(self, parsed_cardlist: list[Wikicode], crude_links: list[str]):
+		links = {}
+		used = set()
+
+		for i, card in enumerate(parsed_cardlist):
+			card_name = str(card.params[1].value)
+
+			for link in crude_links:
+				if card_name in link and link not in used:
+					links[i] = link
+					used.add(link)
 					break
-			links.append(element)
+
 		return (links)

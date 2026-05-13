@@ -10,17 +10,15 @@
 #                                                                              #
 # **************************************************************************** #
 
-from data.vanguard_data import VanguardStorage
-from classifier.vanguard_classifier import VanguardClassifier
+# Library
+from pipeline.builder	import VanguardPipeline
 
-def	process_items(data: list, classifier: VanguardClassifier, storage: VanguardStorage):
+def	process_items(data: list, pipeline: VanguardPipeline):
 	for i in data:
-		key = classifier.classify(i)
-		storage._add_item(key, i)
+		key = pipeline.classifier.classify(i)
+		pipeline.storage._add_item(key, i)
 
-def	sort_storage_list(attributes: list[str],
-					classifier: VanguardClassifier,
-					storage: VanguardStorage):
+def	sort_storage_list(attributes: list[str], pipeline: VanguardPipeline):
 	for atrribute in attributes:
-		lst = getattr(storage, atrribute.lower())
-		lst.sort(key=classifier.obtain_set_number)
+		lst = getattr(pipeline.storage, atrribute.lower())
+		lst.sort(key=pipeline.classifier.obtain_set_number)

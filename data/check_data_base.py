@@ -45,12 +45,12 @@ SET_PATHS = {
 			"prefix": "deck"
 		},
 		"legend": {
-			"folder": "dekcs/legend decks",
+			"folder": "decks/legend decks",
 			"prefix": "deck"
 		},
 		"start": {
 			"folder": "decks/start decks",
-			"prexix": "deck"
+			"prefix": "deck"
 		},
 		"character": {
 			"folder": "decks/character decks",
@@ -87,6 +87,10 @@ SET_PATHS = {
 	}
 }
 
+TYPE_MAP = {
+	"booster": "main"
+}
+
 DB_FOLDER = Path("data/database")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 
@@ -94,7 +98,7 @@ def build_set_path(category: str,
 				set_type: str,
 				block: str,
 				set_number: int) -> Path:
-	info = SET_PATHS[category][set_type]
+	info = SET_PATHS[category][TYPE_MAP[set_type]]
 	filename = (
 		f"{info['prefix']}_{set_number:02}.parquet"
 	)

@@ -10,18 +10,22 @@
 #                                                                              #
 # **************************************************************************** #
 
-# Import
-import asyncio
-
 # Library
 from api_builder.fsm.states						import State
 from api_builder.api_request					import header
 from api_builder.fsm.fsm						import FSMContext
-from api_builder.vanguard_api_build				import VanguardScrapper
+from utils.utils								import smart_sleep
+from utils.utils 								import construct_rules
+from pipeline.builder							import VanguardPipeline
 
-async def	fetch_routine(fsm: FSMContext, scrapper: VanguardScrapper):
+async def	fetch_routine(fsm: FSMContext, pipeline: VanguardPipeline):
+	rules = construct_rules(
+		fsm.data["page"].split()[4]
+	)
+	await smart_sleep()
+	pipeline.classifier._define_rules(rules)
 	param = fsm.data["param"]
-	response = await scrapper.api.get(
+	response = await pipeline.scrapper.api.get(
 		param,
 		header
 	)
