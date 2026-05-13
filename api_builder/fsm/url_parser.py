@@ -47,13 +47,22 @@ def	parse_answer(user_input: str):
 		0: "boosters",
 		1: "specials",
 		2: "decks",
-		3: "others"
+		3: "others",
+		4: "cards"
 	}
 	return (options.get(user_input))
 
 def parse_main_category(fsm: FSMContext):
+	dispatcher = {
+		"boosters": "table",
+		"specials": "table",
+		"decks": "decks",
+		"others": "",
+		"cards": "cards"
+	}
 	fsm.main_category = fsm.answer
 	fsm.data["category"] = fsm.main_category
+	fsm.data["columns"] = dispatcher[fsm.data["category"]]
 	fsm.current_state = State.SELECT_SUBCATEGORY
 	return (fsm.current_state)
 

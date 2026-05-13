@@ -85,7 +85,7 @@ class	VanguardParser:
 
 			for link in crude_links:
 				if card_name in link and link not in used:
-					links[i] = link
+					links[link] = link
 					used.add(link)
 					break
 

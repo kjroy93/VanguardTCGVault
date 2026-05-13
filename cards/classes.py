@@ -25,7 +25,7 @@ class	ScrapCard(BaseModel):
 	Type:			Optional[str] = None
 	Rarity:			str
 	Release:		str
-	URL:			str | int
+	URL:			str
 
 class	ScrapDeck(BaseModel):
 	Code:			str

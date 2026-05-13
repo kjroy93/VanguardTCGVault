@@ -24,7 +24,6 @@ class	ParserContext:
 		self.reset()
 
 	def	reset(self):
-		self.link_key:		int = 0
 		self.size:			int = 0
 		self.prepare_data:	int = None
 		self.infobox:		dict = None

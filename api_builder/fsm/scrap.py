@@ -70,7 +70,7 @@ async def	make_api_calls(card_fsm: CardFSM, pipeline: VanguardPipeline):
 		headers=header
 	)
 
-def	column_dispatcher():
+def	column_dispatcher(fsm: CardFSM):
 	dispatcher = {
 		"table": ["Code", "Name", "Grade",
 				"Faction", "FactionType", "Type",
@@ -79,6 +79,7 @@ def	column_dispatcher():
 				"Grade", "Faction", "FactionType",
 				"Type", "Release", "URL"]
 	}
+	return (dispatcher[fsm.fsm_context.data["columns"]])
 
 async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
 	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
@@ -90,11 +91,8 @@ async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
 			if (block in ["D", "DZ"]):
 				card_fsm.context.is_d = True
 			rows = pipeline.storage.prepare_data(card_fsm.fsm_context.data["crude_cards"], card_fsm)
-			df = pd.DataFrame(rows, columns=[
-				"CardNo", "Name", "Grade",
-				"Faction", "FactionType", "Type",
-				"Rarity", "Release", "URL"
-			])
+			columns = column_dispatcher(card_fsm)
+			df = pd.DataFrame(rows, columns=columns)
 			set_number = pipeline.classifier.obtain_set_number(
 				card_fsm.fsm_context.data["crude_cards"][0]
 			)

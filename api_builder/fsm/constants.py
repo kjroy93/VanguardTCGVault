@@ -37,7 +37,8 @@ CATEGORIES = {
 		"Promo Cards",
 		"V Promo Cards",
 		"Monthly Bushiroad Cards"
-	]
+	],
+	"cards": []
 }
 
 NATIONS = {

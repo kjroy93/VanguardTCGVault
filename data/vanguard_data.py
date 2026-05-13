@@ -10,12 +10,18 @@
 #                                                                              #
 # **************************************************************************** #
 
+import json
+import os
+
 # Dependencies
 from mwparserfromhell.nodes	import Template
 
 # Library
 from cards.fsm				import CardFSM
 from cards.classes			import ScrapCard, ScrapDeck
+
+DATA_DIR = "data/database"
+FILE = os.path.join(DATA_DIR ,"urls.json")
 
 class	VanguardStorage:
 	def __init__(self):
@@ -39,7 +45,7 @@ class	VanguardStorage:
 
 	def	__construct_decks(self, fsm: CardFSM) -> object:
 		if (fsm.context.is_duplicated):
-			d = fsm.context.links[self.url]
+			d = self._links[self.url]
 		else:
 			d = self.url
 		if (fsm.context.infobox.get("release date")):
@@ -75,7 +81,7 @@ class	VanguardStorage:
 	
 	def	__construct_rows(self, fsm: CardFSM) -> object:
 		if (fsm.context.is_duplicated):
-			d = fsm.context.links[self.url]
+			d = self._links[self.url]
 		else:
 			d = self.url
 		if (fsm.context.infobox.get("release date")):
@@ -92,7 +98,7 @@ class	VanguardStorage:
 				Type = 			fsm.context.row[4],
 				Rarity = 		fsm.context.row[5],
 				Release = 		release,
-				URL = 			d
+				URL = 			str(d).strip()
 			)
 			return (row)
 		except (IndexError, ValueError):
@@ -108,11 +114,22 @@ class	VanguardStorage:
 				URL =			"None"
 			)
 			return (row)
+		
+	def	__load_data(self):
+		if (os.path.exists(FILE)):
+			with open(FILE, "r", encoding="utf-8") as f:
+				return (json.load(f))
+		return ({})
+
+	def	__save_data(self):
+		with open(FILE, "w", encoding="utf-8") as f:
+			json.dump(self._links, f, indent=4, ensure_ascii=False)
 
 	def	register_link(self, index: int) -> bool:
 		if (self.url in self._links):
 			return (False)
 		self._links[self.url] = index
+		self.__save_data()
 		return (True)
 
 	def	prepare_data(self, list_of_wikitex: list[Template],
@@ -121,16 +138,18 @@ class	VanguardStorage:
 			0: self.__construct_decks,
 			1: self.__construct_rows
 		}
+		self._links = self.__load_data()
 		fsm.context.obj = ScrapDeck if fsm.context.is_deck else ScrapCard
 		for i in range(0, len(list_of_wikitex)):
-			fsm.context.link_key = i
-			self.url = fsm.context.links[i]
-			is_new = self.register_link(i)
+			self.url = fsm.context.links[str(list_of_wikitex[i].params[1]).strip()]
+			is_new = self.register_link(fsm.context.index)
 			fsm.context.is_duplicated = not is_new
 			fsm.run(list_of_wikitex[i].params)
 			handler = handlers[fsm.context.prepare_data]
 			fsm.context.row = handler(fsm)
 			fsm.context.rows.append(fsm.context.row)
+			if (fsm.context.is_duplicated):
+				continue
 			fsm.context.index += 1
 		data = [fsm.context.obj.model_dump() for fsm.context.obj in fsm.context.rows]
 		fsm.context.rows.clear()

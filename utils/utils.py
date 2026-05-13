@@ -42,5 +42,5 @@ def	convert_to_int(element: str):
 	raise ValueError
 
 async def	smart_sleep():
-	x = random.randint(2, 6)
+	x = random.randint(4, 8)
 	await asyncio.sleep(x)
