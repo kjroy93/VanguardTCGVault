@@ -93,6 +93,6 @@ def	parse_links(fsm: FSMContext, pipeline: VanguardPipeline):
 	process_items(parsed_links, pipeline)
 	if (fsm.answer == "boosters"):
 		sort_storage_list(["LB", "G"], pipeline)
-	sort_storage_list([], pipeline)
+	sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], pipeline)
 	fsm.current_state = State.SCRAP
 	return (fsm.current_state)

@@ -67,7 +67,7 @@ class	RowFactory:
 
 	@staticmethod
 	def	prepare_grade(row: list):
-		if (row[2] == ''):
+		if (row[2] == '' or row[2] == '-'):
 			row[2] = 0
 
 	@staticmethod
@@ -115,7 +115,7 @@ class	RowFactory:
 				Rarity = 		fsm.context.row[5],
 				Release = 		release,
 				URL = 			fsm.context.url,
-				SET_ID =		fsm.context.id
+				SET_ID =		int(fsm.context.id)
 			)
 			fsm.context.rows.append(row)
 		except (IndexError, ValueError):
@@ -138,6 +138,7 @@ class	RowFactory:
 		for i in range(len(fsm.context.row)):
 			release = RowFactory.get_release(fsm.context.infobox)
 			faction = RowFactory.prepare_faction(fsm.context.row[i])
+			RowFactory.prepare_grade(fsm.context.row)
 			try:
 				row = fsm.context.obj(
 					Code =			fsm.context.row[i][0],
@@ -149,7 +150,7 @@ class	RowFactory:
 					Rarity = 		fsm.context.row[i][5],
 					Release = 		release,
 					URL = 			fsm.context.url,
-					URL_ID =		fsm.context.id
+					URL_ID =		int(fsm.context.id)
 				)
 			except (IndexError, ValueError):
 				row = fsm.context.obj(

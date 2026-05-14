@@ -20,5 +20,7 @@ def	process_items(data: list, pipeline: VanguardPipeline):
 
 def	sort_storage_list(attributes: list[str], pipeline: VanguardPipeline):
 	for atrribute in attributes:
-		lst = getattr(pipeline.storage, atrribute.lower())
+		lst = getattr(pipeline.storage, atrribute.lower(), [])
+		if (not lst):
+			continue
 		lst.sort(key=pipeline.classifier.obtain_set_number)

@@ -146,6 +146,8 @@ class	CardFSM:
 		if (self.context.size == 8):
 			self.state = ParserState.DUAL_CARD
 			return
+		if (self.context.size < 6):
+			self.context.row.insert(len(self.context.row), '')
 		while (self.context.size != 6):
 			try:
 				if (self.context.row[i] == '' or
