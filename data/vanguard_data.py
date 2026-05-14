@@ -10,6 +10,7 @@
 #                                                                              #
 # **************************************************************************** #
 
+# Import
 import json
 import os
 
@@ -39,22 +40,15 @@ class	LinkStorage:
 		with open(FILE, "w", encoding="utf-8") as f:
 			json.dump(self._links, f, indent=4, ensure_ascii=False)
 
-	def	register_link(self, index: int, url: str) -> bool:
+	def get_or_create(self, url: str, next_id: int) -> tuple[int, bool]:
+		url = url.strip()
+
 		if (url in self._links):
 			return (self._links[url], False)
-		self._links[url] = index
+
+		self._links[url] = next_id
 		self.__save_data()
-		return (index, True)
-	
-	def	define_url(self, fsm: CardFSM):
-		stored_index, is_new = (self.register_link(
-			fsm.context.index, fsm.context.url))
-		fsm.context.index = stored_index
-		fsm.context.is_duplicated = not is_new
-		if (fsm.context.is_duplicated):
-			fsm.context.url_ref = stored_index
-		else:
-			fsm.context.url_ref = str(fsm.context.url).strip()
+		return (next_id, True)
 
 class	RowFactory:
 	@staticmethod
@@ -66,21 +60,32 @@ class	RowFactory:
 		)
 
 	@staticmethod
+	def	prepare_faction(row: list):
+		if (isinstance(row[3], list)):
+			return (row[3])
+		return ([row[3]])
+
+	@staticmethod
+	def	prepare_grade(row: list):
+		if (row[2] == ''):
+			row[2] = 0
+
+	@staticmethod
 	def	construct_decks(fsm: CardFSM) -> object:
 		release = RowFactory.get_release(fsm.context.infobox)
+		faction = RowFactory.prepare_faction(fsm.context.row)
 		try:
 			row = fsm.context.obj(
 				Code =			fsm.context.row[0],
 				Amount =		fsm.context.row[1],
 				Name =			fsm.context.row[2],
 				Grade = 		fsm.context.row[3],
-				Faction =		[fsm.context.row[4]],
+				Faction =		faction,
 				FactionType =	"Nation" if fsm.context.is_d else "Clan",
 				Type = 			fsm.context.row[5],
 				Release = 		release,
-				URL =			str(fsm.context.url).strip()
 			)
-			return (row)
+			fsm.context.rows.append(row)
 		except (IndexError, ValueError):
 			row = fsm.context.obj(
 				Code =			"None",
@@ -91,24 +96,26 @@ class	RowFactory:
 				FactionType =	"None",
 				Type = 			"None",
 				Release = 		release,
-				URL =			"None"
 			)
-			return (row)
+			fsm.context.rows.append(row)
 
 	@staticmethod
 	def	construct_row(fsm: CardFSM) -> object:
 		release = RowFactory.get_release(fsm.context.infobox)
+		faction = RowFactory.prepare_faction(fsm.context.row)
+		RowFactory.prepare_grade(fsm.context.row)
 		try:
 			row = fsm.context.obj(
 				Code =			fsm.context.row[0],
 				Name =			fsm.context.row[1],
 				Grade =			fsm.context.row[2],
-				Faction =		[fsm.context.row[3]],
+				Faction =		faction,
 				FactionType =	"Nation" if fsm.context.is_d else "Clan",
 				Type = 			fsm.context.row[4],
 				Rarity = 		fsm.context.row[5],
 				Release = 		release,
-				URL = 			fsm.context.url_ref
+				URL = 			fsm.context.url,
+				SET_ID =		fsm.context.id
 			)
 			fsm.context.rows.append(row)
 		except (IndexError, ValueError):
@@ -121,7 +128,8 @@ class	RowFactory:
 				Type = 			"None",
 				Rarity = 		"None",
 				Release = 		release,
-				URL =			"None"
+				URL =			"None",
+				SET_ID = 		None
 			)
 			fsm.context.rows.append(row)
 
@@ -129,17 +137,19 @@ class	RowFactory:
 	def	construct_rows(fsm: CardFSM):
 		for i in range(len(fsm.context.row)):
 			release = RowFactory.get_release(fsm.context.infobox)
+			faction = RowFactory.prepare_faction(fsm.context.row[i])
 			try:
 				row = fsm.context.obj(
 					Code =			fsm.context.row[i][0],
 					Name =			fsm.context.row[i][1],
 					Grade =			fsm.context.row[i][2],
-					Faction =		[fsm.context.row[i][3]],
+					Faction =		faction,
 					FactionType =	"Nation" if fsm.context.is_d else "Clan",
 					Type = 			fsm.context.row[i][4],
 					Rarity = 		fsm.context.row[i][5],
 					Release = 		release,
-					URL = 			fsm.context.url_ref
+					URL = 			fsm.context.url,
+					URL_ID =		fsm.context.id
 				)
 			except (IndexError, ValueError):
 				row = fsm.context.obj(
@@ -154,7 +164,7 @@ class	RowFactory:
 					URL =			"None"
 				)
 			fsm.context.rows.append(row)
-			fsm.context.index += 1
+			fsm.context.id += 1
 
 class	VanguardStorage:
 	def __init__(self):
@@ -184,6 +194,16 @@ class	VanguardStorage:
 				fsm.context.url = url
 				break
 
+	def	manage_url(self, url, next_id, fsm: CardFSM):
+		set_id, is_new = self.link_storage.get_or_create(url, next_id)
+		fsm.context.id = set_id
+		fsm.context.url = url
+		fsm.context.is_duplicated = not is_new
+		if (is_new):
+			self.next_id += 1
+		else:
+			fsm.context.url = None
+
 	def	prepare_data(self, wikitex: list[Template],
 					fsm: CardFSM) -> list:
 		handlers = {
@@ -191,21 +211,19 @@ class	VanguardStorage:
 			1: RowFactory.construct_row,
 			2: RowFactory.construct_rows
 		}
-		fsm.context.index = len(self.link_storage._links) - 1
+		self.next_id = len(self.link_storage._links)
 		fsm.context.obj = ScrapDeck if fsm.context.is_deck else ScrapCard
 		for template in wikitex:
 			text = utils.clean_text(str(template.params[1]).strip())
 			self.obtain_url(text, fsm)
-			self.link_storage.define_url(fsm)
+			url = fsm.context.url
+			self.manage_url(url, self.next_id, fsm)
 			fsm.run(template.params)
 			handler = handlers[fsm.context.prepare_data]
 			handler(fsm)
-			if (fsm.context.is_duplicated):
-				fsm.state = ParserState.START
-				continue
-			fsm.context.index += 1
 			fsm.state = ParserState.START
 		data = [fsm.context.obj.model_dump(exclude_none=True)
 			for fsm.context.obj in fsm.context.rows]
 		fsm.context.rows.clear()
+		fsm.state = ParserState.END
 		return (data)

@@ -22,7 +22,7 @@ class	VanguardPipeline:
 			  storage: VanguardStorage,
 			  scrapper: VanguardScrapper,
 			  classifier: VanguardClassifier):
-		self.scrapper =	scrapper
 		self.parser = parser
-		self.classifier = classifier
 		self.storage = storage
+		self.scrapper =	scrapper
+		self.classifier = classifier

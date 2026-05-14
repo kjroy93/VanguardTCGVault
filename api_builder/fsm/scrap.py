@@ -18,8 +18,10 @@ import pandas 						as pd
 
 # Library
 from api_builder.api_request		import header
+from api_builder.fsm.states			import State
 from cards.fsm						import CardFSM
 from utils.utils					import smart_sleep
+from cards.states					import ParserState
 from data.check_data_base			import build_set_path
 from pipeline.builder				import VanguardPipeline
 
@@ -73,7 +75,7 @@ def	column_dispatcher(fsm: CardFSM):
 	dispatcher = {
 		"table": ["Code", "Name", "Grade",
 				"Faction", "FactionType", "Type",
-				"Rarity", "Release", "URL"],
+				"Rarity", "Release", "URL", "SET_ID"],
 		"deck": ["Code", "Amount", "Name",
 				"Grade", "Faction", "FactionType",
 				"Type", "Release", "URL"]
@@ -81,7 +83,7 @@ def	column_dispatcher(fsm: CardFSM):
 	return (dispatcher[fsm.fsm_context.data["columns"]])
 
 async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
-	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
+	for block in ["D", "DZ"]:
 		consult = pipeline.parser.make_consults(getattr(pipeline.storage, block.lower()), "consult")
 		for tpl in consult.values():
 			card_fsm.fsm_context.data["tpl"] = tpl
@@ -89,7 +91,12 @@ async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
 			parser(card_fsm, pipeline)
 			if (block in ["D", "DZ"]):
 				card_fsm.context.is_d = True
-			rows = pipeline.storage.prepare_data(card_fsm.fsm_context.data["crude_cards"], card_fsm)
+			card_fsm.state = ParserState.START
+			try:
+				rows = pipeline.storage.prepare_data(card_fsm.fsm_context.data["crude_cards"], card_fsm)
+			except (KeyError, ValueError, AttributeError):
+				state = State.ERROR
+				return (state)
 			columns = column_dispatcher(card_fsm)
 			df = pd.DataFrame(rows, columns=columns)
 			set_number = pipeline.classifier.obtain_set_number(

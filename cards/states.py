@@ -20,3 +20,4 @@ class	ParserState(Enum):
 	DUAL_CARD	=	auto()
 	DECK		=	auto()
 	PROMO		=	auto()
+	END			=	auto()

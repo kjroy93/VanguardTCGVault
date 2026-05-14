@@ -11,10 +11,10 @@
 # **************************************************************************** #
 
 # Import
-from typing import Literal, Optional, Annotated, Union
+from typing		import Literal, Optional, Annotated, Union
 
 # Dependencies
-from pydantic import BaseModel, Field
+from pydantic	import BaseModel, Field
 
 class	ScrapCard(BaseModel):
 	Code:			str
@@ -25,7 +25,8 @@ class	ScrapCard(BaseModel):
 	Type:			str | None = None
 	Rarity:			str | None = None
 	Release:		str | None = None
-	URL:			str | int = None
+	URL:			str | None = None
+	SET_ID:			int | None = None
 
 class	ScrapDeck(BaseModel):
 	Code:			str

@@ -11,7 +11,7 @@
 # **************************************************************************** #
 
 # Dependencies
-from mwparserfromhell.wikicode import Wikicode
+from mwparserfromhell.wikicode	import Wikicode
 
 # Library
 from api_builder.fsm.constants	import NATIONS
@@ -97,13 +97,11 @@ class ParserContext:
 		self.is_duplicated: bool = None
 		"""Indicates whether the current entry already exists."""
 
-		self.index: int = 0
+		self.id: int = None
 		"""Internal incremental index."""
 
 		self.url: str = None
 		"""URL associated with the current row."""
-
-		self.url_ref: str | int = None
 
 class	CardFSM:
 	def	__init__(self, fsm_context: FSMContext):
@@ -130,10 +128,11 @@ class	CardFSM:
 		card = []
 		for i in data:
 			if (str(i) in NATIONS):
-				nations.append(i)
+				nation = str(i)
+				nations.append(nation)
 				continue
 			card.append(i)
-		self.context.card.insert(3, nations)
+		card.insert(3, nations)
 		return (card)
 	
 	def	__promo(self, data: list):
@@ -149,16 +148,16 @@ class	CardFSM:
 			return
 		while (self.context.size != 6):
 			try:
-				if (self.context.card[i] == '' or
-						self.context.card[i] == "V" or
-						self.context.card[i] == "D" or
-						self.context.card[i] == "DZ"):
-					self.context.card.pop(i)
+				if (self.context.row[i] == '' or
+						self.context.row[i] == "V" or
+						self.context.row[i] == "D" or
+						self.context.row[i] == "DZ"):
+					self.context.row.pop(i)
 					i = 0
-					self.context.size = len(self.context.card)
+					self.context.size = len(self.context.row)
 					continue
 				i += 1
-				self.context.size = len(self.context.card)
+				self.context.size = len(self.context.row)
 			except (IndexError):
 				break
 
@@ -194,8 +193,6 @@ class	CardFSM:
 	def	run(self, card: list[Wikicode]):
 		self.__dispatcher()
 		self.context.card = card
-		self.context.size = len(self.context.card)
-		self.__normalize_length()
 		nations = sum(
 			1 for nation in self.context.card
 			if (str(nation) in NATIONS)
@@ -216,3 +213,5 @@ class	CardFSM:
 			data = handler["prepare"](data)
 		self.context.row = handler["parse"](data)
 		self.context.prepare_data = handler["cards"]
+		self.context.size = len(self.context.row)
+		self.__normalize_length()

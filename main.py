@@ -16,8 +16,8 @@ import asyncio
 # Library
 from api_builder.fsm				import fsm
 from api_builder.fsm				import menus
-from api_builder.fsm.states			import State
 from api_builder.fsm				import scrap
+from api_builder.fsm.states			import State
 from cards.fsm						import CardFSM
 from api_builder.fsm.query_builder	import make_query
 from api_builder.fsm.url_parser		import parse_links
@@ -37,32 +37,38 @@ async def main():
 		VanguardClassifier()
 	)
 	await pipeline.scrapper.api.init_session()
-	state_machine = fsm.FSMContext()
-	state = State.ENTRY_POINT
+	try:
+		state_machine = fsm.FSMContext()
+		state = State.ENTRY_POINT
 
-	while (state != State.END):
-		if (state == State.ENTRY_POINT):
-			state = menus.entry_point(state_machine)
-		elif (state == State.SELECT_MAIN_CATEGORY):
-			state = menus.select_category(state_machine)
-		elif (state == State.SELECT_SUBCATEGORY):
-			state = menus.select_subcategory(state_machine)
-		elif (state == State.BUILD_QUERY):
-			state = make_query(state_machine)
-		elif (state == State.FETCH):
-			state = await fetch_routine(state_machine, pipeline)
-		elif (state == State.PARSE):
-			state = parse_links(state_machine, pipeline)
-		elif (state == State.SCRAP):
-			card_fsm = CardFSM(state_machine)
-			await scrap.main_scrap_routine(card_fsm, pipeline)
-			print("Do you wish to continue the scrap process? [y]es | [n]o")
-			answer = input("> ").strip().lower()
-			if (answer in ("y", "yes")):
-				state = State.ENTRY_POINT
-			elif (answer in ("n", "no")):
-				state = State.END
-	await pipeline.scrapper.api.close_session()
+		while (state != State.END):
+			if (state == State.ENTRY_POINT):
+				state = menus.entry_point(state_machine)
+			elif (state == State.SELECT_MAIN_CATEGORY):
+				state = menus.select_category(state_machine)
+			elif (state == State.SELECT_SUBCATEGORY):
+				state = menus.select_subcategory(state_machine)
+			elif (state == State.BUILD_QUERY):
+				state = make_query(state_machine)
+			elif (state == State.FETCH):
+				state = await fetch_routine(state_machine, pipeline)
+			elif (state == State.PARSE):
+				state = parse_links(state_machine, pipeline)
+			elif (state == State.SCRAP):
+				card_fsm = CardFSM(state_machine)
+				state = await scrap.main_scrap_routine(card_fsm, pipeline)
+				if (state == State.ERROR):
+					await pipeline.scrapper.api.close_session()
+					return
+				print("Do you wish to continue the scrap process? [y]es | [n]o")
+				answer = input("> ").strip().lower()
+				if (answer in ("y", "yes")):
+					state = State.ENTRY_POINT
+				elif (answer in ("n", "no")):
+					state = State.END
+		pass
+	finally:
+		await pipeline.scrapper.api.close_session()
 
 # async def main():
 # 	web = MediaWikiAPI()
@@ -100,4 +106,7 @@ async def main():
 # 			data = pipeline.storage.prepare_data([data[2]], 6, infobox=infobox)
 
 if __name__ == "__main__":
-	asyncio.run(main())
+	try:
+		asyncio.run(main())
+	except (KeyboardInterrupt):
+		print("Program Close")

@@ -11,8 +11,8 @@
 # **************************************************************************** #
 
 # Library
-from api_builder.fsm.states import State
-from api_builder.fsm.fsm import FSMContext
+from api_builder.fsm.states	import State
+from api_builder.fsm.fsm	import FSMContext
 
 def	__main_dispatcher(fsm: FSMContext):
 	prefix = {

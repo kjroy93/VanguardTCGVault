@@ -16,7 +16,12 @@ from utils import utils
 def	raw_table_data_prepare(template: list) -> list:
 	data = []
 	for i in template:
-		raw_value = utils.convert_to_str(i)
+		try:
+			raw_value = utils.convert_to_str(i)
+		except (AttributeError):
+			value = i
+			data.append(value)
+			continue
 		try:
 			value = utils.convert_to_int(raw_value)
 		except (ValueError):

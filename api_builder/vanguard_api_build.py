@@ -16,10 +16,10 @@ from typing import List, Union
 # Dependencies
 import aiohttp
 import mwparserfromhell
-from mwparserfromhell.wikicode import Wikicode
+from mwparserfromhell.wikicode	import Wikicode
 
 # Libraries
-from utils.utils import remove_from_list
+from utils.utils				import remove_from_list
 
 # Definitions
 JSONType = dict[str]
