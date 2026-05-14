@@ -14,11 +14,12 @@
 import re
 import random
 import asyncio
+import unicodedata
 
 # Dependencies
 from mwparserfromhell.nodes.extras import Parameter
 
-def remove_from_list(sets: list, to_delete: list):
+def	remove_from_list(sets: list, to_delete: list):
 	return ([s for s in sets if not any(pattern in s for pattern in to_delete)])
 
 def	construct_rules(rule: str):
@@ -44,3 +45,18 @@ def	convert_to_int(element: str):
 async def	smart_sleep():
 	x = random.randint(4, 8)
 	await asyncio.sleep(x)
+
+def clean_text(text: str) -> str:
+	text = unicodedata.normalize("NFKC", text)
+
+	invisible_chars = [
+		"\u200e",
+		"\u200f",
+		"\u200b",
+		"\ufeff"
+	]
+
+	for char in invisible_chars:
+		text = text.replace(char, "")
+
+	return (text.strip())

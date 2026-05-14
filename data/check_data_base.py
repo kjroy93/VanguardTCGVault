@@ -91,7 +91,7 @@ TYPE_MAP = {
 	"booster": "main"
 }
 
-DB_FOLDER = Path("data/database")
+DB_FOLDER = Path("database")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 
 def build_set_path(category: str,

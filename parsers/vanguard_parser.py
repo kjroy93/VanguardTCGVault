@@ -18,6 +18,7 @@ from mwparserfromhell.nodes		import Template
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
+from utils						import utils
 from api_builder.api_request	import dict_construct
 
 class	VanguardParser:
@@ -66,7 +67,6 @@ class	VanguardParser:
 		for idx in infos:
 			if idx in titles:
 				data[titles[idx]] = infos[idx]
-
 		return (data)
 		
 	def	infobox(self, parsed: Wikicode) -> dict:
@@ -76,17 +76,17 @@ class	VanguardParser:
 				box = self.__process_infobox(tpl, box)
 		return (box)
 
-	def sort_unique_url(self, parsed_cardlist: list[Wikicode], crude_links: list[str]):
+	def sort_unique_url(self, parsed_cardlist: list[Template], crude_links: list[str]):
 		links = {}
 		used = set()
 
-		for i, card in enumerate(parsed_cardlist):
-			card_name = str(card.params[1].value)
+		for _, card in enumerate(parsed_cardlist):
+			card_name = utils.clean_text(str(card.params[1].value).strip())
 
 			for link in crude_links:
-				if card_name in link and link not in used:
-					links[link] = link
-					used.add(link)
+				clean_link = utils.clean_text(link)
+				if card_name in clean_link and clean_link not in used:
+					links[clean_link] = clean_link
+					used.add(clean_link)
 					break
-
 		return (links)

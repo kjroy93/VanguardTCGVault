@@ -19,13 +19,13 @@ from pydantic import BaseModel, Field
 class	ScrapCard(BaseModel):
 	Code:			str
 	Name:			str
-	Grade:			Optional[int] = None
-	Faction:		list[str]
-	FactionType:	str
-	Type:			Optional[str] = None
-	Rarity:			str
-	Release:		str
-	URL:			str
+	Grade:			int | None = None
+	Faction:		list[str] | None = None
+	FactionType:	str | None = None
+	Type:			str | None = None
+	Rarity:			str | None = None
+	Release:		str | None = None
+	URL:			str | int = None
 
 class	ScrapDeck(BaseModel):
 	Code:			str

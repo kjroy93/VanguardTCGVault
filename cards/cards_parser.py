@@ -30,11 +30,11 @@ def	parse_single_card(card: list[str | int]):
 	return (parsed_row)
 
 def	parse_dual_cards(cards: list[list[str | int]]):
-	parsed_row = []
+	l = []
 	for card in cards:
 		parsed_row = raw_table_data_prepare(card)
-		parsed_row.append(card)
-	return (parsed_row)
+		l.append(parsed_row)
+	return (l)
 
 def	parse_deck():
 	pass

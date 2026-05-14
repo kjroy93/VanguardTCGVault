@@ -11,7 +11,6 @@
 # **************************************************************************** #
 
 # Import
-import asyncio
 from pathlib						import Path
 
 # Dependencies

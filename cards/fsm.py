@@ -19,23 +19,91 @@ from api_builder.fsm.fsm		import FSMContext
 from cards.states				import ParserState
 from cards						import cards_parser
 
-class	ParserContext:
-	def	__init__(self):
-		self.reset()
+class ParserContext:
+	"""
+	Shared context used between the parser and the FSM.
 
-	def	reset(self):
-		self.size:			int = 0
-		self.prepare_data:	int = None
-		self.infobox:		dict = None
-		self.row:			list = None
-		self.is_d:			bool = False
-		self.is_deck:		bool = False
-		self.obj:			object = None
-		self.card:			list[str] = None
-		self.rows:			list[object] = []
-		self.links:			dict = None
-		self.is_duplicated:	bool = None
-		self.index:			int = 0
+	Attributes:
+		size (int):
+			Amount of processed elements.
+
+		prepare_data (int):
+			Defines the data preparation mode.
+
+		infobox (dict):
+			Information extracted from the wiki infobox.
+
+		row (list):
+			Temporary row currently being processed.
+
+		is_d (bool):
+			Indicates whether the entry belongs to D format.
+
+		is_deck (bool):
+			Indicates whether the parser is processing decks.
+
+		obj (object):
+			Output model used to build parsed data.
+
+		card (list[str]):
+			Temporary card-related information.
+
+		rows (list[object]):
+			Accumulated list of constructed models.
+
+		links (dict):
+			Mapping between names and URLs.
+
+		is_duplicated (bool):
+			Indicates whether the current entry already exists.
+
+		index (int):
+			Internal incremental index.
+
+		url (str):
+			URL associated with the current row.
+	"""
+	def __init__(self):
+		self.size: int = 0
+		"""Amount of processed elements."""
+
+		self.prepare_data: int = None
+		"""Defines the current data preparation mode."""
+
+		self.infobox: dict = None
+		"""Information extracted from the wiki infobox."""
+
+		self.row: list = None
+		"""Temporary row currently being processed."""
+
+		self.is_d: bool = False
+		"""Indicates whether the entry belongs to D format."""
+
+		self.is_deck: bool = False
+		"""Indicates whether the parser is processing decks."""
+
+		self.obj: object = None
+		"""Output model used to build parsed data."""
+
+		self.card: list[str] = None
+		"""Temporary card-related information."""
+
+		self.rows: list[object] = []
+		"""Accumulated list of constructed models."""
+
+		self.links: dict = None
+		"""Mapping between names and URLs."""
+
+		self.is_duplicated: bool = None
+		"""Indicates whether the current entry already exists."""
+
+		self.index: int = 0
+		"""Internal incremental index."""
+
+		self.url: str = None
+		"""URL associated with the current row."""
+
+		self.url_ref: str | int = None
 
 class	CardFSM:
 	def	__init__(self, fsm_context: FSMContext):
@@ -88,6 +156,7 @@ class	CardFSM:
 					self.context.card.pop(i)
 					i = 0
 					self.context.size = len(self.context.card)
+					continue
 				i += 1
 				self.context.size = len(self.context.card)
 			except (IndexError):
@@ -103,7 +172,7 @@ class	CardFSM:
 			ParserState.DUAL_CARD: {
 				"prepare": self.__split_card,
 				"parse": cards_parser.parse_dual_cards,
-				"cards": 1
+				"cards": 2
 			},
 			ParserState.SINGLE_CARD: {
 				"prepare": None,
@@ -133,8 +202,8 @@ class	CardFSM:
 		)
 
 		if (self.state == ParserState.DUAL_CARD):
-			return
-		if (nations >= 2):
+			pass
+		elif (nations >= 2):
 			self.state = ParserState.DUAL_NATION
 		elif (self.fsm_context.main_category == "decks"):
 			self.state = ParserState.DECK
