@@ -128,8 +128,8 @@ class	RowFactory:
 				Type = 			"None",
 				Rarity = 		"None",
 				Release = 		release,
-				URL =			"None",
-				SET_ID = 		None
+				URL =			fsm.context.url,
+				SET_ID = 		int(fsm.context.id)
 			)
 			fsm.context.rows.append(row)
 
@@ -162,7 +162,8 @@ class	RowFactory:
 					Type = 			"None",
 					Rarity = 		"None",
 					Release = 		release,
-					URL =			"None"
+					URL =			fsm.context.url,
+					URL_ID = 		int(fsm.context.id)
 				)
 			fsm.context.rows.append(row)
 			fsm.context.id += 1

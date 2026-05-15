@@ -83,7 +83,7 @@ def	column_dispatcher(fsm: CardFSM):
 	return (dispatcher[fsm.fsm_context.data["columns"]])
 
 async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
-	for block in ["D"]:
+	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
 		consult = pipeline.parser.make_consults(getattr(pipeline.storage, block.lower()), "consult")
 		for tpl in consult.values():
 			card_fsm.fsm_context.data["tpl"] = tpl
