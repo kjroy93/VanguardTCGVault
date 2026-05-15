@@ -107,7 +107,6 @@ class	CardFSM:
 	def	__init__(self, fsm_context: FSMContext):
 		self.fsm_context =	fsm_context
 		self.context =		ParserContext()
-		self.state =		ParserState.START
 
 	def	__split_card(self, data: list):
 		card_a = []
@@ -142,12 +141,9 @@ class	CardFSM:
 		pass
 
 	def __normalize_length(self):
-		i = 0
-		if (self.context.size == 8):
-			self.state = ParserState.DUAL_CARD
-			return
 		if (self.context.size < 6):
 			self.context.row.insert(len(self.context.row), '')
+		i = 0
 		while (self.context.size != 6):
 			try:
 				if (self.context.row[i] == '' or
@@ -195,6 +191,7 @@ class	CardFSM:
 	def	run(self, card: list[Wikicode]):
 		self.__dispatcher()
 		self.context.card = card
+		self.context.size = len(self.context.card)
 		nations = sum(
 			1 for nation in self.context.card
 			if (str(nation) in NATIONS)
@@ -202,18 +199,20 @@ class	CardFSM:
 
 		if (self.state == ParserState.DUAL_CARD):
 			pass
+		if (self.context.size == 8):
+			self.state = ParserState.DUAL_CARD
 		elif (nations >= 2):
 			self.state = ParserState.DUAL_NATION
 		elif (self.fsm_context.main_category == "decks"):
 			self.state = ParserState.DECK
 		else:
 			self.state = ParserState.SINGLE_CARD
-		
+
 		handler = self._dispatcher[self.state]
-		data = self.context.card
 		if (handler["prepare"]):
-			data = handler["prepare"](data)
+			data = handler["prepare"](self.context.card)
 		self.context.row = handler["parse"](data)
 		self.context.prepare_data = handler["cards"]
-		self.context.size = len(self.context.row)
-		self.__normalize_length()
+		if (self.state != ParserState.DUAL_CARD):
+			self.context.size = len(self.context.row)
+			self.__normalize_length()

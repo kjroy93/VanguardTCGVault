@@ -63,6 +63,8 @@ class	RowFactory:
 	def	prepare_faction(row: list):
 		if (isinstance(row[3], list)):
 			return (row[3])
+		if (row[3] == '-'):
+			return (["None"])
 		return ([row[3]])
 
 	@staticmethod
