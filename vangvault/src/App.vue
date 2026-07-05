@@ -11,7 +11,7 @@ console.log([...boosterStore.sets])
 </script>
 
 <template>
-  <main class="p-4">
+ <!--<main class="p-4">
     <h1 class="text-2xl font-bold mb-4">
       Boosters
     </h1>
@@ -37,6 +37,6 @@ console.log([...boosterStore.sets])
         </a>
       </li>
     </ul>
-  </main>
+  </main>-->
   <router-view />
 </template>
