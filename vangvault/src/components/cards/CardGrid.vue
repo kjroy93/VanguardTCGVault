@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 
 import type { CardEntry } from '@/models/card-entry.model'
 
@@ -25,6 +25,49 @@ const emit = defineEmits<{
 }>()
 
 const perPage = 20
+
+const preloadedImageUrls = new Set<string>()
+
+const preloadImages = (cards: CardEntry[]) => {
+  for (const card of cards) {
+    if (!card.imageUrl) {
+      continue
+    }
+
+    if (preloadedImageUrls.has(card.imageUrl)) {
+      continue
+    }
+
+    const image = new Image()
+    image.src = card.imageUrl
+
+    preloadedImageUrls.add(card.imageUrl)
+  }
+}
+
+const preloadNextPage = () => {
+  const nextPageStart = props.page * perPage
+
+  const nextPageCards = props.cards.slice(
+    nextPageStart,
+    nextPageStart + perPage
+  )
+
+  preloadImages(nextPageCards)
+}
+
+watch(
+  () => ({
+    page: props.page,
+    imageSignature: props.cards
+      .map(card => card.imageUrl ?? '')
+      .join('|'),
+  }),
+  () => {
+    preloadNextPage()
+  },
+  { immediate: true }
+)
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(props.cards.length / perPage))

@@ -6,6 +6,7 @@ import type { CardEntry } from '@/models/card-entry.model'
 import { fetchBoosterSetCardListHtml } from './helpers/card-list.api'
 import { extractCardListRowsFromHtml } from './helpers/card-list.extractor'
 import { mapCardListRowsToEntries } from './helpers/card-list.mapper'
+import { fetchCardImageUrls } from './helpers/card-image.api'
 
 export const useCardStore = defineStore('card', {
   state: () => ({
@@ -13,8 +14,10 @@ export const useCardStore = defineStore('card', {
 
     selectedSetUrl: null as string | null,
     loadingSetUrl: null as string | null,
+    loadingImageSetUrl: null as string | null,
 
     errorMessage: null as string | null,
+    imageErrorMessage: null as string | null,
   }),
 
   getters: {
@@ -39,6 +42,7 @@ export const useCardStore = defineStore('card', {
       const cachedCards = this.cardsBySet[setUrl]
 
       if (cachedCards) {
+        void this.loadImagesForBooster(booster)
         return cachedCards
       }
 
@@ -56,6 +60,10 @@ export const useCardStore = defineStore('card', {
 
         this.cardsBySet[setUrl] = cards
 
+        // No bloquea la interfaz: primero se muestran placeholders,
+        // luego se actualizan las imágenes en segundo plano.
+        void this.loadImagesForBooster(booster)
+
         return cards
       } catch (error) {
         this.errorMessage =
@@ -67,6 +75,57 @@ export const useCardStore = defineStore('card', {
       } finally {
         if (this.loadingSetUrl === setUrl) {
           this.loadingSetUrl = null
+        }
+      }
+    },
+
+    async loadImagesForBooster(
+      booster: BoosterSet
+    ): Promise<void> {
+      const setUrl = booster.url
+      const currentCards = this.cardsBySet[setUrl] ?? []
+
+      const cardsWithoutImages = currentCards.filter(
+        card => !card.imageUrl
+      )
+
+      if (cardsWithoutImages.length === 0) {
+        return
+      }
+
+      if (this.loadingImageSetUrl === setUrl) {
+        return
+      }
+
+      this.loadingImageSetUrl = setUrl
+      this.imageErrorMessage = null
+
+      try {
+        const imageUrls = await fetchCardImageUrls(
+          cardsWithoutImages
+        )
+
+        const updatedCards = (
+          this.cardsBySet[setUrl] ?? []
+        ).map(card => ({
+          ...card,
+          imageUrl: imageUrls[card.id] ?? card.imageUrl,
+        }))
+
+        this.cardsBySet[setUrl] = updatedCards
+      } catch (error) {
+        this.imageErrorMessage =
+          error instanceof Error
+            ? error.message
+            : 'No se pudieron cargar las miniaturas'
+
+        console.warn(
+          'No se pudieron cargar las miniaturas del booster',
+          error
+        )
+      } finally {
+        if (this.loadingImageSetUrl === setUrl) {
+          this.loadingImageSetUrl = null
         }
       }
     },
