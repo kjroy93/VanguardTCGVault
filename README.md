@@ -325,6 +325,8 @@ La lógica de acceso a wiki está centralizada en `wiki.client.ts` para evitar q
 
 ## Flujo de carga de cartas
 
+<img width="1268" height="512" alt="2026-07-05 20_00_50-backup movil - Explorador de archivos" src="https://github.com/user-attachments/assets/64fded09-ea91-4e32-9a7e-d77ff858de50" />
+
 ### Carga de un booster concreto
 
 ```text
