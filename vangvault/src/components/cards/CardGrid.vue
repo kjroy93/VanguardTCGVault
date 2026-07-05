@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+
+import type { CardEntry } from '@/models/card-entry.model'
+
 import CardItem from './CardItem.vue'
 import CardRow from './CardRow.vue'
 
@@ -9,50 +12,59 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
-  PaginationEllipsis,
 } from '@/components/ui/pagination'
 
 const props = defineProps<{
-  cards: any[]
+  cards: CardEntry[]
   page: number
   viewMode: 'grid' | 'list'
 }>()
 
 const emit = defineEmits<{
-  (e: 'update:page', value: number): void
+  (event: 'update:page', value: number): void
 }>()
 
 const perPage = 20
 
 const totalPages = computed(() =>
-  Math.ceil(props.cards.length / perPage)
+  Math.max(1, Math.ceil(props.cards.length / perPage))
 )
 
-const paginated = computed(() => {
+const paginatedCards = computed(() => {
   const start = (props.page - 1) * perPage
+
   return props.cards.slice(start, start + perPage)
 })
 </script>
 
 <template>
   <div class="space-y-6">
+    <p
+      v-if="cards.length === 0"
+      class="py-12 text-center text-muted-foreground"
+    >
+      No hay cartas que coincidan con los filtros actuales.
+    </p>
 
     <!-- GRID -->
     <div
-      v-if="viewMode === 'grid'"
-      class="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-3"
+      v-else-if="viewMode === 'grid'"
+      class="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3"
     >
       <CardItem
-        v-for="card in paginated"
+        v-for="card in paginatedCards"
         :key="card.id"
         :card="card"
       />
     </div>
 
     <!-- LIST -->
-    <div v-else class="space-y-4">
+    <div
+      v-else
+      class="space-y-3"
+    >
       <CardRow
-        v-for="card in paginated"
+        v-for="card in paginatedCards"
         :key="card.id"
         :card="card"
       />
@@ -60,17 +72,20 @@ const paginated = computed(() => {
 
     <!-- PAGINATION -->
     <Pagination
+      v-if="cards.length > perPage"
       :page="page"
       :items-per-page="perPage"
       :total="cards.length"
     >
       <PaginationContent v-slot="{ items }">
-
         <PaginationPrevious
           @click="page > 1 && emit('update:page', page - 1)"
         />
 
-        <template v-for="(item, index) in items" :key="index">
+        <template
+          v-for="item in items"
+          :key="item.type === 'page' ? item.value : item.type"
+        >
           <PaginationItem
             v-if="item.type === 'page'"
             :value="item.value"
@@ -81,14 +96,13 @@ const paginated = computed(() => {
           </PaginationItem>
         </template>
 
-        <PaginationEllipsis />
-
         <PaginationNext
-          @click="page < totalPages && emit('update:page', page + 1)"
+          @click="
+            page < totalPages &&
+            emit('update:page', page + 1)
+          "
         />
-
       </PaginationContent>
     </Pagination>
-
   </div>
 </template>

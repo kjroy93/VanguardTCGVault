@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, watch, computed } from "vue";
-import type { BoosterSet } from "@/models/booster.model";
+import { computed, ref, watch } from 'vue'
+
+import type { BoosterSet } from '@/models/booster.model'
+import type { CardFilters } from './card-filters.types'
 
 import {
   TagsInput,
@@ -8,9 +10,13 @@ import {
   TagsInputItem,
   TagsInputItemText,
   TagsInputItemDelete,
-} from "@/components/ui/tags-input";
+} from '@/components/ui/tags-input'
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 
 import {
   Command,
@@ -18,7 +24,7 @@ import {
   CommandGroup,
   CommandInput,
   CommandItem,
-} from "@/components/ui/command";
+} from '@/components/ui/command'
 
 import {
   Select,
@@ -26,94 +32,96 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from '@/components/ui/select'
 
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@/components/ui/toggle-group'
 
-// 🔹 TIPADO
-import type { CardFilters } from './card-filters.types'
-
-// 🔹 CONFIG
 const GENERATIONS = [
-  { label: "All", value: "all" },
-  { label: "Original", value: "Original" },
-  { label: "G", value: "G" },
-  { label: "V", value: "V" },
-  { label: "D", value: "D" },
-  { label: "DZ", value: "DZ" },
-];
+  { label: 'All', value: 'all' },
+  { label: 'Original', value: 'Original' },
+  { label: 'G', value: 'G' },
+  { label: 'V', value: 'V' },
+  { label: 'D', value: 'D' },
+  { label: 'DZ', value: 'DZ' },
+]
 
 const GRADES = [
-  { label: "All", value: "all" },
-  { label: "0", value: "0" },
-  { label: "1", value: "1" },
-  { label: "2", value: "2" },
-  { label: "3", value: "3" },
-  { label: "4", value: "4" },
-  { label: "5+", value: "5+" },
-];
+  { label: 'All', value: 'all' },
+  { label: '0', value: '0' },
+  { label: '1', value: '1' },
+  { label: '2', value: '2' },
+  { label: '3', value: '3' },
+  { label: '4', value: '4' },
+  { label: '5+', value: '5+' },
+]
 
 const TYPES = [
-  { label: "All", value: "all" },
-  { label: "Unit", value: "unit" },
-  { label: "Trigger", value: "trigger" },
-  { label: "Order", value: "order" },
-  { label: "Blitz", value: "blitz" },
-];
+  { label: 'All', value: 'all' },
+  { label: 'Unit', value: 'unit' },
+  { label: 'Trigger', value: 'trigger' },
+  { label: 'Order', value: 'order' },
+  { label: 'Blitz', value: 'blitz' },
+]
 
 const TRIGGERS = [
-  { label: "All", value: "all" },
-  { label: "Draw", value: "draw" },
-  { label: "Critical", value: "critical" },
-  { label: "Front", value: "front" },
-  { label: "Heal", value: "heal" },
-  { label: "Over", value: "over" },
-];
+  { label: 'All', value: 'all' },
+  { label: 'Draw', value: 'draw' },
+  { label: 'Critical', value: 'critical' },
+  { label: 'Front', value: 'front' },
+  { label: 'Heal', value: 'heal' },
+  { label: 'Over', value: 'over' },
+]
 
 const NATIONS = [
-  { label: "All", value: "all" },
-  { label: "Dragon Empire", value: "dragon_empire" },
-  { label: "Stoicheia", value: "stoicheia" },
-  { label: "Dark States", value: "dark_states" },
-  { label: "Keter Sanctuary", value: "keter" },
-  { label: "Brandt Gate", value: "brandt" },
-  { label: "Lyrical Monasterio", value: "lyrical" },
-];
+  { label: 'All', value: 'all' },
+  { label: 'Dragon Empire', value: 'dragon_empire' },
+  { label: 'Stoicheia', value: 'stoicheia' },
+  { label: 'Dark States', value: 'dark_states' },
+  { label: 'Keter Sanctuary', value: 'keter' },
+  { label: 'Brandt Gate', value: 'brandt' },
+  { label: 'Lyrical Monasterio', value: 'lyrical' },
+]
 
 const CLANS = [
-  { name: "Kagero", nation: "dragon_empire" },
-  { name: "Murakumo", nation: "dragon_empire" },
-  { name: "Nubatama", nation: "dragon_empire" },
-  { name: "Tachikaze", nation: "dragon_empire" },
+  { name: 'Kagero', nation: 'dragon_empire' },
+  { name: 'Murakumo', nation: 'dragon_empire' },
+  { name: 'Nubatama', nation: 'dragon_empire' },
+  { name: 'Tachikaze', nation: 'dragon_empire' },
 
-  { name: "Aqua Force", nation: "stoicheia" },
-  { name: "Granblue", nation: "stoicheia" },
-  { name: "Neo Nectar", nation: "stoicheia" },
-  { name: "Great Nature", nation: "stoicheia" },
+  { name: 'Aqua Force', nation: 'stoicheia' },
+  { name: 'Granblue', nation: 'stoicheia' },
+  { name: 'Neo Nectar', nation: 'stoicheia' },
+  { name: 'Great Nature', nation: 'stoicheia' },
 
-  { name: "Spike Brothers", nation: "dark_states" },
-  { name: "Dark Irregulars", nation: "dark_states" },
-  { name: "Pale Moon", nation: "dark_states" },
+  { name: 'Spike Brothers', nation: 'dark_states' },
+  { name: 'Dark Irregulars', nation: 'dark_states' },
+  { name: 'Pale Moon', nation: 'dark_states' },
 
-  { name: "Royal Paladin", nation: "keter" },
-  { name: "Shadow Paladin", nation: "keter" },
-  { name: "Gold Paladin", nation: "keter" },
-  { name: "Angel Feather", nation: "keter" },
-  { name: "Genesis", nation: "keter" },
+  { name: 'Royal Paladin', nation: 'keter' },
+  { name: 'Shadow Paladin', nation: 'keter' },
+  { name: 'Gold Paladin', nation: 'keter' },
+  { name: 'Angel Feather', nation: 'keter' },
+  { name: 'Genesis', nation: 'keter' },
 
-  { name: "Nova Grappler", nation: "brandt" },
-  { name: "Dimension Police", nation: "brandt" },
-  { name: "Link Joker", nation: "brandt" },
+  { name: 'Nova Grappler', nation: 'brandt' },
+  { name: 'Dimension Police', nation: 'brandt' },
+  { name: 'Link Joker', nation: 'brandt' },
 
-  { name: "Bermuda Triangle", nation: "lyrical" },
-  { name: "Elemental Cray", nation: null },
-];
+  { name: 'Bermuda Triangle', nation: 'lyrical' },
+  { name: 'Elemental Cray', nation: null },
+]
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   filters: CardFilters
-  boosterSets: BoosterSet[]
-  boosterSetsLoading: boolean
-}>()
+  boosterSets?: BoosterSet[]
+  boosterSetsLoading?: boolean
+}>(), {
+  boosterSets: () => [],
+  boosterSetsLoading: false,
+})
 
 const emit = defineEmits<{
   (event: 'update:filters', value: CardFilters): void
@@ -135,74 +143,99 @@ const searchTags = ref<string[]>(
 const clanOpen = ref(false)
 const boosterOpen = ref(false)
 
-const boosterKey = (booster: BoosterSet) => booster.code ?? booster.url;
+const availableClans = computed(() => {
+  if (local.value.nation === 'all') {
+    return CLANS.map(clan => clan.name)
+  }
 
-const boosterLabel = (booster: BoosterSet) =>
-  `[${booster.generation ?? "?"}] ${booster.code ?? "Sin código"} — ${booster.name}`;
+  return CLANS
+    .filter(
+      clan =>
+        clan.nation === local.value.nation ||
+        clan.nation === null
+    )
+    .map(clan => clan.name)
+})
 
-const filteredBoosters = computed(() => {
-  const generation = local.value.generation;
+const boosterLabel = (booster: BoosterSet): string =>
+  `[${booster.generation ?? '?'}] ${booster.code ?? '—'} — ${booster.name}`
 
-  return props.boosterSets
-    .filter((booster) => generation === "all" || booster.generation === generation)
-    .sort((a, b) => boosterLabel(a).localeCompare(boosterLabel(b)));
-});
+const visibleBoosterSets = computed(() =>
+  props.boosterSets
+    .filter(
+      booster =>
+        local.value.generation === 'all' ||
+        booster.generation === local.value.generation
+    )
+    .sort((a, b) =>
+      boosterLabel(a).localeCompare(boosterLabel(b))
+    )
+)
 
 const selectedBoosterLabel = computed(() => {
-  if (props.boosterSetsLoading) return "Cargando sets...";
-  if (local.value.boosterSet === "all") return "All";
+  if (props.boosterSetsLoading) {
+    return 'Cargando sets...'
+  }
+
+  if (local.value.boosterSet === 'all') {
+    return 'All'
+  }
 
   const selected = props.boosterSets.find(
-    (booster) => boosterKey(booster) === local.value.boosterSet
-  );
+    booster => booster.url === local.value.boosterSet
+  )
 
-  return selected ? boosterLabel(selected) : "All";
-});
+  return selected
+    ? boosterLabel(selected)
+    : 'All'
+})
 
-function selectBooster(booster: BoosterSet) {
-  local.value.boosterSet = boosterKey(booster);
-  boosterOpen.value = false;
+const handleTagInput = (event: KeyboardEvent) => {
+  if (event.key !== ';') return
+
+  event.preventDefault()
+
+  const input = event.target as HTMLInputElement
+  const value = input.value.trim().toLowerCase()
+
+  if (value && !searchTags.value.includes(value)) {
+    searchTags.value.push(value)
+  }
+
+  input.value = ''
 }
+
+watch(
+  local,
+  value => {
+    emit('update:filters', { ...value })
+  },
+  { deep: true }
+)
+
+watch(
+  searchTags,
+  tags => {
+    local.value.search = tags.join(';')
+  },
+  { deep: true }
+)
 
 watch(
   () => local.value.generation,
   () => {
-    const existsInGeneration = filteredBoosters.value.some(
-      (booster) => boosterKey(booster) === local.value.boosterSet
-    );
+    const currentBoosterIsVisible = visibleBoosterSets.value.some(
+      booster => booster.url === local.value.boosterSet
+    )
 
-    if (local.value.boosterSet !== "all" && !existsInGeneration) {
-      local.value.boosterSet = "all";
+    if (
+      local.value.boosterSet !== 'all' &&
+      !currentBoosterIsVisible
+    ) {
+      local.value.boosterSet = 'all'
     }
   }
-);
-
-// 🔹 CLANES FILTRADOS
-const availableClans = computed(() => {
-  if (local.value.nation === "all") return CLANS.map((c) => c.name);
-
-  return CLANS.filter((c) => c.nation === local.value.nation || c.nation === null).map(
-    (c) => c.name
-  );
-});
-
-// 🔹 TAG INPUT
-const handleTagInput = (e: KeyboardEvent) => {
-  if (e.key === ";") {
-    e.preventDefault();
-    const input = e.target as HTMLInputElement;
-    const value = input.value.trim().toLowerCase();
-
-    if (value && !searchTags.value.includes(value)) {
-      searchTags.value.push(value);
-    }
-
-    input.value = "";
-  }
-};
-
-// 🔹 SYN
-const open = ref(false);
+)
 </script>
 
 <template>
@@ -212,10 +245,16 @@ const open = ref(false);
     >
       <!-- SEARCH -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Buscar</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Buscar
+        </span>
 
         <TagsInput v-model="searchTags" class="flex-1 p-2">
-          <TagsInputItem v-for="item in searchTags" :key="item" :value="item">
+          <TagsInputItem
+            v-for="item in searchTags"
+            :key="item"
+            :value="item"
+          >
             <TagsInputItemText />
             <TagsInputItemDelete />
           </TagsInputItem>
@@ -228,20 +267,33 @@ const open = ref(false);
         </TagsInput>
       </div>
 
-      <!-- GENERACIÓN -->
+      <!-- GENERATION -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Gen</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Gen
+        </span>
 
-        <ToggleGroup type="single" v-model="local.generation" variant="outline" size="sm">
-          <ToggleGroupItem v-for="g in GENERATIONS" :key="g.value" :value="g.value">
-            {{ g.label }}
+        <ToggleGroup
+          v-model="local.generation"
+          type="single"
+          variant="outline"
+          size="sm"
+        >
+          <ToggleGroupItem
+            v-for="generation in GENERATIONS"
+            :key="generation.value"
+            :value="generation.value"
+          >
+            {{ generation.label }}
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
-      <!-- BOOSTER SET -->
+      <!-- SET -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Set</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Set
+        </span>
 
         <Popover v-model:open="boosterOpen">
           <PopoverTrigger as-child>
@@ -257,37 +309,34 @@ const open = ref(false);
             </button>
           </PopoverTrigger>
 
-          <PopoverContent class="w-[420px] p-0">
+          <PopoverContent class="w-[440px] p-0">
             <Command>
               <CommandInput placeholder="Buscar booster set..." />
 
               <CommandEmpty>
-                {{
-                  boosterSetsLoading
-                    ? "Cargando boosters..."
-                    : "No se encontraron sets para esta generación."
-                }}
+                No se encontraron sets para esta generación.
               </CommandEmpty>
 
               <div class="max-h-72 overflow-y-auto">
                 <CommandGroup>
                   <CommandItem
                     value="all"
-                    @select="
-                      () => {
-                        local.boosterSet = 'all';
-                        boosterOpen = false;
-                      }
-                    "
+                    @select="() => {
+                      local.boosterSet = 'all'
+                      boosterOpen = false
+                    }"
                   >
                     All
                   </CommandItem>
 
                   <CommandItem
-                    v-for="booster in filteredBoosters"
+                    v-for="booster in visibleBoosterSets"
                     :key="booster.url"
                     :value="boosterLabel(booster)"
-                    @select="() => selectBooster(booster)"
+                    @select="() => {
+                      local.boosterSet = booster.url
+                      boosterOpen = false
+                    }"
                   >
                     <span class="font-medium mr-2">
                       {{ booster.code }}
@@ -306,7 +355,9 @@ const open = ref(false);
 
       <!-- NATION -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Nation</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Nation
+        </span>
 
         <Select v-model="local.nation">
           <SelectTrigger class="flex-1">
@@ -314,8 +365,12 @@ const open = ref(false);
           </SelectTrigger>
 
           <SelectContent>
-            <SelectItem v-for="n in NATIONS" :key="n.value" :value="n.value">
-              {{ n.label }}
+            <SelectItem
+              v-for="nation in NATIONS"
+              :key="nation.value"
+              :value="nation.value"
+            >
+              {{ nation.label }}
             </SelectItem>
           </SelectContent>
         </Select>
@@ -323,14 +378,16 @@ const open = ref(false);
 
       <!-- CLAN -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Clan</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Clan
+        </span>
 
         <Popover v-model:open="clanOpen">
           <PopoverTrigger as-child>
             <button
               class="flex-1 flex justify-between px-3 py-2 text-sm bg-muted rounded-md border border-border"
             >
-              {{ local.clan === "all" ? "All" : local.clan }}
+              {{ local.clan === 'all' ? 'All' : local.clan }}
               <span class="opacity-50">⌕</span>
             </button>
           </PopoverTrigger>
@@ -344,28 +401,24 @@ const open = ref(false);
                 <CommandGroup>
                   <CommandItem
                     value="all"
-                    @select="
-                      () => {
-                        local.clan = 'all';
-                        open = false;
-                      }
-                    "
+                    @select="() => {
+                      local.clan = 'all'
+                      clanOpen = false
+                    }"
                   >
                     All
                   </CommandItem>
 
                   <CommandItem
-                    v-for="c in availableClans"
-                    :key="c"
-                    :value="c"
-                    @select="
-                      () => {
-                        local.clan = c;
-                        open = false;
-                      }
-                    "
+                    v-for="clan in availableClans"
+                    :key="clan"
+                    :value="clan"
+                    @select="() => {
+                      local.clan = clan
+                      clanOpen = false
+                    }"
                   >
-                    {{ c }}
+                    {{ clan }}
                   </CommandItem>
                 </CommandGroup>
               </div>
@@ -376,33 +429,66 @@ const open = ref(false);
 
       <!-- TYPE -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Type</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Type
+        </span>
 
-        <ToggleGroup type="single" v-model="local.type" variant="outline" size="sm">
-          <ToggleGroupItem v-for="t in TYPES" :key="t.value" :value="t.value">
-            {{ t.label }}
+        <ToggleGroup
+          v-model="local.type"
+          type="single"
+          variant="outline"
+          size="sm"
+        >
+          <ToggleGroupItem
+            v-for="type in TYPES"
+            :key="type.value"
+            :value="type.value"
+          >
+            {{ type.label }}
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
       <!-- GRADE -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Grade</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Grade
+        </span>
 
-        <ToggleGroup type="single" v-model="local.grade" variant="outline" size="sm">
-          <ToggleGroupItem v-for="g in GRADES" :key="g.value" :value="g.value">
-            {{ g.label }}
+        <ToggleGroup
+          v-model="local.grade"
+          type="single"
+          variant="outline"
+          size="sm"
+        >
+          <ToggleGroupItem
+            v-for="grade in GRADES"
+            :key="grade.value"
+            :value="grade.value"
+          >
+            {{ grade.label }}
           </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
       <!-- TRIGGER -->
       <div class="flex items-center">
-        <span class="w-15 text-sm text-muted-foreground">Trigger</span>
+        <span class="w-15 text-sm text-muted-foreground">
+          Trigger
+        </span>
 
-        <ToggleGroup type="single" v-model="local.trigger" variant="outline" size="sm">
-          <ToggleGroupItem v-for="t in TRIGGERS" :key="t.value" :value="t.value">
-            {{ t.label }}
+        <ToggleGroup
+          v-model="local.trigger"
+          type="single"
+          variant="outline"
+          size="sm"
+        >
+          <ToggleGroupItem
+            v-for="trigger in TRIGGERS"
+            :key="trigger.value"
+            :value="trigger.value"
+          >
+            {{ trigger.label }}
           </ToggleGroupItem>
         </ToggleGroup>
       </div>

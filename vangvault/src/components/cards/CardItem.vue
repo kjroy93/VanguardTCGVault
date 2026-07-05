@@ -1,15 +1,41 @@
 <script setup lang="ts">
-defineProps<{ card: any }>()
+import type { CardEntry } from '@/models/card-entry.model'
+
+defineProps<{
+  card: CardEntry
+}>()
 </script>
 
 <template>
-  <div class="group cursor-pointer">
-    <div class="aspect-[5/7] bg-muted rounded-md overflow-hidden border border-border">
-      <img :src="card.image" class="w-full h-full object-cover" />
+  <article class="group min-w-0">
+    <div
+      class="aspect-[5/7] rounded-md overflow-hidden border border-border bg-muted"
+    >
+      <img
+        v-if="card.imageUrl"
+        :src="card.imageUrl"
+        :alt="card.name"
+        class="w-full h-full object-cover"
+        loading="lazy"
+      />
+
+      <div
+        v-else
+        class="w-full h-full flex items-center justify-center p-4 text-center text-xs text-muted-foreground"
+      >
+        Imagen pendiente
+      </div>
     </div>
 
-    <p class="text-xs mt-1 truncate text-muted-foreground">
+    <p class="mt-2 text-xs text-muted-foreground">
+      {{ card.cardNumber }}
+    </p>
+
+    <p
+      class="text-sm truncate"
+      :title="card.name"
+    >
       {{ card.name }}
     </p>
-  </div>
+  </article>
 </template>

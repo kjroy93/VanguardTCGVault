@@ -1,23 +1,34 @@
 import { defineStore } from 'pinia'
 
+type LegacyFilterState = {
+  booster: string | null
+  nation: string | null
+  power: number | null
+  shield: number | null
+}
+
+const createDefaultState = (): LegacyFilterState => ({
+  booster: null,
+  nation: null,
+  power: null,
+  shield: null,
+})
+
 export const useFilterStore = defineStore('filter', {
-  state: () => ({
-    booster: null,
-    nation: null,
-    power: null,
-    shield: null
-  }),
+  state: (): LegacyFilterState => createDefaultState(),
 
   actions: {
-    setFilter(key, value) {
-      this[key] = value
+    setFilter<K extends keyof LegacyFilterState>(
+      key: K,
+      value: LegacyFilterState[K],
+    ) {
+      this.$patch({
+        [key]: value,
+      } as Partial<LegacyFilterState>)
     },
 
     resetFilters() {
-      this.booster = null
-      this.nation = null
-      this.power = null
-      this.shield = null
-    }
-  }
+      this.$patch(createDefaultState())
+    },
+  },
 })

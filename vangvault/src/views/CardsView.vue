@@ -1,148 +1,170 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { storeToRefs } from "pinia";
+import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
+import { LayoutGrid, List } from 'lucide-vue-next'
 
-import CardGrid from "@/components/cards/CardGrid.vue";
-import CardFilters from "@/components/filters/CardFilters.vue";
-import { useBoosterStore } from "@/stores/booster/booster.store";
+import CardGrid from '@/components/cards/CardGrid.vue'
+import CardFiltersPanel from '@/components/filters/CardFilters.vue'
 
-import { LayoutGrid, List } from "lucide-vue-next";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  createDefaultCardFilters,
+  type CardFilters,
+} from '@/components/filters/card-filters.types'
 
-// 🔹 TIPOS
-type Filters = {
-  search: string;
-  grade: string;
-  nation: string;
-  clan: string;
-  type: string;
-  trigger: string;
-  generation: string;
-  boosterSet: string;
-};
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from '@/components/ui/toggle-group'
 
-type Card = {
-  id: number;
-  name: string;
-  image: string;
-  effect?: string;
-  clan?: string;
-  grade?: string;
-  nation?: string;
-  type?: string;
-  trigger?: string;
-  generation?: string;
-};
+import { useBoosterStore } from '@/stores/booster/booster.store'
+import { useCardStore } from '@/stores/card/card.store'
 
-const boosterStore = useBoosterStore();
+const boosterStore = useBoosterStore()
+const cardStore = useCardStore()
 
-const { sets: boosterSets, loading: boosterSetsLoading } = storeToRefs(boosterStore);
+const {
+  sets: boosterSets,
+  loading: boosterSetsLoading,
+} = storeToRefs(boosterStore)
 
-// 🔹 DATA
-const cards = ref<Card[]>(
-  Array.from({ length: 123 }, (_, i) => ({
-    id: i + 1,
-    name: `Card ${i + 1}`,
-    image:
-      "https://static.wikia.nocookie.net/cardfight/images/1/1c/Sleeve133.png/revision/latest?cb=20160712170330",
-    effect: "Sample effect text",
-    clan: i % 2 === 0 ? "Kagero" : "Murakumo",
-    grade: String(i % 5),
-    nation: "dragon_empire",
-    type: "unit",
-    trigger: i % 3 === 0 ? "critical" : "",
-    generation: "D",
-  }))
-);
+const {
+  selectedCards,
+  selectedSetUrl,
+  loadingSetUrl,
+  errorMessage,
+} = storeToRefs(cardStore)
 
-// 🔹 STATE
-const filters = ref<Filters>({
-  search: "",
-  grade: "all",
-  nation: "all",
-  clan: "all",
-  type: "all",
-  trigger: "all",
-  generation: "all",
-  boosterSet: "all",
-});
+const filters = ref<CardFilters>(
+  createDefaultCardFilters()
+)
 
-const page = ref(1);
-const viewMode = ref<"grid" | "list">("grid");
+const page = ref(1)
+const viewMode = ref<'grid' | 'list'>('grid')
 
-// 🔹 SEARCH TOKENS (; separated)
-const searchTokens = computed<string[]>(() => {
-  return (filters.value.search || "")
-    .split(";")
-    .map((s) => s.trim().toLowerCase())
-    .filter(Boolean);
-});
+const isLoadingSelectedSet = computed(() =>
+  selectedSetUrl.value !== null &&
+  selectedSetUrl.value === loadingSetUrl.value
+)
 
-// 🔹 FILTER LOGIC
+const searchTokens = computed(() =>
+  filters.value.search
+    .split(';')
+    .map(token => token.trim().toLowerCase())
+    .filter(Boolean)
+)
+
 const filteredCards = computed(() => {
-  return cards.value.filter((card) => {
-    // 🔎 SEARCH (AND)
+  return selectedCards.value.filter(card => {
+    const searchableText = [
+      card.cardNumber,
+      card.name,
+      card.nation,
+      card.rarity,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase()
+
     const matchesSearch =
       searchTokens.value.length === 0 ||
-      searchTokens.value.every(
-        (token: string) =>
-          card.name.toLowerCase().includes(token) ||
-          card.effect?.toLowerCase().includes(token) ||
-          card.clan?.toLowerCase().includes(token)
-      );
+      searchTokens.value.every(token =>
+        searchableText.includes(token)
+      )
 
-    // 🎯 GRADE
     const matchesGrade =
-      filters.value.grade === "all" || card.grade === filters.value.grade;
+      filters.value.grade === 'all' ||
+      card.grade === filters.value.grade
 
-    // 🏳️ NATION
     const matchesNation =
-      filters.value.nation === "all" || card.nation === filters.value.nation;
+      filters.value.nation === 'all' ||
+      card.nationKey === filters.value.nation
 
-    // 🏳️ CLAN
-    const matchesClan = filters.value.clan === "all" || card.clan === filters.value.clan;
-
-    // 🧩 TYPE
-    const matchesType = filters.value.type === "all" || card.type === filters.value.type;
-
-    // ⚡ TRIGGER
-    const matchesTrigger =
-      filters.value.trigger === "all" || card.trigger === filters.value.trigger;
-
-    // 🧬 GENERATION
     const matchesGeneration =
-      filters.value.generation === "all" || card.generation === filters.value.generation;
+      filters.value.generation === 'all' ||
+      card.generation === filters.value.generation
 
     return (
       matchesSearch &&
       matchesGrade &&
       matchesNation &&
-      matchesClan &&
-      matchesType &&
-      matchesTrigger &&
       matchesGeneration
-    );
-  });
-});
+    )
+  })
+})
+
+watch(
+  () => filters.value.boosterSet,
+  async boosterUrl => {
+    if (boosterUrl === 'all') {
+      cardStore.clearSelectedBooster()
+      return
+    }
+
+    const booster = boosterSets.value.find(
+      item => item.url === boosterUrl
+    )
+
+    if (!booster) {
+      return
+    }
+
+    try {
+      await cardStore.loadCardsFromBooster(booster)
+    } catch (error) {
+      console.error(error)
+    }
+  }
+)
+
+watch(
+  filters,
+  () => {
+    page.value = 1
+  },
+  { deep: true }
+)
+
+onMounted(async () => {
+  if (
+    boosterSets.value.length === 0 &&
+    !boosterSetsLoading.value
+  ) {
+    try {
+      await boosterStore.loadFromApi()
+    } catch (error) {
+      console.error(
+        'No se pudieron cargar los booster sets',
+        error
+      )
+    }
+  }
+})
 </script>
 
 <template>
-  <!-- 🔴 HEADER FULL WIDTH -->
   <div class="w-full border-b border-border bg-card">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-      <!-- IZQUIERDA -->
-      <div class="flex items-center gap-3">
-        <span class="text-lg font-semibold">Cards</span>
-      </div>
+    <div
+      class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between"
+    >
+      <span class="text-lg font-semibold">
+        Cards
+      </span>
 
-      <!-- DERECHA -->
       <div class="flex items-center gap-4">
-        <span class="text-sm text-muted-foreground"> {{ cards.length }} cartas </span>
+        <span class="text-sm text-muted-foreground">
+          {{ filteredCards.length }} cartas
+        </span>
 
-        <ToggleGroup type="single" v-model="viewMode" variant="outline" size="sm">
+        <ToggleGroup
+          v-model="viewMode"
+          type="single"
+          variant="outline"
+          size="sm"
+        >
           <ToggleGroupItem value="grid">
             <LayoutGrid class="w-4 h-4" />
           </ToggleGroupItem>
+
           <ToggleGroupItem value="list">
             <List class="w-4 h-4" />
           </ToggleGroupItem>
@@ -151,18 +173,39 @@ const filteredCards = computed(() => {
     </div>
   </div>
 
-  <!-- 🟢 CONTENIDO CENTRADO -->
   <div class="max-w-7xl mx-auto px-4 py-6 space-y-6">
-    <CardFilters
+    <CardFiltersPanel
       v-model:filters="filters"
       :booster-sets="boosterSets"
       :booster-sets-loading="boosterSetsLoading"
     />
 
+    <p
+      v-if="filters.boosterSet === 'all'"
+      class="py-14 text-center text-muted-foreground"
+    >
+      Selecciona un booster set para cargar sus cartas.
+    </p>
+
+    <p
+      v-else-if="isLoadingSelectedSet"
+      class="py-14 text-center text-muted-foreground"
+    >
+      Cargando Card List…
+    </p>
+
+    <p
+      v-else-if="errorMessage"
+      class="py-14 text-center text-destructive"
+    >
+      {{ errorMessage }}
+    </p>
+
     <CardGrid
+      v-else
       :cards="filteredCards"
       :page="page"
-      :viewMode="viewMode"
+      :view-mode="viewMode"
       @update:page="page = $event"
     />
   </div>

@@ -19,6 +19,7 @@ const normalizeHeader = (value: string): string =>
   cleanText(value)
     .toLowerCase()
     .replace(/[^\w]+/g, ' ')
+    .trim()
 
 const normalizeWikiUrl = (href: string): string =>
   href.startsWith('http')
