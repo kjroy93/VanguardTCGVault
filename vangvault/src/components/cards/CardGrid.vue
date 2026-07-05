@@ -2,22 +2,26 @@
 import { computed, watch } from 'vue'
 
 import type { CardEntry } from '@/models/card-entry.model'
+import type { CardDetail } from '@/models/card-detail.model'
 
 import CardItem from './CardItem.vue'
 import CardRow from './CardRow.vue'
 
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
+type PaginationItem =
+  | number
+  | 'ellipsis-left'
+  | 'ellipsis-right'
 
 const props = defineProps<{
   cards: CardEntry[]
   page: number
   viewMode: 'grid' | 'list'
+
+  cardDetails: Record<string, CardDetail>
+  loadingDetailCardIds: Record<string, boolean>
+  failedDetailCardIds: Record<string, boolean>
+
+  searchText: string
 }>()
 
 const emit = defineEmits<{
@@ -25,6 +29,70 @@ const emit = defineEmits<{
 }>()
 
 const perPage = 20
+
+const totalPages = computed(() =>
+  Math.max(1, Math.ceil(props.cards.length / perPage))
+)
+
+const paginatedCards = computed(() => {
+  const start = (props.page - 1) * perPage
+
+  return props.cards.slice(start, start + perPage)
+})
+
+const paginationItems = computed<PaginationItem[]>(() => {
+  const total = totalPages.value
+  const current = props.page
+
+  if (total <= 5) {
+    return Array.from(
+      { length: total },
+      (_, index) => index + 1
+    )
+  }
+
+  if (current <= 3) {
+    return [
+      1,
+      2,
+      3,
+      'ellipsis-right',
+      total,
+    ]
+  }
+
+  if (current >= total - 2) {
+    return [
+      1,
+      'ellipsis-left',
+      total - 2,
+      total - 1,
+      total,
+    ]
+  }
+
+  return [
+    1,
+    'ellipsis-left',
+    current - 1,
+    current,
+    current + 1,
+    'ellipsis-right',
+    total,
+  ]
+})
+
+const goToPage = (targetPage: number) => {
+  if (
+    targetPage < 1 ||
+    targetPage > totalPages.value ||
+    targetPage === props.page
+  ) {
+    return
+  }
+
+  emit('update:page', targetPage)
+}
 
 const preloadedImageUrls = new Set<string>()
 
@@ -48,12 +116,12 @@ const preloadImages = (cards: CardEntry[]) => {
 const preloadNextPage = () => {
   const nextPageStart = props.page * perPage
 
-  const nextPageCards = props.cards.slice(
-    nextPageStart,
-    nextPageStart + perPage
+  preloadImages(
+    props.cards.slice(
+      nextPageStart,
+      nextPageStart + perPage
+    )
   )
-
-  preloadImages(nextPageCards)
 }
 
 watch(
@@ -68,16 +136,6 @@ watch(
   },
   { immediate: true }
 )
-
-const totalPages = computed(() =>
-  Math.max(1, Math.ceil(props.cards.length / perPage))
-)
-
-const paginatedCards = computed(() => {
-  const start = (props.page - 1) * perPage
-
-  return props.cards.slice(start, start + perPage)
-})
 </script>
 
 <template>
@@ -89,7 +147,6 @@ const paginatedCards = computed(() => {
       No hay cartas que coincidan con los filtros actuales.
     </p>
 
-    <!-- GRID -->
     <div
       v-else-if="viewMode === 'grid'"
       class="grid grid-cols-[repeat(auto-fill,minmax(190px,1fr))] gap-3"
@@ -101,7 +158,6 @@ const paginatedCards = computed(() => {
       />
     </div>
 
-    <!-- LIST -->
     <div
       v-else
       class="space-y-3"
@@ -110,42 +166,61 @@ const paginatedCards = computed(() => {
         v-for="card in paginatedCards"
         :key="card.id"
         :card="card"
+        :detail="cardDetails[card.id]"
+        :detail-loading="Boolean(loadingDetailCardIds[card.id])"
+        :detail-failed="Boolean(failedDetailCardIds[card.id])"
+        :search-text="searchText"
       />
     </div>
 
-    <!-- PAGINATION -->
-    <Pagination
+    <nav
       v-if="cards.length > perPage"
-      :page="page"
-      :items-per-page="perPage"
-      :total="cards.length"
+      class="flex flex-wrap items-center justify-center gap-1"
+      aria-label="Paginación de cartas"
     >
-      <PaginationContent v-slot="{ items }">
-        <PaginationPrevious
-          @click="page > 1 && emit('update:page', page - 1)"
-        />
+      <button
+        type="button"
+        class="h-9 px-3 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
+        :disabled="page === 1"
+        @click="goToPage(page - 1)"
+      >
+        ‹ Previous
+      </button>
 
-        <template
-          v-for="item in items"
-          :key="item.type === 'page' ? item.value : item.type"
+      <template
+        v-for="item in paginationItems"
+        :key="String(item)"
+      >
+        <span
+          v-if="item === 'ellipsis-left' || item === 'ellipsis-right'"
+          class="w-9 text-center text-sm text-muted-foreground"
         >
-          <PaginationItem
-            v-if="item.type === 'page'"
-            :value="item.value"
-            :is-active="item.value === page"
-            @click="emit('update:page', item.value)"
-          >
-            {{ item.value }}
-          </PaginationItem>
-        </template>
+          …
+        </span>
 
-        <PaginationNext
-          @click="
-            page < totalPages &&
-            emit('update:page', page + 1)
-          "
-        />
-      </PaginationContent>
-    </Pagination>
+        <button
+          v-else
+          type="button"
+          class="w-9 h-9 rounded-md text-sm font-medium transition-colors hover:bg-muted"
+          :class="{
+            'bg-primary text-primary-foreground hover:bg-primary':
+              item === page,
+          }"
+          :aria-current="item === page ? 'page' : undefined"
+          @click="goToPage(item)"
+        >
+          {{ item }}
+        </button>
+      </template>
+
+      <button
+        type="button"
+        class="h-9 px-3 rounded-md text-sm font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed hover:bg-muted"
+        :disabled="page === totalPages"
+        @click="goToPage(page + 1)"
+      >
+        Next ›
+      </button>
+    </nav>
   </div>
 </template>

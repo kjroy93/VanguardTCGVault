@@ -9,6 +9,11 @@ export type CardFilters = {
   boosterSet: string
 }
 
+export type CardSearchScope =
+  | 'none'
+  | 'set'
+  | 'generation'
+
 export const createDefaultCardFilters = (): CardFilters => ({
   search: '',
   grade: 'all',

@@ -5,14 +5,6 @@ import type { BoosterSet } from '@/models/booster.model'
 import type { CardFilters } from './card-filters.types'
 
 import {
-  TagsInput,
-  TagsInputInput,
-  TagsInputItem,
-  TagsInputItemText,
-  TagsInputItemDelete,
-} from '@/components/ui/tags-input'
-
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -118,27 +110,26 @@ const props = withDefaults(defineProps<{
   filters: CardFilters
   boosterSets?: BoosterSet[]
   boosterSetsLoading?: boolean
+  canSearch?: boolean
+  searchDisabledReason?: string
+  searching?: boolean
 }>(), {
   boosterSets: () => [],
   boosterSetsLoading: false,
+  canSearch: false,
+  searchDisabledReason:
+    'Selecciona un booster set o una generación.',
+  searching: false,
 })
 
 const emit = defineEmits<{
   (event: 'update:filters', value: CardFilters): void
+  (event: 'search', value: CardFilters): void
 }>()
 
 const local = ref<CardFilters>({
   ...props.filters,
 })
-
-const searchTags = ref<string[]>(
-  props.filters.search
-    ? props.filters.search
-        .split(';')
-        .map(tag => tag.trim())
-        .filter(Boolean)
-    : []
-)
 
 const clanOpen = ref(false)
 const boosterOpen = ref(false)
@@ -190,33 +181,18 @@ const selectedBoosterLabel = computed(() => {
     : 'All'
 })
 
-const handleTagInput = (event: KeyboardEvent) => {
-  if (event.key !== ';') return
-
-  event.preventDefault()
-
-  const input = event.target as HTMLInputElement
-  const value = input.value.trim().toLowerCase()
-
-  if (value && !searchTags.value.includes(value)) {
-    searchTags.value.push(value)
-  }
-
-  input.value = ''
+const submitSearch = () => {
+  emit('search', {
+    ...local.value,
+  })
 }
 
 watch(
   local,
   value => {
-    emit('update:filters', { ...value })
-  },
-  { deep: true }
-)
-
-watch(
-  searchTags,
-  tags => {
-    local.value.search = tags.join(';')
+    emit('update:filters', {
+      ...value,
+    })
   },
   { deep: true }
 )
@@ -224,9 +200,10 @@ watch(
 watch(
   () => local.value.generation,
   () => {
-    const currentBoosterIsVisible = visibleBoosterSets.value.some(
-      booster => booster.url === local.value.boosterSet
-    )
+    const currentBoosterIsVisible =
+      visibleBoosterSets.value.some(
+        booster => booster.url === local.value.boosterSet
+      )
 
     if (
       local.value.boosterSet !== 'all' &&
@@ -239,9 +216,9 @@ watch(
 </script>
 
 <template>
-  <div class="bg-card border border-border rounded-lg p-4">
+  <section class="bg-card border border-border rounded-lg p-4">
     <div
-      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr] gap-y-1 gap-x-10"
+      class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-[1fr_1fr_1fr] gap-x-10 gap-y-2"
     >
       <!-- SEARCH -->
       <div class="flex items-center">
@@ -249,22 +226,12 @@ watch(
           Buscar
         </span>
 
-        <TagsInput v-model="searchTags" class="flex-1 p-2">
-          <TagsInputItem
-            v-for="item in searchTags"
-            :key="item"
-            :value="item"
-          >
-            <TagsInputItemText />
-            <TagsInputItemDelete />
-          </TagsInputItem>
-
-          <TagsInputInput
-            placeholder="Buscar (;)"
-            @keydown.enter.prevent
-            @keydown="handleTagInput"
-          />
-        </TagsInput>
+        <input
+          v-model="local.search"
+          type="text"
+          placeholder="Nombre, número, nación..."
+          class="flex-1 h-9 px-3 text-sm bg-muted rounded-md border border-border outline-none focus:ring-2 focus:ring-ring"
+        >
       </div>
 
       <!-- GENERATION -->
@@ -298,7 +265,8 @@ watch(
         <Popover v-model:open="boosterOpen">
           <PopoverTrigger as-child>
             <button
-              class="flex-1 flex justify-between gap-3 px-3 py-2 text-sm bg-muted rounded-md border border-border text-left"
+              type="button"
+              class="flex-1 flex justify-between gap-3 px-3 py-2 text-sm bg-muted rounded-md border border-border text-left disabled:opacity-50"
               :disabled="boosterSetsLoading"
             >
               <span class="truncate">
@@ -385,6 +353,7 @@ watch(
         <Popover v-model:open="clanOpen">
           <PopoverTrigger as-child>
             <button
+              type="button"
               class="flex-1 flex justify-between px-3 py-2 text-sm bg-muted rounded-md border border-border"
             >
               {{ local.clan === 'all' ? 'All' : local.clan }}
@@ -493,5 +462,36 @@ watch(
         </ToggleGroup>
       </div>
     </div>
-  </div>
+
+    <div
+      class="mt-4 pt-4 border-t border-border flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p
+        v-if="!canSearch"
+        class="text-xs text-muted-foreground"
+      >
+        {{ searchDisabledReason }}
+      </p>
+
+      <p
+        v-else
+        class="text-xs text-muted-foreground"
+      >
+        La búsqueda se aplicará al pulsar el botón.
+      </p>
+
+      <button
+        type="button"
+        class="h-9 px-5 rounded-md bg-primary text-primary-foreground text-sm font-medium transition-opacity disabled:opacity-50"
+        :disabled="!canSearch || searching || boosterSetsLoading"
+        @click="submitSearch"
+      >
+        {{ searching ? 'Cargando...' : 'Buscar' }}
+      </button>
+    </div>
+
+    <p class="mt-3 text-xs text-muted-foreground">
+      Clan, Type, Trigger y búsqueda dentro del efecto se activarán cuando incorporemos el índice detallado de cartas.
+    </p>
+  </section>
 </template>
