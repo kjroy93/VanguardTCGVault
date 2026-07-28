@@ -1,3 +1,17 @@
+export type CardKind =
+  | 'unit'
+  | 'trigger'
+  | 'order'
+  | 'blitz'
+
+export type TriggerKind =
+  | 'draw'
+  | 'critical'
+  | 'front'
+  | 'heal'
+  | 'over'
+  | 'stand'
+
 export type CardEntry = {
   /**
    * Identificador interno seguro y único dentro de la aplicación.
@@ -25,7 +39,23 @@ export type CardEntry = {
   grade?: string
   nation?: string
   nationKey?: string
+
+  /**
+   * Texto original recibido en la columna `Type` de la Card List.
+   * Se conserva para depurar cambios de formato en la wiki.
+   */
   listType?: string
+
+  /**
+   * Campos categóricos derivados de `listType`.
+   *
+   * La interfaz filtra con estas claves exactas, no buscando palabras en el
+   * efecto. El updater y una futura base de datos deberán producir las mismas
+   * claves para poder cambiar de fuente sin cambiar la vista.
+   */
+  cardKind?: CardKind
+  triggerKind?: TriggerKind
+
   rarity?: string
 
   /**

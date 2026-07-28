@@ -575,7 +575,7 @@ watch(
     </div>
 
     <p class="mt-3 text-xs text-muted-foreground">
-      Clan, Type, Trigger y búsqueda dentro del efecto se activarán cuando incorporemos el índice detallado de cartas.
+      Grade, Nation, Type y Trigger usan los datos normalizados de las cartas. Clan y texto libre consultan el índice disponible.
     </p>
   </section>
 </template>

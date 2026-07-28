@@ -27,10 +27,7 @@ import {
 import { useBoosterStore } from '@/stores/booster/booster.store'
 import { useCardStore } from '@/stores/card/card.store'
 
-import {
-  searchCardsByWikiMetadata,
-  searchCardsByWikiText,
-} from '@/stores/card/helpers/card-text-search.api'
+import { cardQuerySource } from '@/stores/card/data/card-query.source'
 
 /**
  * PUNTO DE ENTRADA DE LA PANTALLA
@@ -274,7 +271,7 @@ const advancedFilterStatus = computed(() => {
   }
 
   if (advancedFiltersLoading.value) {
-    return 'Aplicando filtros avanzados en la wiki...'
+    return 'Aplicando filtros avanzados...'
   }
 
   if (advancedFiltersError.value) {
@@ -334,7 +331,7 @@ const handleSearch = async (
 
     textSearchLoading.value = true
 
-    const searchResult = await searchCardsByWikiText(
+    const searchResult = await cardQuerySource.searchText(
       scopeCards,
       requestedFilters.search
     )
@@ -384,7 +381,7 @@ const applyAdvancedFilters = async (): Promise<void> => {
 
   try {
     const result =
-      await searchCardsByWikiMetadata(cards, {
+      await cardQuerySource.searchMetadata(cards, {
         clan: draftFilters.value.clan,
         type: draftFilters.value.type,
         trigger: draftFilters.value.trigger,
@@ -578,7 +575,7 @@ onMounted(async () => {
         v-if="advancedFiltersWasTruncated"
         class="text-sm text-amber-500"
       >
-        La wiki devolvió demasiados resultados para este filtro avanzado. El resultado puede requerir acotarlo por generación o set.
+        La fuente de consultas devolvió demasiados resultados para este filtro avanzado. Prueba a acotarlo por generación o set.
       </p>
 
       <p

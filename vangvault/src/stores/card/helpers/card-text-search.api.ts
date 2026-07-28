@@ -1,4 +1,8 @@
 import type { CardEntry } from '@/models/card-entry.model'
+import type {
+  CardMetadataFilters,
+  CardQueryResult,
+} from '@/stores/card/data/card-query.types'
 
 import {
   fetchWikiApiJson,
@@ -16,17 +20,6 @@ type WikiSearchResponse = {
       title?: string
     }>
   }
-}
-
-export type WikiTextSearchResult = {
-  cardIds: Set<string>
-  wasTruncated: boolean
-}
-
-export type WikiAdvancedFilters = {
-  clan: string
-  type: string
-  trigger: string
 }
 
 type CachedSearchResult = {
@@ -224,7 +217,7 @@ const getMatchingCardIds = (
 export const searchCardsByWikiText = async (
   cards: CardEntry[],
   searchText: string
-): Promise<WikiTextSearchResult> => {
+): Promise<CardQueryResult> => {
   const terms = getSearchTerms(searchText)
 
   if (terms.length === 0) {
@@ -290,131 +283,77 @@ export const searchCardsByWikiText = async (
 }
 
 /**
- * Traduce el botón de tipo a la frase que debe buscar MediaWiki.
+ * Convierte un nombre de categoría en una consulta exacta para MediaWiki.
+ *
+ * `incategory` evita que, por ejemplo, una unidad normal coincida solo porque
+ * su efecto menciona la palabra "Critical".
  */
-const getTypeQuery = (
-  type: string
-): string | undefined => {
-  switch (type) {
-    case 'unit':
-      return '"Normal Unit"'
-
-    case 'trigger':
-      return '"Trigger Unit"'
-
-    case 'order':
-      return '"Normal Order"'
-
-    case 'blitz':
-      return '"Blitz Order"'
-
-    default:
-      return undefined
-  }
-}
+const getCategoryQuery = (
+  categoryName: string
+): string =>
+  `incategory:"${categoryName.replaceAll('"', '\\"')}"`
 
 /**
- * Traduce el botón de trigger a la frase que debe buscar MediaWiki.
+ * Aplica los campos categóricos que ya fueron normalizados desde Card List.
+ *
+ * Esta parte no hace fetch. Si falta el dato, la carta no se incluye: es más
+ * seguro mostrar menos resultados que inventar una coincidencia por texto.
  */
-const getTriggerQuery = (
-  trigger: string
-): string | undefined => {
-  switch (trigger) {
-    case 'draw':
-      return '"Trigger Effect" "Draw"'
+const filterByNormalizedMetadata = (
+  cards: CardEntry[],
+  filters: CardMetadataFilters
+): CardEntry[] =>
+  cards.filter(card => {
+    const matchesType =
+      filters.type === 'all' ||
+      card.cardKind === filters.type
 
-    case 'critical':
-      return '"Trigger Effect" "Critical"'
+    const matchesTrigger =
+      filters.trigger === 'all' ||
+      card.triggerKind === filters.trigger
 
-    case 'front':
-      return '"Trigger Effect" "Front"'
-
-    case 'heal':
-      return '"Trigger Effect" "Heal"'
-
-    case 'over':
-      return '"Trigger Effect" "Over"'
-
-    default:
-      return undefined
-  }
-}
+    return matchesType && matchesTrigger
+  })
 
 /**
- * Busca metadatos de ficha sin pedir el HTML de cada carta.
+ * Busca metadatos sin pedir el HTML individual de cada carta.
  *
- * Ejemplos:
- * - Trigger → "Trigger Unit"
- * - Critical → "Trigger Effect" "Critical"
- * - Murakumo → "Clan" "Murakumo"
- *
- * Cada filtro produce una consulta. Los resultados se intersectan para que una
- * carta tenga que cumplir todos los filtros activos.
+ * Type y Trigger salen de la columna Type de Card List. Clan aún no aparece en
+ * todas esas tablas, así que se consulta como categoría exacta y se intersecta
+ * con las cartas ya filtradas.
  */
 export const searchCardsByWikiMetadata = async (
   cards: CardEntry[],
-  filters: WikiAdvancedFilters
-): Promise<WikiTextSearchResult> => {
-  const queries: string[] = []
+  filters: CardMetadataFilters
+): Promise<CardQueryResult> => {
+  const locallyFilteredCards =
+    filterByNormalizedMetadata(cards, filters)
 
-  if (filters.clan !== 'all') {
-    queries.push(
-      `"Clan" "${filters.clan}"`
-    )
-  }
-
-  const typeQuery = getTypeQuery(filters.type)
-
-  if (typeQuery) {
-    queries.push(typeQuery)
-  }
-
-  const triggerQuery = getTriggerQuery(
-    filters.trigger
-  )
-
-  if (triggerQuery) {
-    queries.push(triggerQuery)
-  }
-
-  if (queries.length === 0) {
+  if (filters.clan === 'all') {
     return {
-      cardIds: new Set(cards.map(card => card.id)),
+      cardIds: new Set(
+        locallyFilteredCards.map(card => card.id)
+      ),
       wasTruncated: false,
     }
   }
 
-  let matchingCardIds = new Set(
-    cards.map(card => card.id)
-  )
-
-  let wasTruncated = false
-
-  for (const query of queries) {
-    const wikiResult =
-      await getWikiTitleKeysForQuery(query)
-
-    wasTruncated =
-      wasTruncated || wikiResult.wasTruncated
-
-    const matchingIds = getMatchingCardIds(
-      cards,
-      new Set(wikiResult.pageTitleKeys)
-    )
-
-    matchingCardIds = new Set(
-      [...matchingCardIds].filter(cardId =>
-        matchingIds.has(cardId)
-      )
-    )
-
-    if (matchingCardIds.size === 0) {
-      break
+  if (locallyFilteredCards.length === 0) {
+    return {
+      cardIds: new Set(),
+      wasTruncated: false,
     }
   }
 
+  const wikiResult = await getWikiTitleKeysForQuery(
+    getCategoryQuery(filters.clan)
+  )
+
   return {
-    cardIds: matchingCardIds,
-    wasTruncated,
+    cardIds: getMatchingCardIds(
+      locallyFilteredCards,
+      new Set(wikiResult.pageTitleKeys)
+    ),
+    wasTruncated: wikiResult.wasTruncated,
   }
 }

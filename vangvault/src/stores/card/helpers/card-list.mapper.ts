@@ -1,5 +1,9 @@
 import type { BoosterSet } from '@/models/booster.model'
-import type { CardEntry } from '@/models/card-entry.model'
+import type {
+  CardEntry,
+  CardKind,
+  TriggerKind,
+} from '@/models/card-entry.model'
 import type { ScrapedCardListRow } from './card-list.extractor'
 
 const NATION_KEYS: Record<string, string> = {
@@ -21,6 +25,78 @@ const mapNationToKey = (
   if (!nation) return undefined
 
   return NATION_KEYS[nation.toLowerCase()]
+}
+
+/**
+ * Deja el valor de la columna Type preparado para comparaciones exactas.
+ */
+const normalizeListType = (
+  listType?: string
+): string =>
+  (listType ?? '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toLowerCase()
+
+/**
+ * Normaliza `Critical`, `Critical Trigger`, etc. a una única clave estable.
+ */
+const mapListTypeToTriggerKind = (
+  listType?: string
+): TriggerKind | undefined => {
+  const normalizedType = normalizeListType(listType)
+
+  const triggerKinds: TriggerKind[] = [
+    'draw',
+    'critical',
+    'front',
+    'heal',
+    'over',
+    'stand',
+  ]
+
+  return triggerKinds.find(triggerKind =>
+    new RegExp(`\\b${triggerKind}\\b`).test(
+      normalizedType
+    )
+  )
+}
+
+/**
+ * Convierte las variantes visibles de la wiki a las cuatro opciones del filtro.
+ *
+ * El orden de las condiciones es intencionado: `Normal Order` contiene la
+ * palabra "Normal", pero debe clasificarse como order y no como unit.
+ */
+const mapListTypeToCardKind = (
+  listType?: string
+): CardKind | undefined => {
+  const normalizedType = normalizeListType(listType)
+
+  if (normalizedType.includes('blitz')) {
+    return 'blitz'
+  }
+
+  if (normalizedType.includes('order')) {
+    return 'order'
+  }
+
+  if (
+    mapListTypeToTriggerKind(listType) ||
+    normalizedType.includes('trigger')
+  ) {
+    return 'trigger'
+  }
+
+  if (
+    normalizedType === 'normal' ||
+    normalizedType.includes('normal unit') ||
+    normalizedType.endsWith(' unit')
+  ) {
+    return 'unit'
+  }
+
+  return undefined
 }
 
 /**
@@ -72,6 +148,9 @@ export const mapCardListRowsToEntries = (
     nation: row.nation,
     nationKey: mapNationToKey(row.nation),
     listType: row.listType,
+    cardKind: mapListTypeToCardKind(row.listType),
+    triggerKind:
+      mapListTypeToTriggerKind(row.listType),
     rarity: row.rarity,
   }))
 }

@@ -5,40 +5,46 @@
  * CONTEXTO:
  * - Realiza llamadas HTTP (fetch)
  * - Gestiona fallback entre distintas fuentes (proxy / allorigins)
- * - No interpreta ni transforma los datos
+ * - No interpreta ni transforma los datos de producto
  *
  * ENTRADA:
  * - No recibe parámetros (endpoints fijos)
  *
  * SALIDA:
- * - Devuelve los HTML de Booster Sets, Special Series y su categoría
+ * - Devuelve HTML de las listas y títulos JSON de la categoría
  */
 
-import { fetchWikiPageHtmlByTitle } from '@/services/wiki/wiki.client'
+import {
+  fetchWikiCategoryPageTitles,
+  fetchWikiPageHtmlByTitle,
+} from '@/services/wiki/wiki.client'
 
 const SET_LIST_TITLES = [
   'List_of_Cardfight!!_Vanguard_Booster_Sets',
   'List_of_Cardfight!!_Vanguard_Special_Series',
-  /**
-   * La lista histórica puede tardar en actualizarse. La categoría sí incluye
-   * los SS nuevos, por ejemplo DZ-SS12 ... DZ-SS16.
-   */
-  'Category:Special_Series',
 ] as const
+
+const SPECIAL_SERIES_CATEGORY =
+  'Category:Special Series'
+
+export type WikiBoosterSources = {
+  htmlPages: string[]
+  categoryPageTitles: string[]
+}
 
 /**
  * FETCH DEL CATÁLOGO
  * ------------------
- * Descarga en paralelo las tres páginas que describen los productos.
- * La salida sigue siendo HTML crudo; `booster.extractor.ts` lo convierte
- * después en pares `{ name, url }`.
+ * Descarga en paralelo:
+ * - El HTML de las dos listas históricas de productos.
+ * - Los miembros JSON de la categoría que suele contener antes los SS nuevos.
+ *
+ * `booster.extractor.ts` convertirá ambas formas en pares `{ name, url }`.
  */
-export const fetchWikiBoosterHtmlPages =
-  async (): Promise<string[]> => {
+export const fetchWikiBoosterSources =
+  async (): Promise<WikiBoosterSources> => {
     /**
-     * `Promise.allSettled` espera todas las fuentes sin cancelar el conjunto
-     * cuando falla una. Con `Promise.all`, un error de la categoría provocaba
-     * que se perdieran también las otras páginas que sí habían respondido.
+     * `Promise.allSettled` evita que una lista caída cancele la otra.
      */
     const results = await Promise.allSettled(
       SET_LIST_TITLES.map(title =>
@@ -61,5 +67,21 @@ export const fetchWikiBoosterHtmlPages =
       }
     )
 
-    return htmlPages
+    /**
+     * Una categoría de MediaWiki no es una página de contenido normal. Se usa
+     * su API `categorymembers` en vez de intentar parsearla como HTML, que era
+     * lo que producía el aviso "sin HTML parseable" de la consola.
+     *
+     * Esta fuente es complementaria: si falla, las dos listas y el catálogo
+     * local siguen siendo válidos, por lo que no se muestra un error engañoso.
+     */
+    const categoryPageTitles =
+      await fetchWikiCategoryPageTitles(
+        SPECIAL_SERIES_CATEGORY
+      ).catch(() => [])
+
+    return {
+      htmlPages,
+      categoryPageTitles,
+    }
   }

@@ -22,9 +22,10 @@
 import { defineStore } from 'pinia'
 import { BoosterSet } from '@/models/booster.model'
 import { FALLBACK_BOOSTER_ITEMS } from '@/stores/booster/data/booster-catalog.fallback'
-import { fetchWikiBoosterHtmlPages } from '@/stores/booster/helpers/booster.api'
+import { fetchWikiBoosterSources } from '@/stores/booster/helpers/booster.api'
 import {
   extractBoostersFromPages,
+  extractBoostersFromTitles,
   mergeBoosterItems,
 } from './helpers/booster.extractor'
 import { parseBoosterFromScraped } from './helpers/booster.parser'
@@ -74,9 +75,16 @@ export const useBoosterStore = defineStore('booster', {
         this.sets = fallbackBoosters
         this.loading = false
 
-        const htmlPages = await fetchWikiBoosterHtmlPages()
-        const remoteItems =
-          extractBoostersFromPages(htmlPages)
+        const sources = await fetchWikiBoosterSources()
+
+        const remoteItems = mergeBoosterItems(
+          extractBoostersFromPages(
+            sources.htmlPages
+          ),
+          extractBoostersFromTitles(
+            sources.categoryPageTitles
+          )
+        )
 
         /**
          * La wiki tiene prioridad porque puede contener productos nuevos.

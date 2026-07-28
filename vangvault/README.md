@@ -16,6 +16,9 @@ Lee [docs/DATA_FLOW.md](docs/DATA_FLOW.md). Explica con nombres de fichero:
 Los archivos principales también contienen comentarios junto al paso que
 realizan.
 
+La transición prevista desde scraping a un índice alimentado por el updater
+está separada en [docs/DATA_SOURCE_MIGRATION.md](docs/DATA_SOURCE_MIGRATION.md).
+
 El selector dispone de un catálogo local de seguridad. Se muestra de inmediato
 y después se completa con la wiki cuando la red responde. Por eso una caída de
 Fandom no debería volver a reducirlo únicamente a `All`.
@@ -30,6 +33,7 @@ npm run dev
 ## Comprobar producción
 
 ```sh
+npm run verify:filters
 npm run build
 ```
 
@@ -39,5 +43,6 @@ La estructura sigue esta convención:
 - `wiki.client.ts`: ejecuta el HTTP;
 - `*.extractor.ts`: lee el HTML;
 - `*.parser.ts` y `*.mapper.ts`: normalizan los datos;
+- `stores/card/data/card-query.*`: desacopla la vista del origen de búsquedas;
 - `*.store.ts`: orquesta y conserva el estado;
 - `views` y `components`: conectan acciones y renderizan.

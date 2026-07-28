@@ -3,6 +3,8 @@ export type BoosterSourceItem = {
   url: string
 }
 
+import { buildWikiPageUrl } from '@/services/wiki/wiki.client'
+
 const BASE = 'https://cardfight.fandom.com'
 const BOOSTER_PATTERN =
   /\bVGE?(?:-[A-Z0-9]+)+\b|^(?:P&V|DZ|D|V|G)?\s*Special Series\s+\d+\b/i
@@ -161,6 +163,24 @@ export const extractBoostersFromPages = (
 ): BoosterSourceItem[] =>
   dedupeResults(
     htmlPages.flatMap(html => extractBoosters(html))
+  )
+
+/**
+ * TÍTULOS JSON DE UNA CATEGORÍA -> `{ name, url }[]`
+ *
+ * `categorymembers` ya devuelve el nombre limpio de cada página. Aquí solo se
+ * descartan miembros que no parecen productos y se construye su URL visible.
+ */
+export const extractBoostersFromTitles = (
+  pageTitles: string[]
+): BoosterSourceItem[] =>
+  dedupeResults(
+    pageTitles
+      .filter(isBoosterTitle)
+      .map(pageTitle => ({
+        name: normalizeName(pageTitle),
+        url: buildWikiPageUrl(pageTitle),
+      }))
   )
 
 /**

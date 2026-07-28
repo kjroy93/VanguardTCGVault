@@ -11,8 +11,10 @@ qué se descarga, cómo se normaliza, dónde se guarda y dónde se renderiza.
    `booster-catalog.fallback.ts`, para que el selector nunca dependa por completo
    de que Fandom esté disponible.
 3. `src/stores/booster/helpers/booster.api.ts` intenta actualizar ese catálogo
-   mediante tres páginas índice: booster sets, special series y la categoría
-   actual de special series. Si una falla, conserva las demás.
+   mediante dos páginas índice y la categoría actual de special series.
+   Las listas se descargan como HTML; la categoría usa el endpoint JSON
+   `categorymembers`, porque una categoría no es una página de contenido
+   normal. Si la categoría opcional falla, el respaldo conserva los SS.
 4. `src/services/wiki/wiki.client.ts` ejecuta el `fetch` HTTP por varias rutas y
    devuelve HTML. Cada intento tiene un límite de tiempo.
 5. `src/stores/booster/helpers/booster.extractor.ts` convierte ese HTML en
@@ -51,7 +53,27 @@ Resumen:
 
 `CardFilters -> CardsView.handleSearch -> card.store -> card-list.api -> wiki.client -> extractor -> mapper -> store -> CardGrid`
 
-## 3. Imágenes
+## 3. Filtros
+
+1. `card-list.extractor.ts` lee, entre otras, la columna **Type** de la tabla.
+2. `card-list.mapper.ts` conserva ese texto en `listType` y lo normaliza en:
+   - `cardKind`: `unit`, `trigger`, `order` o `blitz`;
+   - `triggerKind`: `draw`, `critical`, `front`, `heal`, `over` o `stand`.
+3. Grade, Nation, Type y Trigger se comparan con esos campos normalizados.
+   Por eso `Critical` ya no busca la palabra "Critical" dentro del efecto de
+   una Normal Unit.
+4. Clan todavía no está presente en todas las Card Lists. El adaptador actual
+   lo consulta mediante `incategory:"Nombre del clan"` en MediaWiki y cruza los
+   títulos devueltos con las cartas del ámbito cargado.
+5. `src/stores/card/data/card-query.source.ts` es el punto desde el que la
+   vista obtiene esas operaciones. `CardsView.vue` no importa directamente el
+   helper concreto de MediaWiki.
+
+Resumen:
+
+`Card List -> extractor -> mapper -> CardEntry normalizado -> card-query.source -> CardsView`
+
+## 4. Imágenes
 
 1. Cuando ya existen cartas, `card.store.ts` llama a
    `src/stores/card/helpers/card-image.api.ts`.
@@ -72,6 +94,7 @@ Resumen:
 | `*.extractor.ts` | Extrae estructura desde HTML crudo. |
 | `*.parser.ts` / `*.mapper.ts` | Normaliza datos al modelo de la app. |
 | `*.store.ts` | Orquesta pasos, mantiene estado y caché. |
+| `stores/card/data/card-query.*` | Define el contrato de consultas y el origen activo. |
 | `booster-catalog.fallback.ts` | Mantiene operativo el selector si falla la red. |
 | `views/*.vue` | Conecta acciones del usuario con los stores. |
 | `components/*.vue` | Renderiza props y emite eventos. |
@@ -79,3 +102,6 @@ Resumen:
 Si la wiki cambia su HTML, el primer lugar que hay que revisar es el extractor.
 Si cambia un endpoint, el cliente o el archivo `*.api.ts`. Si el dato existe
 pero se ve mal, hay que revisar el componente Vue que lo renderiza.
+
+La migración prevista desde scraping hacia un índice persistente se describe
+en [DATA_SOURCE_MIGRATION.md](DATA_SOURCE_MIGRATION.md).
