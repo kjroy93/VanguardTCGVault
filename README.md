@@ -325,6 +325,8 @@ La lógica de acceso a wiki está centralizada en `wiki.client.ts` para evitar q
 
 ## Flujo de carga de cartas
 
+<img width="1268" height="512" alt="2026-07-05 20_00_50-backup movil - Explorador de archivos" src="https://github.com/user-attachments/assets/64fded09-ea91-4e32-9a7e-d77ff858de50" />
+
 ### Carga de un booster concreto
 
 ```text
@@ -964,60 +966,7 @@ Comprobar también:
 - [ ] Implementar búsqueda por efecto EN y JP.
 - [ ] Implementar caché por query y página.
 
----
 
-## Diagramas pendientes
-
-Los siguientes diagramas se añadirán en `docs/images/`.
-
-```text
-docs/
-└── images/
-    ├── architecture-current.png
-    ├── architecture-target.png
-    ├── card-loading-flow.png
-    ├── search-flow.png
-    ├── data-models.png
-    └── folder-structure.png
-```
-
-### Arquitectura temporal
-
-```md
-![Arquitectura temporal](./docs/images/architecture-current.png)
-```
-
-### Arquitectura objetivo con API y MongoDB
-
-```md
-![Arquitectura objetivo](./docs/images/architecture-target.png)
-```
-
-### Flujo de carga de cartas
-
-```md
-![Flujo de carga](./docs/images/card-loading-flow.png)
-```
-
-### Flujo de búsqueda y filtros
-
-```md
-![Flujo de búsqueda](./docs/images/search-flow.png)
-```
-
-### Modelos de datos
-
-```md
-![Modelos de datos](./docs/images/data-models.png)
-```
-
-### Estructura de carpetas
-
-```md
-![Estructura de carpetas](./docs/images/folder-structure.png)
-```
-
----
 
 ## Licencia
 
