@@ -32,7 +32,16 @@ import {
   searchCardsByWikiText,
 } from '@/stores/card/helpers/card-text-search.api'
 
-const PAGE_SIZE = 20
+/**
+ * PUNTO DE ENTRADA DE LA PANTALLA
+ * -------------------------------
+ * 1. Al montar, carga el catálogo de sets en `boosterStore`.
+ * 2. `CardFiltersPanel` lo recibe como prop y emite `search`.
+ * 3. `handleSearch` pide las cartas al `cardStore`.
+ * 4. Los `computed` filtran el estado reactivo.
+ * 5. La plantilla pasa el resultado a `CardGrid`, que lo renderiza.
+ */
+const PAGE_SIZE = 24
 
 const boosterStore = useBoosterStore()
 const cardStore = useCardStore()
@@ -278,6 +287,7 @@ const advancedFilterStatus = computed(() => {
 const handleSearch = async (
   requestedFilters: CardFilters
 ) => {
+  // Este es el puente entre el botón Buscar y el fetch de la Card List.
   advancedSearchVersion += 1
   advancedMatchedCardIds.value = null
   advancedFiltersError.value = null
@@ -473,6 +483,8 @@ watch(
 )
 
 onMounted(async () => {
+  // App.vue ya no repite esta llamada: esta vista es la propietaria del
+  // catálogo que necesita para sus filtros.
   if (
     boosterSets.value.length === 0 &&
     !boosterSetsLoading.value
@@ -522,6 +534,7 @@ onMounted(async () => {
   </div>
 
   <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <!-- Renderiza el catálogo normalizado y emite la búsqueda seleccionada. -->
     <CardFiltersPanel
       v-model:filters="draftFilters"
       :booster-sets="boosterSets"
@@ -578,6 +591,7 @@ onMounted(async () => {
         {{ advancedFilterStatus }}
       </p>
 
+      <!-- Último paso: `CardEntry[]` reactivo -> tarjetas/filas visibles. -->
       <CardGrid
         :cards="filteredCards"
         :page="page"

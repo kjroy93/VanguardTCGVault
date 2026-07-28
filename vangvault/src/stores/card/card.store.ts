@@ -11,40 +11,62 @@ import { fetchCardImageUrls } from './helpers/card-image.api'
 import { fetchCardDetail } from './helpers/card-detail.api'
 import { runWithConcurrency } from './helpers/card-load.utils'
 
+/**
+ * Estados posibles al cargar una generación completa.
+ *
+ * Se guardan por generación para evitar repetir una carga ya terminada y para
+ * que la interfaz pueda mostrar progreso o error.
+ */
 type GenerationLoadStatus =
   | 'idle'
   | 'loading'
   | 'ready'
   | 'error'
 
+/** Contadores que se muestran mientras se descargan varios sets. */
 type GenerationProgress = {
   completed: number
   total: number
   failed: number
 }
 
+/**
+ * Forma completa del estado de cartas.
+ *
+ * Los objetos `Record` funcionan como diccionarios: permiten encontrar datos
+ * rápidamente usando la URL del set, la generación o el id de una carta.
+ */
 type CardStoreState = {
+  /** Card Lists ya normalizadas y guardadas en caché. */
   cardsBySet: Record<string, CardEntry[]>
   cardsByGeneration: Record<string, CardEntry[]>
 
+  /** Datos detallados e indicadores de carga de cada carta. */
   cardDetailsById: Record<string, CardDetail>
   loadingDetailCardIds: Record<string, boolean>
   failedDetailCardIds: Record<string, boolean>
 
+  /** Ámbito elegido mediante el botón Buscar. */
   selectedSetUrl: string | null
   selectedGeneration: string | null
 
+  /** Indicadores para no lanzar la misma petición de imagen dos veces. */
   loadingSetUrl: string | null
   loadingImageSetUrl: string | null
   loadingImageCardIds: Record<string, boolean>
 
+  /** Estado y progreso cuando se carga una generación entera. */
   generationStatus: Record<string, GenerationLoadStatus>
   generationProgress: Record<string, GenerationProgress>
 
+  /** Mensajes que puede enseñar la vista si algo falla. */
   errorMessage: string | null
   imageErrorMessage: string | null
 }
 
+/**
+ * Crea los contadores iniciales de una carga por generación.
+ */
 const createDefaultGenerationProgress = (
   total = 0
 ): GenerationProgress => ({
@@ -54,6 +76,12 @@ const createDefaultGenerationProgress = (
 })
 
 export const useCardStore = defineStore('card', {
+  /**
+   * ESTADO INICIAL
+   *
+   * Empieza sin cartas ni selección. Los datos se incorporan bajo demanda
+   * cuando el usuario pulsa Buscar.
+   */
   state: (): CardStoreState => ({
     cardsBySet: {},
     cardsByGeneration: {},
@@ -77,6 +105,12 @@ export const useCardStore = defineStore('card', {
   }),
 
   getters: {
+    /**
+     * Devuelve las cartas correspondientes a la selección actual.
+     *
+     * La vista no necesita saber en qué caché están guardadas: recibe la lista
+     * del set, la lista de la generación o un array vacío.
+     */
     selectedCards(state): CardEntry[] {
       if (state.selectedSetUrl) {
         return state.cardsBySet[state.selectedSetUrl] ?? []
@@ -95,24 +129,24 @@ export const useCardStore = defineStore('card', {
   },
 
   actions: {
+    /**
+     * Flujo de un set:
+     * URL del booster -> HTML -> filas de la Card List -> `CardEntry[]`.
+     * El resultado queda en caché dentro de `cardsBySet`.
+     */
     async ensureCardsForBooster(
       booster: BoosterSet
     ): Promise<CardEntry[]> {
       const setUrl = booster.url
       const cachedCards = this.cardsBySet[setUrl]
 
+      /** Si el set ya se descargó, se reutiliza y no se vuelve a hacer fetch. */
       if (cachedCards) {
         return cachedCards
       }
 
-      const html = await fetchBoosterSetCardListHtml(
-        booster
-      )
-
-      const scrapedRows = extractCardListRowsFromHtml(
-        html
-      )
-
+      const html = await fetchBoosterSetCardListHtml(booster)
+      const scrapedRows = extractCardListRowsFromHtml(html)
       const cards = mapCardListRowsToEntries(
         scrapedRows,
         booster
@@ -123,6 +157,12 @@ export const useCardStore = defineStore('card', {
       return cards
     },
 
+    /**
+     * Selecciona un set, carga sus cartas y pone en marcha sus imágenes.
+     *
+     * Las cartas se esperan porque son necesarias para renderizar. Las imágenes
+     * se lanzan en segundo plano para que la lista aparezca antes.
+     */
     async loadCardsFromBooster(
       booster: BoosterSet
     ): Promise<CardEntry[]> {
@@ -138,6 +178,10 @@ export const useCardStore = defineStore('card', {
           booster
         )
 
+        /**
+         * Pinia provoca el rerender cuando llegue cada `imageUrl`, por eso no
+         * bloqueamos aquí el resultado principal con `await`.
+         */
         void this.loadImagesForBooster(booster)
 
         return cards
@@ -155,6 +199,12 @@ export const useCardStore = defineStore('card', {
       }
     },
 
+    /**
+     * Carga todos los sets pertenecientes a una generación.
+     *
+     * Limita la concurrencia a tres sets, actualiza el progreso y permite que
+     * un set falle sin cancelar automáticamente los demás.
+     */
     async loadCardsFromGeneration(
       generation: string,
       boosters: BoosterSet[]
@@ -173,8 +223,7 @@ export const useCardStore = defineStore('card', {
       this.selectedGeneration = generation
       this.errorMessage = null
 
-      const currentStatus =
-        this.generationStatus[generation] ?? 'idle'
+      const currentStatus = this.generationStatus[generation] ?? 'idle'
 
       if (currentStatus === 'ready') {
         return this.cardsByGeneration[generation] ?? []
@@ -192,6 +241,10 @@ export const useCardStore = defineStore('card', {
         )
 
       try {
+        /**
+         * `runWithConcurrency` reparte los sets entre tres trabajadores.
+         * Cada trabajador devuelve las cartas o un array vacío si ese set falla.
+         */
         const cardsByBooster = await runWithConcurrency(
           generationBoosters,
           3,
@@ -225,6 +278,10 @@ export const useCardStore = defineStore('card', {
           }
         )
 
+        /**
+         * Una misma carta puede reaparecer en varios productos. El `Map` usa su
+         * id como clave y deja una sola copia en el resultado de generación.
+         */
         const uniqueCards = new Map<string, CardEntry>()
 
         for (const cards of cardsByBooster) {
@@ -261,9 +318,13 @@ export const useCardStore = defineStore('card', {
       }
     },
 
-    async loadImagesForCards(
-      cards: CardEntry[]
-    ): Promise<void> {
+    /**
+     * Carga imágenes únicamente para el grupo de cartas que recibe.
+     *
+     * `CardsView.vue` la usa con la página visible para no pedir cientos de
+     * imágenes que todavía están fuera de pantalla.
+     */
+    async loadImagesForCards(cards: CardEntry[]): Promise<void> {
       const cardsToLoad = cards.filter(card => {
         return (
           !card.imageUrl &&
@@ -284,9 +345,11 @@ export const useCardStore = defineStore('card', {
           cardsToLoad
         )
 
-        const applyImages = (
-          collection: CardEntry[]
-        ): CardEntry[] =>
+        /**
+         * Devuelve nuevas cartas con la imagen encontrada. Se crean objetos
+         * nuevos para que Vue detecte con claridad el cambio reactivo.
+         */
+        const applyImages = (collection: CardEntry[]): CardEntry[] =>
           collection.map(card => ({
             ...card,
             imageUrl:
@@ -326,6 +389,12 @@ export const useCardStore = defineStore('card', {
       }
     },
 
+    /**
+     * Descarga efecto, clan, tipo y trigger para varias cartas.
+     *
+     * Solo se usa cuando esos datos hacen falta. Recuerda qué cartas fallaron
+     * para no repetir indefinidamente la misma petición.
+     */
     async loadDetailsForCards(
       cards: CardEntry[]
     ): Promise<void> {
@@ -345,6 +414,7 @@ export const useCardStore = defineStore('card', {
         this.loadingDetailCardIds[card.id] = true
       }
 
+      /** Resultado interno de cada trabajador de detalles. */
       type DetailLoadResult = {
         cardId: string
         detail?: CardDetail
@@ -403,6 +473,12 @@ export const useCardStore = defineStore('card', {
       }
     },
 
+    /**
+     * Carga todas las imágenes pendientes de un booster concreto.
+     *
+     * Actualiza tanto la caché por set como la caché por generación para que
+     * ambas vistas compartan las mismas URLs de imagen.
+     */
     async loadImagesForBooster(
       booster: BoosterSet
     ): Promise<void> {
@@ -473,16 +549,19 @@ export const useCardStore = defineStore('card', {
       }
     },
 
+    /** Deja de mostrar un set concreto y limpia su mensaje de error. */
     clearSelectedBooster(): void {
       this.selectedSetUrl = null
       this.errorMessage = null
     },
 
+    /** Deja de mostrar una generación y limpia su mensaje de error. */
     clearSelectedGeneration(): void {
       this.selectedGeneration = null
       this.errorMessage = null
     },
 
+    /** Borra cualquier ámbito de búsqueda seleccionado. */
     clearSelection(): void {
       this.selectedSetUrl = null
       this.selectedGeneration = null

@@ -1,3 +1,14 @@
+/**
+ * Ejecuta una tarea asíncrona sobre muchos elementos sin lanzarlos todos a la
+ * vez.
+ *
+ * @param items Elementos que hay que procesar.
+ * @param concurrency Número máximo de trabajadores simultáneos.
+ * @param worker Función que procesa un elemento.
+ * @returns Resultados en el mismo orden que `items`.
+ *
+ * Esto protege a la wiki de ráfagas enormes de peticiones y reduce bloqueos.
+ */
 export const runWithConcurrency = async <TItem, TResult>(
   items: TItem[],
   concurrency: number,
@@ -17,6 +28,10 @@ export const runWithConcurrency = async <TItem, TResult>(
   const results = new Array<TResult>(items.length)
   let nextIndex = 0
 
+  /**
+   * Cada trabajador toma el siguiente índice libre, ejecuta la tarea y repite
+   * hasta que ya no quedan elementos.
+   */
   const workers = Array.from(
     { length: Math.min(concurrency, items.length) },
     async () => {

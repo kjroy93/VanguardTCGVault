@@ -36,12 +36,39 @@ type Rule<T> = {
   resolve: (ctx: Ctx) => T
 }
 
+const SPECIAL_SERIES_TITLE_PATTERN =
+  /^(?:(P&V|DZ|D|V|G)\s+)?Special Series\s+0*(\d+)\b/i
+
 /**
- * Construye el contexto base a partir del nombre
+ * Construye una versión fácil de analizar del nombre recibido.
+ *
+ * Ejemplo:
+ * `VGE-DZ-SS11: Festival Booster 2025`
+ * se divide en código, cabecera `VGE` y segmentos `DZ`, `SS11`.
+ *
+ * Para títulos sin código, como `DZ Special Series 16`, también fabrica el
+ * código normalizado `DZ-SS16`.
  */
 function buildCtx(rawName: string): Ctx {
   const codeMatch = rawName.match(/^([A-Z0-9]+(?:[-:][A-Z0-9]+)*)\b/i)
-  const code = codeMatch ? codeMatch[1].toUpperCase() : undefined
+  const specialSeriesMatch = rawName.match(
+    SPECIAL_SERIES_TITLE_PATTERN
+  )
+
+  const matchedCode =
+    codeMatch?.[1].includes('-')
+      ? codeMatch[1]
+      : undefined
+
+  const code = (
+    matchedCode ??
+    (
+      specialSeriesMatch
+        ? `${specialSeriesMatch[1] ? `${specialSeriesMatch[1]}-` : ''}SS${specialSeriesMatch[2].padStart(2, '0')}`
+        : codeMatch?.[1]
+    )
+  )?.toUpperCase()
+
   const parts = code ? code.split(/[-:]/) : []
 
   return {
@@ -54,7 +81,10 @@ function buildCtx(rawName: string): Ctx {
 }
 
 /**
- * Motor genérico de resolución por reglas
+ * Recorre una lista de reglas y usa la primera que coincida.
+ *
+ * `T` representa el tipo de resultado que esperamos obtener. Si ninguna regla
+ * se cumple, se ejecuta `fallback` para devolver un valor seguro.
  */
 function resolveByRules<T>(ctx: Ctx, rules: Rule<T>[], fallback: (ctx: Ctx) => T): T {
   const match = rules.find(r => r.when(ctx))
@@ -62,23 +92,35 @@ function resolveByRules<T>(ctx: Ctx, rules: Rule<T>[], fallback: (ctx: Ctx) => T
 }
 
 /**
- * Reglas de generación
+ * Reglas que convierten distintos formatos de código en una generación.
+ *
+ * Están separadas del parser principal para que cada caso se pueda leer y
+ * modificar sin crear una cadena grande de `if/else`.
  */
 const generationRules: Rule<string | undefined>[] = [
+  {
+    /** Títulos descriptivos como `DZ Special Series 16`. */
+    when: ctx =>
+      [TAGS.G.id, TAGS.V.id, TAGS.D.id, TAGS.DZ.id]
+        .includes(ctx.head as 'G' | 'V' | 'D' | 'DZ') &&
+      /^SS\d+/i.test(ctx.seg),
+    resolve: ctx => ctx.head
+  },
   {
     when: ctx => ctx.head === 'VGE',
     resolve: () => TAGS.VGE.id
   },
   {
-    // 🔥 Solo generaciones reales (G, V, D, DZ...)
+    /** `VG-G`, `VG-V`, `VG-D` y `VG-DZ` toman el segundo segmento. */
     when: ctx =>
       ctx.head === 'VG' &&
       !!ctx.seg &&
-      !/^L?BT/i.test(ctx.seg), // excluye BT
+      /** `BT` y `LBT` no son generaciones. */
+      !/^L?BT/i.test(ctx.seg),
     resolve: ctx => ctx.seg
   },
   {
-    // 🔥 BT → Original
+    /** Los códigos `VG-BT` pertenecen a la serie Original. */
     when: ctx =>
       ctx.head === 'VG' &&
       (/^L?BT/i.test(ctx.seg || '') || !ctx.seg),
@@ -87,7 +129,10 @@ const generationRules: Rule<string | undefined>[] = [
 ]
 
 /**
- * Regla especial: VGE-DZ → DZ
+ * Excepciones que deben aplicarse antes de las reglas generales.
+ *
+ * `VGE` indica una variante regional, pero `VGE-DZ` sigue perteneciendo a la
+ * generación DZ. Sin esta excepción quedaría clasificado como generación VGE.
  */
 const overrideRules: Rule<{ generation?: string; region?: string }>[] = [
   {
@@ -111,10 +156,13 @@ export function parseBoosterFromScraped(
   url: string,
   cards: Card[] = []
 ): BoosterSet {
-
+  /**
+   * A partir de aquí no se consulta la red: solo se transforma texto.
+   * El resultado final es el modelo que almacenará Pinia y utilizará la UI.
+   */
   const ctx = buildCtx(rawName)
 
-  // override (si aplica)
+  /** Tipo de dato que puede producir una regla de excepción. */
   type OverrideResult = {
     generation?: string
     region?: string
@@ -130,15 +178,31 @@ export function parseBoosterFromScraped(
     override.generation ??
     resolveByRules(ctx, generationRules, () => TAGS.ORIGINAL.id)
 
-  // número
+  /**
+   * Extrae el número del producto. Para BT se busca expresamente `BTxx`;
+   * para el resto se toma el primer número presente en el código.
+   */
   const btMatch = ctx.code?.match(/BT0*(\d+)/i)
   const number = btMatch
     ? btMatch[1]
     : ctx.code?.match(/\d+/)?.[0]
 
-  // nombre limpio
+  /**
+   * Elimina el código y los separadores del texto visible.
+   * Conserva únicamente un nombre como `Festival Booster 2025`.
+   */
   const cleanName =
-    rawName.replace(/^([A-Z0-9]+(?:[-:][A-Z0-9]+)*)\s*[:\-–—]?\s*/i, '').trim() ||
+    rawName
+      .replace(
+        SPECIAL_SERIES_TITLE_PATTERN,
+        ''
+      )
+      .replace(
+        /^([A-Z0-9]+(?:[-:][A-Z0-9]+)*)\s*[:\-–—]?\s*/i,
+        ''
+      )
+      .replace(/^\s*[:\-–—]\s*/, '')
+      .trim() ||
     rawName
 
   return new BoosterSet(

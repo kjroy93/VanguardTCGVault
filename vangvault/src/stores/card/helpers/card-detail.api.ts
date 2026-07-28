@@ -23,8 +23,10 @@ type WikiParseTextResponse = {
 
 type CardMetadata = Record<string, string>
 
+/** Tiempo máximo que esperamos por la ficha de una carta. */
 const DETAIL_TIMEOUT_MS = 12_000
 
+/** Limpia un texto que debe permanecer en una sola línea. */
 const cleanInlineText = (
   value?: string | null
 ): string =>
@@ -32,6 +34,10 @@ const cleanInlineText = (
     .replace(/\s+/g, ' ')
     .trim()
 
+/**
+ * Prepara textos para comparaciones internas: minúsculas, sin signos y con
+ * espacios uniformes.
+ */
 const normalizeText = (
   value?: string | null
 ): string =>
@@ -40,6 +46,12 @@ const normalizeText = (
     .replace(/[^a-z0-9]+/g, ' ')
     .trim()
 
+/**
+ * Compite una promesa real contra un temporizador.
+ *
+ * Si la wiki no responde antes del límite, rechaza la operación para que la
+ * interfaz no quede cargando eternamente.
+ */
 const withTimeout = async <T>(
   promise: Promise<T>,
   label: string
@@ -68,6 +80,10 @@ const withTimeout = async <T>(
   }
 }
 
+/**
+ * MediaWiki puede devolver `parse.text` como string o dentro de la propiedad
+ * `*`. Esta función oculta esa diferencia al resto del fichero.
+ */
 const getParseHtml = (
   response: WikiParseTextResponse
 ): string | undefined => {
@@ -84,6 +100,9 @@ const getParseHtml = (
   return undefined
 }
 
+/**
+ * Descarga el HTML completo de la ficha de una carta y sigue redirecciones.
+ */
 const fetchCardPageHtml = async (
   card: CardEntry
 ): Promise<string> => {
@@ -113,6 +132,7 @@ const fetchCardPageHtml = async (
   return html
 }
 
+/** Reconoce los distintos textos que la wiki usa para titular los efectos. */
 const isCardEffectHeading = (
   value?: string | null
 ): boolean => {
@@ -125,6 +145,12 @@ const isCardEffectHeading = (
   )
 }
 
+/**
+ * Recorre recursivamente un nodo HTML conservando saltos de línea útiles.
+ *
+ * `textContent` puro mezclaría párrafos, costes y habilidades en una sola
+ * línea, dificultando su lectura posterior.
+ */
 const extractTextWithLineBreaks = (
   node: Node
 ): string => {
@@ -161,6 +187,9 @@ const extractTextWithLineBreaks = (
     : content
 }
 
+/**
+ * Limpia el efecto sin destruir su separación en párrafos.
+ */
 const normalizeEffectText = (
   value: string
 ): string => {
@@ -196,6 +225,9 @@ const normalizeEffectText = (
   return result.join('\n').trim()
 }
 
+/**
+ * Localiza la tabla de efectos y reúne las filas situadas bajo su cabecera.
+ */
 const extractCardEffectFromHtml = (
   html: string
 ): string | undefined => {
@@ -336,6 +368,10 @@ const getMetadataValue = (
   metadata: CardMetadata,
   keys: string[]
 ): string | undefined => {
+  /**
+   * Recorremos alternativas en orden de preferencia porque distintas fichas
+   * pueden llamar de forma diferente al mismo campo.
+   */
   for (const key of keys) {
     const value = metadata[key]
 
@@ -347,6 +383,7 @@ const getMetadataValue = (
   return undefined
 }
 
+/** Convierte el texto libre de `Card Type` en una opción de filtro estable. */
 const resolveCardType = (
   cardTypeText?: string
 ): CardFilterType | undefined => {
@@ -375,6 +412,7 @@ const resolveCardType = (
   return undefined
 }
 
+/** Convierte el texto de trigger de la wiki en una opción de filtro estable. */
 const resolveTrigger = (
   triggerEffectText?: string
 ): CardTrigger | undefined => {
@@ -407,6 +445,12 @@ const resolveTrigger = (
   return undefined
 }
 
+/**
+ * Orquesta la carga de detalle de una carta.
+ *
+ * Descarga una sola ficha, extrae sus metadatos y devuelve el modelo pequeño
+ * que guardará `card.store.ts`.
+ */
 export const fetchCardDetail = async (
   card: CardEntry
 ): Promise<CardDetail> => {
@@ -438,6 +482,10 @@ export const fetchCardDetail = async (
     trigger: resolveTrigger(triggerEffectText),
   }
 
+  /**
+   * Este log es diagnóstico: permite comparar el texto original de Fandom con
+   * los valores normalizados si un filtro no reconoce una carta.
+   */
   console.debug('[Card metadata parsed]', {
     cardNumber: card.cardNumber,
     name: card.name,

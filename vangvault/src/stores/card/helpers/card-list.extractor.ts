@@ -1,4 +1,6 @@
 const WIKI_BASE_URL = 'https://cardfight.fandom.com'
+const CARD_NUMBER_PATTERN =
+  /\b[A-Z][A-Z0-9-]*\d[A-Z0-9-]*\/[A-Z0-9-]*\d[A-Z0-9-]*\b/i
 
 export type ScrapedCardListRow = {
   cardNumber: string
@@ -10,50 +12,133 @@ export type ScrapedCardListRow = {
   rarity?: string
 }
 
+/** Elimina saltos, espacios repetidos y espacios de los extremos. */
 const cleanText = (value?: string | null): string =>
   (value ?? '')
     .replace(/\s+/g, ' ')
     .trim()
 
+/**
+ * Prepara el texto de una cabecera para compararlo sin depender de mayúsculas
+ * o signos como el punto de `Card No.`.
+ */
 const normalizeHeader = (value: string): string =>
   cleanText(value)
     .toLowerCase()
     .replace(/[^\w]+/g, ' ')
     .trim()
 
+/** Convierte un enlace relativo de Fandom en una URL completa. */
 const normalizeWikiUrl = (href: string): string =>
   href.startsWith('http')
     ? href
     : new URL(href, WIKI_BASE_URL).toString()
 
+/**
+ * Busca qué posición ocupa una columna.
+ *
+ * Acepta varios nombres porque la wiki puede escribir `Card No`,
+ * `Card Number`, `Name` o `Card Name`.
+ */
 const getColumnIndex = (
   headers: string[],
   acceptedNames: string[]
 ): number => {
   return headers.findIndex(header =>
-    acceptedNames.includes(header)
+    acceptedNames.some(
+      accepted =>
+        header === accepted ||
+        header.startsWith(`${accepted} `)
+    )
   )
 }
 
+/** Obtiene únicamente las celdas directas de una fila, sean `<th>` o `<td>`. */
+const getRowCells = (
+  row: HTMLTableRowElement
+): HTMLTableCellElement[] =>
+  Array.from(row.children).filter(
+    (cell): cell is HTMLTableCellElement =>
+      cell.matches('th, td')
+  )
+
+/** Comprueba si un texto tiene forma de número de carta Vanguard. */
+const isCardNumber = (value?: string | null): boolean =>
+  CARD_NUMBER_PATTERN.test(cleanText(value))
+
+/**
+ * Encuentra la fila que contiene los nombres de las columnas.
+ *
+ * No exige `<th>` porque algunas páginas construyen sus cabeceras con `<td>`.
+ */
+const findHeaderRow = (
+  table: HTMLTableElement
+): HTMLTableRowElement | undefined =>
+  Array.from(table.querySelectorAll('tr')).find(row => {
+    const headers = getRowCells(row).map(cell =>
+      normalizeHeader(cell.textContent ?? '')
+    )
+
+    return (
+      getColumnIndex(headers, [
+        'card no',
+        'card number',
+      ]) !== -1 &&
+      getColumnIndex(headers, [
+        'name',
+        'card name',
+      ]) !== -1
+    )
+  })
+
+/**
+ * Reconoce una fila de datos por dos señales: contiene un número de carta y
+ * algún enlace a una página de la wiki.
+ */
+const rowLooksLikeCard = (
+  row: HTMLTableRowElement
+): boolean => {
+  const cells = getRowCells(row)
+
+  return (
+    cells.some(cell => isCardNumber(cell.textContent)) &&
+    cells.some(
+      cell =>
+        cell.querySelector('a[href*="/wiki/"]') !==
+        null
+    )
+  )
+}
+
+/**
+ * Decide si una tabla es una Card List.
+ *
+ * Primero busca cabeceras claras. Si no existen, exige al menos dos filas que
+ * parezcan cartas para no confundir una ficha informativa con el listado.
+ */
 const tableLooksLikeCardList = (
   table: HTMLTableElement
 ): boolean => {
-  const headerRow = Array.from(
-    table.querySelectorAll('tr')
-  ).find(row => row.querySelectorAll('th').length > 0)
+  if (findHeaderRow(table)) {
+    return true
+  }
 
-  if (!headerRow) return false
-
-  const headers = Array.from(
-    headerRow.querySelectorAll('th')
-  ).map(cell => normalizeHeader(cell.textContent ?? ''))
-
-  return (
-    getColumnIndex(headers, ['card no', 'card number']) !== -1 &&
-    getColumnIndex(headers, ['name']) !== -1
-  )
+  /**
+   * Algunas tablas usan `<td>` o no conservan un encabezado semántico. Dos
+   * filas con "número + enlace de carta" son una señal más estable que
+   * depender de la etiqueta HTML concreta.
+   */
+  return Array.from(table.querySelectorAll('tr'))
+    .filter(rowLooksLikeCard)
+    .length >= 2
 }
 
+/**
+ * Busca la tabla situada bajo el título `Card List`.
+ *
+ * Si la estructura de la página ha cambiado, recorre después todas las tablas
+ * como alternativa.
+ */
 const findCardListTable = (
   doc: Document
 ): HTMLTableElement | null => {
@@ -98,6 +183,15 @@ const findCardListTable = (
 export const extractCardListRowsFromHtml = (
   html: string
 ): ScrapedCardListRow[] => {
+  /**
+   * NORMALIZACIÓN DE CARD LIST
+   * --------------------------
+   * Entrada: HTML del set seleccionado.
+   * Salida: filas simples con número, nombre, URL y metadatos básicos.
+   *
+   * Acepta encabezados creados con `<th>` o `<td>` y, como último recurso,
+   * deduce las columnas por el patrón del número y el enlace de la carta.
+   */
   const doc = new DOMParser().parseFromString(
     html,
     'text/html'
@@ -113,24 +207,22 @@ export const extractCardListRowsFromHtml = (
 
   const rows = Array.from(table.querySelectorAll('tr'))
 
-  const headerRow = rows.find(
-    row => row.querySelectorAll('th').length > 0
-  )
-
-  if (!headerRow) {
-    throw new Error('La Card List no tiene encabezados reconocibles')
-  }
-
-  const headers = Array.from(
-    headerRow.querySelectorAll('th')
-  ).map(cell => normalizeHeader(cell.textContent ?? ''))
+  const headerRow = findHeaderRow(table)
+  const headers = headerRow
+    ? getRowCells(headerRow).map(cell =>
+        normalizeHeader(cell.textContent ?? '')
+      )
+    : []
 
   const cardNumberIndex = getColumnIndex(headers, [
     'card no',
     'card number',
   ])
 
-  const nameIndex = getColumnIndex(headers, ['name'])
+  const nameIndex = getColumnIndex(headers, [
+    'name',
+    'card name',
+  ])
   const gradeIndex = getColumnIndex(headers, ['grade'])
   const nationIndex = getColumnIndex(headers, ['nation'])
   const typeIndex = getColumnIndex(headers, ['type'])
@@ -139,15 +231,60 @@ export const extractCardListRowsFromHtml = (
   const seen = new Set<string>()
 
   return rows.flatMap(row => {
-    const cells = Array.from(row.querySelectorAll('td'))
+    if (row === headerRow) return []
+
+    const cells = getRowCells(row)
 
     if (!cells.length) return []
 
-    const cardNumber = cleanText(
-      cells[cardNumberIndex]?.textContent
+    const inferredCardNumberIndex = cells.findIndex(cell =>
+      isCardNumber(cell.textContent)
     )
 
-    const nameCell = cells[nameIndex]
+    /**
+     * Preferimos la posición indicada por la cabecera. Si esa posición no
+     * contiene un número válido, usamos la posición deducida en esta fila.
+     */
+    const effectiveCardNumberIndex =
+      cardNumberIndex !== -1 &&
+      isCardNumber(cells[cardNumberIndex]?.textContent)
+        ? cardNumberIndex
+        : inferredCardNumberIndex
+
+    const cardNumber = cleanText(
+      cells[effectiveCardNumberIndex]?.textContent
+    )
+
+    const inferredNameIndex = cells.findIndex(
+      (cell, index) => {
+        if (index === effectiveCardNumberIndex) {
+          return false
+        }
+
+        const link = cell.querySelector(
+          'a[href*="/wiki/"]'
+        )
+
+        return (
+          link !== null &&
+          !isCardNumber(link.textContent)
+        )
+      }
+    )
+
+    /**
+     * La celda de nombre debe contener un enlace que no sea el propio número.
+     * Así evitamos escoger por error la nación u otra columna enlazada.
+     */
+    const effectiveNameIndex =
+      nameIndex !== -1 &&
+      cells[nameIndex]?.querySelector(
+        'a[href*="/wiki/"]'
+      )
+        ? nameIndex
+        : inferredNameIndex
+
+    const nameCell = cells[effectiveNameIndex]
     const link = nameCell?.querySelector('a[href*="/wiki/"]')
 
     const name = cleanText(link?.textContent ?? nameCell?.textContent)

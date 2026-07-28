@@ -28,13 +28,14 @@ const emit = defineEmits<{
   (event: 'update:page', value: number): void
 }>()
 
-const perPage = 20
+const perPage = 24
 
 const totalPages = computed(() =>
   Math.max(1, Math.ceil(props.cards.length / perPage))
 )
 
 const paginatedCards = computed(() => {
+  // Esta colección es la que consumen los `v-for` de la plantilla.
   const start = (props.page - 1) * perPage
 
   return props.cards.slice(start, start + perPage)

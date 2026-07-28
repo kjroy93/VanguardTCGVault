@@ -151,6 +151,83 @@ const availableClans = computed(() => {
 const boosterLabel = (booster: BoosterSet): string =>
   `[${booster.generation ?? '?'}] ${booster.code ?? '—'} — ${booster.name}`
 
+const setCodeCollator = new Intl.Collator('en', {
+  numeric: true,
+  sensitivity: 'base',
+})
+
+const GENERATION_ORDER = [
+  'Original',
+  'G',
+  'V',
+  'D',
+  'DZ',
+]
+
+/**
+ * Orden natural de sets.
+ *
+ * No se ordena por el texto completo porque `VG-DZ-SS11` y
+ * `VGE-DZ-SS04` quedarían separados por el prefijo regional. Se compara:
+ * generación -> familia final (BT, SS...) -> número -> código completo.
+ */
+const compareBoosterSets = (
+  a: BoosterSet,
+  b: BoosterSet
+): number => {
+  const generationIndex = (booster: BoosterSet) => {
+    const index = GENERATION_ORDER.indexOf(
+      booster.generation ?? ''
+    )
+
+    return index === -1
+      ? Number.MAX_SAFE_INTEGER
+      : index
+  }
+
+  const generationA = generationIndex(a)
+  const generationB = generationIndex(b)
+
+  if (generationA !== generationB) {
+    return generationA - generationB
+  }
+
+  const parts = (booster: BoosterSet) => {
+    const match = booster.code?.match(
+      /(?:^|-)([A-Z]+)0*(\d+)$/i
+    )
+
+    return {
+      family: match?.[1] ?? booster.code ?? '',
+      number: Number(match?.[2] ?? Number.MAX_SAFE_INTEGER),
+    }
+  }
+
+  const partsA = parts(a)
+  const partsB = parts(b)
+  const familyOrder = setCodeCollator.compare(
+    partsA.family,
+    partsB.family
+  )
+
+  if (familyOrder !== 0) {
+    return familyOrder
+  }
+
+  if (partsA.number !== partsB.number) {
+    return partsA.number - partsB.number
+  }
+
+  return setCodeCollator.compare(
+    a.code ?? a.name,
+    b.code ?? b.name
+  )
+}
+
+/**
+ * Estos son los sets que finalmente renderiza el desplegable de la plantilla.
+ * El store entrega el catálogo; aquí solo se filtra y ordena para la vista.
+ */
 const visibleBoosterSets = computed(() =>
   props.boosterSets
     .filter(
@@ -158,9 +235,7 @@ const visibleBoosterSets = computed(() =>
         local.value.generation === 'all' ||
         booster.generation === local.value.generation
     )
-    .sort((a, b) =>
-      boosterLabel(a).localeCompare(boosterLabel(b))
-    )
+    .sort(compareBoosterSets)
 )
 
 const selectedBoosterLabel = computed(() => {
@@ -269,15 +344,20 @@ watch(
               class="flex-1 flex justify-between gap-3 px-3 py-2 text-sm bg-muted rounded-md border border-border text-left disabled:opacity-50"
               :disabled="boosterSetsLoading"
             >
-              <span class="truncate">
+              <span
+                class="min-w-0 flex-1 truncate whitespace-nowrap"
+                :title="selectedBoosterLabel"
+              >
                 {{ selectedBoosterLabel }}
               </span>
 
-              <span class="opacity-50">⌕</span>
+              <span class="shrink-0 opacity-50">⌕</span>
             </button>
           </PopoverTrigger>
 
-          <PopoverContent class="w-[440px] p-0">
+          <PopoverContent
+            class="w-[min(34rem,calc(100vw-2rem))] p-0"
+          >
             <Command>
               <CommandInput placeholder="Buscar booster set..." />
 
@@ -301,16 +381,20 @@ watch(
                     v-for="booster in visibleBoosterSets"
                     :key="booster.url"
                     :value="boosterLabel(booster)"
+                    class="grid grid-cols-[max-content_minmax(0,1fr)] items-center gap-3"
                     @select="() => {
                       local.boosterSet = booster.url
                       boosterOpen = false
                     }"
                   >
-                    <span class="font-medium mr-2">
+                    <span class="font-medium whitespace-nowrap">
                       {{ booster.code }}
                     </span>
 
-                    <span class="truncate text-muted-foreground">
+                    <span
+                      class="min-w-0 truncate whitespace-nowrap text-muted-foreground"
+                      :title="booster.name"
+                    >
                       {{ booster.name }}
                     </span>
                   </CommandItem>

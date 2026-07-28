@@ -37,11 +37,17 @@ type CachedSearchResult = {
 const SEARCH_PAGE_SIZE = 50
 const MAX_SEARCH_REQUESTS = 20
 
+/**
+ * Memoria temporal de búsquedas ya realizadas.
+ *
+ * Evita repetir la misma consulta a Fandom mientras la aplicación siga abierta.
+ */
 const cachedSearches = new Map<
   string,
   CachedSearchResult
 >()
 
+/** Normaliza texto para compararlo sin diferencias de formato. */
 const normalizeText = (value: string): string =>
   value
     .replaceAll('_', ' ')
@@ -49,12 +55,23 @@ const normalizeText = (value: string): string =>
     .trim()
     .toLowerCase()
 
+/**
+ * Permite escribir varios términos separados por `;`.
+ *
+ * Los términos vacíos se descartan.
+ */
 const getSearchTerms = (value: string): string[] =>
   value
     .split(';')
     .map(term => term.trim())
     .filter(Boolean)
 
+/**
+ * Obtiene una clave comparable a partir de la URL de la ficha.
+ *
+ * Si la URL no pertenece a la wiki, devuelve una cadena vacía en vez de romper
+ * toda la búsqueda.
+ */
 const getCardPageTitleKey = (
   card: CardEntry
 ): string => {
@@ -67,6 +84,11 @@ const getCardPageTitleKey = (
   }
 }
 
+/**
+ * Construye el texto que ya conocemos localmente, sin hacer fetch.
+ *
+ * Así nombre, número, nación o rareza pueden coincidir inmediatamente.
+ */
 const getLocalSearchText = (
   card: CardEntry
 ): string =>
@@ -82,6 +104,12 @@ const getLocalSearchText = (
     .filter(Boolean)
     .join(' '))
 
+/**
+ * Pregunta al buscador de MediaWiki qué páginas contienen una consulta.
+ *
+ * Sigue la paginación hasta terminar o alcanzar el límite de seguridad y
+ * conserva el resultado en caché.
+ */
 const getWikiTitleKeysForQuery = async (
   query: string
 ): Promise<CachedSearchResult> => {
@@ -89,6 +117,7 @@ const getWikiTitleKeysForQuery = async (
 
   const cached = cachedSearches.get(cacheKey)
 
+  /** Una consulta repetida puede resolverse sin volver a usar la red. */
   if (cached) {
     return cached
   }
@@ -103,6 +132,10 @@ const getWikiTitleKeysForQuery = async (
     requestIndex < MAX_SEARCH_REQUESTS;
     requestIndex += 1
   ) {
+    /**
+     * `continuationParams` contiene el cursor que MediaWiki devuelve para
+     * solicitar la página siguiente de resultados.
+     */
     const json = await fetchWikiApiJson<WikiSearchResponse>({
       action: 'query',
       list: 'search',
@@ -157,6 +190,10 @@ const getWikiTitleKeysForQuery = async (
   return result
 }
 
+/**
+ * Cruza los títulos encontrados por MediaWiki con las cartas del ámbito actual
+ * y devuelve únicamente sus ids.
+ */
 const getMatchingCardIds = (
   cards: CardEntry[],
   pageTitleKeys: Set<string>
@@ -180,6 +217,9 @@ const getMatchingCardIds = (
 /**
  * Busca texto libre en fichas de carta.
  * Los términos separados por ";" se intersectan.
+ *
+ * Para cada término une coincidencias locales y coincidencias del contenido de
+ * la wiki. Después exige que la carta haya coincidido con todos los términos.
  */
 export const searchCardsByWikiText = async (
   cards: CardEntry[],
@@ -249,6 +289,9 @@ export const searchCardsByWikiText = async (
   }
 }
 
+/**
+ * Traduce el botón de tipo a la frase que debe buscar MediaWiki.
+ */
 const getTypeQuery = (
   type: string
 ): string | undefined => {
@@ -270,6 +313,9 @@ const getTypeQuery = (
   }
 }
 
+/**
+ * Traduce el botón de trigger a la frase que debe buscar MediaWiki.
+ */
 const getTriggerQuery = (
   trigger: string
 ): string | undefined => {
@@ -301,6 +347,9 @@ const getTriggerQuery = (
  * - Trigger → "Trigger Unit"
  * - Critical → "Trigger Effect" "Critical"
  * - Murakumo → "Clan" "Murakumo"
+ *
+ * Cada filtro produce una consulta. Los resultados se intersectan para que una
+ * carta tenga que cumplir todos los filtros activos.
  */
 export const searchCardsByWikiMetadata = async (
   cards: CardEntry[],

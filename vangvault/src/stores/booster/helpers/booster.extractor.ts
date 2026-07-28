@@ -1,21 +1,33 @@
-type Item = {
+export type BoosterSourceItem = {
   name: string
   url: string
 }
 
 const BASE = 'https://cardfight.fandom.com'
-const BOOSTER_PATTERN = /(^VG[\w\-\:\s]+)|\bVG-BT\d+\b/i
+const BOOSTER_PATTERN =
+  /\bVGE?(?:-[A-Z0-9]+)+\b|^(?:P&V|DZ|D|V|G)?\s*Special Series\s+\d+\b/i
 
 /**
- * Normaliza URL
+ * Decide si un texto parece el nombre de un producto Vanguard.
+ *
+ * Sirve para no introducir en el catálogo enlaces del menú, categorías,
+ * páginas de ayuda u otros enlaces que también aparecen en el HTML.
+ */
+const isBoosterTitle = (
+  value?: string | null
+): value is string =>
+  Boolean(value && BOOSTER_PATTERN.test(value.trim()))
+
+/**
+ * NORMALIZACIÓN 1: convierte enlaces relativos de la wiki en URL absolutas.
  */
 const normalizeUrl = (href: string) =>
   href.startsWith('http') ? href : new URL(href, BASE).toString()
 
 /**
- * Extrae boosters desde tablas `.wikitable`
+ * EXTRACCIÓN: busca productos en tablas `.wikitable`.
  */
-const extractFromTables = (doc: Document): Item[] =>
+const extractFromTables = (doc: Document): BoosterSourceItem[] =>
   Array.from(doc.querySelectorAll('table.wikitable'))
     .flatMap(table =>
       Array.from(table.querySelectorAll('tr')).flatMap(row => {
@@ -24,23 +36,29 @@ const extractFromTables = (doc: Document): Item[] =>
 
         const first = cells[0]
         const a = first.querySelector('a[href]')
+        const href = a?.getAttribute('href') || ''
 
-        if (a && a.textContent?.trim()) {
+        if (
+          a &&
+          isBoosterTitle(a.textContent) &&
+          href.includes('/wiki/')
+        ) {
           return [{
             name: a.textContent.trim(),
-            url: normalizeUrl(a.getAttribute('href') || '')
+            url: normalizeUrl(href)
           }]
         }
 
-        const text = first.textContent?.trim()
-        return text ? [{ name: text, url: BASE }] : []
+        /** Sin enlace no habría una página desde la que cargar cartas. */
+        return []
       })
     )
 
 /**
- * Extrae boosters desde listas `<li>`
+ * EXTRACCIÓN: busca productos en listas `<li>`.
+ * El filtro evita confundir la navegación lateral y las categorías con sets.
  */
-const extractFromListItems = (doc: Document): Item[] =>
+const extractFromListItems = (doc: Document): BoosterSourceItem[] =>
   Array.from((doc.querySelector('.mw-parser-output') || doc.body).querySelectorAll('li'))
     .flatMap(li => {
       const a = li.querySelector('a[href]')
@@ -49,25 +67,24 @@ const extractFromListItems = (doc: Document): Item[] =>
       const title = a.textContent?.trim()
       const href = a.getAttribute('href') || ''
 
-      return title && href.includes('/wiki/')
+      return isBoosterTitle(title) && href.includes('/wiki/')
         ? [{ name: title, url: normalizeUrl(href) }]
         : []
     })
 
 /**
- * Extrae boosters desde anchors (fallback agresivo)
+ * EXTRACCIÓN: último recurso para páginas cuyo contenido no usa tabla o lista.
  */
-const extractFromAnchors = (doc: Document): Item[] =>
+const extractFromAnchors = (doc: Document): BoosterSourceItem[] =>
   Array.from(doc.querySelectorAll('a[href]'))
     .map(a => ({
       title: a.textContent?.trim(),
       href: a.getAttribute('href') || ''
     }))
     .filter(t =>
-      t.title &&
+      isBoosterTitle(t.title) &&
       t.href &&
-      t.href.includes('/wiki/') &&
-      BOOSTER_PATTERN.test(t.title)
+      t.href.includes('/wiki/')
     )
     .map(t => ({
       name: t.title as string,
@@ -75,29 +92,46 @@ const extractFromAnchors = (doc: Document): Item[] =>
     }))
 
 /**
- * Elimina duplicados por URL
+ * NORMALIZACIÓN 2: elimina duplicados por página real de la wiki.
+ * `URL` también evita que el SS presente en la lista y la categoría salga dos
+ * veces. Conservamos el primer nombre, normalmente el código VGE/VG más útil.
  */
-const dedupeResults = (items: Item[]): Item[] => {
-  const map = new Map<string, Item>()
+const dedupeResults = (
+  items: BoosterSourceItem[]
+): BoosterSourceItem[] => {
+  const map = new Map<string, BoosterSourceItem>()
+
   items.forEach(it => {
-    if (!map.has(it.url)) {
-      map.set(it.url, it)
+    /**
+     * Dos enlaces pueden escribir el mismo carácter de manera diferente
+     * (`:` o `%3A`). Por eso comparamos la ruta ya decodificada y no la URL
+     * literal.
+     */
+    const url = new URL(it.url)
+    const pageKey = decodeURIComponent(url.pathname)
+      .replace(/\/+$/, '')
+      .toLowerCase()
+
+    if (!map.has(pageKey)) {
+      map.set(pageKey, it)
     }
   })
+
   return Array.from(map.values())
 }
 
 /**
- * EXTRA
- * Limpia nombres raros tipo "[VG-BT02] Name"
+ * NORMALIZACIÓN 3: deja espacios y saltos de línea en una forma estable.
  */
 const normalizeName = (name: string) =>
   name.replace(/\s+/g, ' ').trim()
 
 /**
- * Función principal
+ * HTML DE UNA FUENTE -> `{ name, url }[]`
  */
-export const extractBoosters = (html: string): Item[] => {
+export const extractBoosters = (
+  html: string
+): BoosterSourceItem[] => {
   const doc = new DOMParser().parseFromString(html, 'text/html')
 
   const results = [
@@ -115,3 +149,27 @@ export const extractBoosters = (html: string): Item[] => {
     url: b.url
   }))
 }
+
+/**
+ * HTML DE TODAS LAS FUENTES -> CATÁLOGO ÚNICO
+ *
+ * Aquí se mezclan la lista de boosters, la lista histórica de SS y la
+ * categoría actual. El parser posterior convertirá cada par en `BoosterSet`.
+ */
+export const extractBoostersFromPages = (
+  htmlPages: string[]
+): BoosterSourceItem[] =>
+  dedupeResults(
+    htmlPages.flatMap(html => extractBoosters(html))
+  )
+
+/**
+ * Une varios catálogos y elimina las páginas repetidas.
+ *
+ * El orden importa: se conservan primero los datos obtenidos de la wiki y el
+ * catálogo local solo completa aquello que no llegó por red.
+ */
+export const mergeBoosterItems = (
+  ...catalogs: BoosterSourceItem[][]
+): BoosterSourceItem[] =>
+  dedupeResults(catalogs.flat())
