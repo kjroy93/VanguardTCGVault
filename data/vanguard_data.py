@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    vanguard_data.py                                   :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 15:31:47 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/08 15:49:13 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,8 +37,14 @@ class	LinkStorage:
 		self._links = self.__load_data()
 
 	def	__save_data(self):
-		with open(FILE, "w", encoding="utf-8") as f:
-			json.dump(self._links, f, indent=4, ensure_ascii=False)
+		try:
+			with open(FILE, "w", encoding="utf-8") as f:
+				json.dump(self._links, f, indent=4, ensure_ascii=False)
+		except FileNotFoundError as e:
+			print(f'Error {e} detected, creating file to save urls')
+			os.mkdir(DATA_DIR)
+			with open("urls.json", "w") as f:
+				json.dump(self._links, f, ident=4, ensure_ascii=False)
 
 	def get_or_create(self, url: str, next_id: int) -> tuple[int, bool]:
 		url = url.strip()

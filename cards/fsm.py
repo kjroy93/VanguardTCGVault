@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    card_parser                                        :+:      :+:    :+:    #
+#    fsm.py                                             :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/05/12 17:52:03 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/08 16:04:15 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -211,6 +211,8 @@ class	CardFSM:
 		handler = self._dispatcher[self.state]
 		if (handler["prepare"]):
 			data = handler["prepare"](self.context.card)
+		else:
+			data = self.context.card
 		self.context.row = handler["parse"](data)
 		self.context.prepare_data = handler["cards"]
 		if (self.state != ParserState.DUAL_CARD):
