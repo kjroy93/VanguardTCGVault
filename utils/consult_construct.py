@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    apu_builder.py                                     :+:      :+:    :+:    #
+#    api_request.py                                     :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:28:41 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 15:28:41 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/08 16:15:30 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@
 from typing import Union, Literal
 
 header = {
-	"User-Agent": "VanguardScrapper/1.0 (Python; contact: kmarrero1993@gmail.com)"
+	"User-Agent": "VanguardScrapper/1.1 (Python; contact: kmarrero1993@gmail.com)"
 }
 
 def dict_construct(consult: Union[Literal["consult", "decks"]], lst: list):

@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    scrap.py                                           :+:      :+:    :+:    #
+#    routine.py                                         :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/08 20:09:12 by marvin            #+#    #+#              #
-#    Updated: 2026/05/08 20:09:12 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/08 20:28:06 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,8 +17,7 @@ from pathlib						import Path
 import pandas 						as pd
 
 # Library
-from api_builder.api_request		import header
-from api_builder.fsm.states			import State
+from api_builder.api_constructor		import header
 from cards.fsm						import CardFSM
 from utils.utils					import smart_sleep
 from cards.states					import ParserState

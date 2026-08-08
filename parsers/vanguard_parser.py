@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    vanguard_parser.py                                 :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 15:17:03 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/08 20:28:06 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,7 +19,7 @@ from mwparserfromhell.wikicode	import Wikicode
 
 # Library
 from utils						import utils
-from api_builder.api_request	import dict_construct
+from api_builder.api_constructor	import dict_construct
 
 class	VanguardParser:
 	def separate_urls(self, data: list):
@@ -90,3 +90,17 @@ class	VanguardParser:
 					used.add(clean_link)
 					break
 		return (links)
+
+	def	parse_links(fsm: FSMContext, pipeline: VanguardPipeline):
+		links = pipeline.scrapper.obtain_links(fsm.data["response"])
+		pipeline.parser.clean_trash_from_set(fsm.data["page"], links, 4)
+		parsed_links = remove_from_list(links, [
+			fsm.data["page"],
+			*dict_s.get(fsm.main_category)
+		])
+		process_items(parsed_links, pipeline)
+		if (fsm.answer == "boosters"):
+			sort_storage_list(["LB", "G"], pipeline)
+		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], pipeline)
+		fsm.current_state = State.SCRAP
+		return (fsm.current_state)

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    main.py                                            :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 16:07:31 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/08 20:26:40 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,12 +15,10 @@ import asyncio
 
 # Library
 from api_builder.fsm				import fsm
-from api_builder.fsm				import menus
-from api_builder.fsm				import scrap
-from api_builder.fsm.states			import State
+from api_builder.fsm				import user_input
+from api_builder				import routine
 from cards.fsm						import CardFSM
 from api_builder.fsm.query_builder	import make_query
-from api_builder.fsm.url_parser		import parse_links
 from api_builder.fsm.fetch			import fetch_routine
 from parsers.vanguard_parser		import VanguardParser
 from data.vanguard_data				import VanguardStorage
@@ -43,11 +41,11 @@ async def main():
 
 		while (state != State.END):
 			if (state == State.ENTRY_POINT):
-				state = menus.entry_point(state_machine)
+				state = user_input.entry_point(state_machine)
 			elif (state == State.SELECT_MAIN_CATEGORY):
-				state = menus.select_category(state_machine)
+				state = user_input.select_category(state_machine)
 			elif (state == State.SELECT_SUBCATEGORY):
-				state = menus.select_subcategory(state_machine)
+				state = user_input.select_subcategory(state_machine)
 			elif (state == State.BUILD_QUERY):
 				state = make_query(state_machine)
 			elif (state == State.FETCH):
@@ -56,7 +54,7 @@ async def main():
 				state = parse_links(state_machine, pipeline)
 			elif (state == State.SCRAP):
 				card_fsm = CardFSM(state_machine)
-				state = await scrap.main_scrap_routine(card_fsm, pipeline)
+				state = await routine.main_scrap_routine(card_fsm, pipeline)
 				if (state == State.ERROR):
 					await pipeline.scrapper.api.close_session()
 					return
@@ -66,7 +64,6 @@ async def main():
 					state = State.ENTRY_POINT
 				elif (answer in ("n", "no")):
 					state = State.END
-		pass
 	finally:
 		await pipeline.scrapper.api.close_session()
 

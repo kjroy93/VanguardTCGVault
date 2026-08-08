@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 16:04:15 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/08 18:16:40 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
-from api_builder.fsm.constants	import NATIONS
+from utils.constants	import NATIONS
 from api_builder.fsm.fsm		import FSMContext
 from cards.states				import ParserState
 from cards						import cards_parser
