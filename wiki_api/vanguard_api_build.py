@@ -1,28 +1,31 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    api_request.py                                     :+:      :+:    :+:    #
+#    vanguard_api_build.py                              :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:24:34 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 15:24:34 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/09 19:09:11 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from typing import List, Union
+from typing import List, Union, Literal
 
 # Dependencies
-import aiohttp
-import mwparserfromhell
-from mwparserfromhell.wikicode	import Wikicode
+import	aiohttp
+import	mwparserfromhell
+from	mwparserfromhell.wikicode	import Wikicode
 
 # Libraries
-from utils.utils				import remove_from_list
+from utils.utils				import remove_from_list, smart_sleep
 
 # Definitions
 JSONType = dict[str]
+header = {
+	"User-Agent": "VanguardScrapper/1.1 (Python; contact: kmarrero1993@gmail.com)"
+}
 
 # Classes
 class	MediaWikiAPI:
@@ -61,6 +64,62 @@ class	MediaWikiAPI:
 			headers=headers
 		) as response:
 			return (await response.json())
+	
+	async def	make_api_calls(self):
+		def	define_param(tpl: dict):
+			links = {
+				"action": "parse",
+				"page": tpl.get("titles"),
+				"prop": "links",
+				"format": "json"
+			}
+			return (links)
+		card_fsm.fsm_context.data["link_param"] = define_param(card_fsm.fsm_context.data["tpl"])
+		await smart_sleep()
+		card_fsm.fsm_context.data["api_result"] = await self.get(
+			params=card_fsm.fsm_context.data["tpl"],
+			headers=header
+		)
+		await smart_sleep()
+		card_fsm.fsm_context.data["link_result"] = await self.get(
+			params=card_fsm.fsm_context.data["link_param"],
+			headers=header
+		)
+		
+	def make_consults(self, lst: list, format: Literal["consult", "decks"]) -> dict[int, dict[str, str]]:
+		def dict_construct(consult: Union[Literal["consult", "decks"]], lst: list):
+			if (consult == "consult"):
+				return {
+					i: {
+					"action": "query",
+					"format": "json",
+					"prop": "revisions",
+					"titles": value,
+					"rvprop": "content",
+					"rvslots": "main"
+				}
+				for i, value in enumerate(lst)
+			}
+			if (consult == "decks"):
+				return {
+					i: {
+					"action": "parse",
+					"page": value,
+					"prop": "text",
+					"format": "json"
+					}
+					for i, value in enumerate(lst)
+				}
+			else:
+				return {
+					value: {
+						"action": "parse",
+						"page": value,
+						"format": "json"
+					}
+					for _, value in enumerate(lst)
+				}
+		return (dict_construct(format, lst))
 
 class	VanguardScrapper:
 	def	__init__(self, api: MediaWikiAPI):

@@ -6,102 +6,84 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 18:16:40 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/09 20:44:36 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+#Imports
+from dataclasses	import dataclass, field
+from enum			import Enum, auto
+from typing			import Callable
 
 # Dependencies
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
-from utils.constants	import NATIONS
-from api_builder.fsm.fsm		import FSMContext
-from cards.states				import ParserState
+from utils.constants			import NATIONS
 from cards						import cards_parser
 
-class ParserContext:
-	"""
-	Shared context used between the parser and the FSM.
+# Define
+type Action[C] = Callable[[C], None]
+class	InvalidTransition:
+	pass
 
-	Attributes:
-		size (int):
-			Amount of processed elements.
+@dataclass
+class	CardContext:
+	size: int = 0
+	prepare_data: int = None
+	infobox: dict = None
+	row: list = None
+	is_d: bool = False
+	is_deck: bool = False
+	obj: object = None
+	card: list[str] = None
+	rows: list[object] = []
+	links: dict = None
+	is_duplicated: bool = None
+	id: int = None
+	url: str = None
 
-		prepare_data (int):
-			Defines the data preparation mode.
+class	CardState(Enum):
+	ENTRY_POINT	= auto()
+	CARD_PARSER = auto()
+	DATA_CHECK	= auto()
+	SAVE_DATA	= auto()
+	MAKE_JSON	= auto()
+	END			= auto()
+	
 
-		infobox (dict):
-			Information extracted from the wiki infobox.
+class	CardEvent(Enum):
+	API_CALL		= auto()
+	PARSER			= auto()
+	CARD_CHECKER	= auto()
+	DATAFRAME		= auto()
+	JSON			= auto()
+	ERROR			= auto()
 
-		row (list):
-			Temporary row currently being processed.
+@dataclass
+class	CardStateMachine[S: Enum, E: Enum, C]:
+	initial_state: S
+	current_state: S = field(init=False)
+	transitions: dict[tuple[S, E], tuple[S, Action[C]]] = field(
+		default_factory=dict[tuple[S, E], tuple[S, Action[C]]]
+	)
 
-		is_d (bool):
-			Indicates whether the entry belongs to D format.
+	def	__post_init__(self):
+		self.current_state = self.initial_state
 
-		is_deck (bool):
-			Indicates whether the parser is processing decks.
+	def	add_transitions(self, from_state: S, event: E, to_state: S, func: Action[C]):
+		self.transitions[(from_state, event)] = (to_state, func)
 
-		obj (object):
-			Output model used to build parsed data.
+	def	next_transition(self, state: S, event: E) -> tuple[S, Action[C]]:
+		try:
+			return (self.transitions[(state, event)])
+		except KeyError as e:
+			raise InvalidTransition(f"Cannot {event.name} when {state.name}") from e
 
-		card (list[str]):
-			Temporary card-related information.
-
-		rows (list[object]):
-			Accumulated list of constructed models.
-
-		links (dict):
-			Mapping between names and URLs.
-
-		is_duplicated (bool):
-			Indicates whether the current entry already exists.
-
-		index (int):
-			Internal incremental index.
-
-		url (str):
-			URL associated with the current row.
-	"""
-	def __init__(self):
-		self.size: int = 0
-		"""Amount of processed elements."""
-
-		self.prepare_data: int = None
-		"""Defines the current data preparation mode."""
-
-		self.infobox: dict = None
-		"""Information extracted from the wiki infobox."""
-
-		self.row: list = None
-		"""Temporary row currently being processed."""
-
-		self.is_d: bool = False
-		"""Indicates whether the entry belongs to D format."""
-
-		self.is_deck: bool = False
-		"""Indicates whether the parser is processing decks."""
-
-		self.obj: object = None
-		"""Output model used to build parsed data."""
-
-		self.card: list[str] = None
-		"""Temporary card-related information."""
-
-		self.rows: list[object] = []
-		"""Accumulated list of constructed models."""
-
-		self.links: dict = None
-		"""Mapping between names and URLs."""
-
-		self.is_duplicated: bool = None
-		"""Indicates whether the current entry already exists."""
-
-		self.id: int = None
-		"""Internal incremental index."""
-
-		self.url: str = None
-		"""URL associated with the current row."""
+	def	handle(self, ctx: C, state: S, event: E) -> S:
+		next_state, action = self.next_transition(state, event)
+		action(ctx)
+		return (next_state)
 
 class	CardFSM:
 	def	__init__(self, fsm_context: FSMContext):

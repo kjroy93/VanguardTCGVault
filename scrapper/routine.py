@@ -6,46 +6,21 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/08 20:09:12 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 20:28:06 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/09 21:13:36 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-
-# Import
-from pathlib						import Path
 
 # Dependencies
 import pandas 						as pd
 
 # Library
-from api_builder.api_constructor		import header
 from cards.fsm						import CardFSM
-from utils.utils					import smart_sleep
-from cards.states					import ParserState
 from data.check_data_base			import build_set_path
+from parsers.vanguard_parser		import VanguardParser
+from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
-
-def	get_duplicate_path(path: Path) -> Path:
-	if not path.exists():
-		return path
-	
-	stem = path.stem
-	suffix = path.suffix
-	parent = path.parent
-	i = 1
-	while True:
-		new_path = parent / f"{stem}_{i}{suffix}"
-		if not new_path.exists():
-			return new_path
-		i += 1
-
-def	define_param(tpl: dict):
-	links = {
-		"action": "parse",
-		"page": tpl.get("titles"),
-		"prop": "links",
-		"format": "json"
-	}
-	return (links)
+from classifier.vanguard_classifier	import VanguardClassifier
+from wiki_api.vanguard_api_build	import MediaWikiAPI, VanguardScrapper
 
 def	parser(card_fsm: CardFSM, pipeline: VanguardPipeline):
 	wikitex = pipeline.scrapper.obtain_wikitex(card_fsm.fsm_context.data["api_result"])
@@ -55,19 +30,6 @@ def	parser(card_fsm: CardFSM, pipeline: VanguardPipeline):
 	pipeline.parser.clean_trash_from_set(card_fsm.fsm_context.data["page"], all_links, 4, reverse=True)
 	card_fsm.context.links = pipeline.parser.sort_unique_url(
 		card_fsm.fsm_context.data["crude_cards"], all_links
-	)
-
-async def	make_api_calls(card_fsm: CardFSM, pipeline: VanguardPipeline):
-	card_fsm.fsm_context.data["link_param"] = define_param(card_fsm.fsm_context.data["tpl"])
-	await smart_sleep()
-	card_fsm.fsm_context.data["api_result"] = await pipeline.scrapper.api.get(
-		params=card_fsm.fsm_context.data["tpl"],
-		headers=header
-	)
-	await smart_sleep()
-	card_fsm.fsm_context.data["link_result"] = await pipeline.scrapper.api.get(
-		params=card_fsm.fsm_context.data["link_param"],
-		headers=header
 	)
 
 def	column_dispatcher(fsm: CardFSM):
@@ -83,7 +45,7 @@ def	column_dispatcher(fsm: CardFSM):
 
 async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
 	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
-		consult = pipeline.parser.make_consults(getattr(pipeline.storage, block.lower()), "consult")
+		consult = pipeline.scrapper.api.make_consults(getattr(pipeline.storage, block.lower()), "consult")
 		for tpl in consult.values():
 			card_fsm.fsm_context.data["tpl"] = tpl
 			await make_api_calls(card_fsm, pipeline)

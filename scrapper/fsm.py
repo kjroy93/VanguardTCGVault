@@ -6,35 +6,50 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/08 20:36:34 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/09 20:45:16 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-# Library
+# Imports
 from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import Callable
 
+# Definitions
 JSONType = dict[str]
 type Action[C] = Callable[[C], None]
 
+class	InvalidTransition:
+	pass
+
 class	ParseState(Enum):
 	ENTRY_POINT				=	auto()
-	SELECT_MAIN_CATEGORY	= 	auto()
-	SELECT_SUBCATEGORY		=	auto()
-	BUILD_QUERY				=	auto()
-	FETCH					=	auto()
-	PARSE					=	auto()
-	SCRAP					=	auto()
+	MAIN_CATEGORY_SELECTED	= 	auto()
+	SUB_CATEGORY_SELECTED	=	auto()
+	QUERY_BUILT				=	auto()
+	SET_CONSULT				=	auto()
+	URL_PARSED				=	auto()
 	END						=	auto()
 
 class	ParseEvent(Enum):
-	CATEGORY_SELECTED		= auto()
-	SUBCATEGORY_SELECTED	= auto()
-	QUERY_BUILT				= auto()
+	SELECT_CATEGORY			= auto()
+	SELECT_SUBCATEGORY		= auto()
+	BUILD_QUERY				= auto()
+	MAKE_CONSULT			= auto()
 	CLEAN_RESULT			= auto()
 	MAIN_ROUTINE			= auto()
 	ERROR					= auto()
+
+@dataclass
+class	ParseContext:
+	category:			str			|	None = None
+	column:				str			|	None = None
+	subcategory:		str			|	None = None
+	query_page:			str			|	None = None
+	query_parameters:	str			|	None = None
+	response:			JSONType	|	None = None
+	crude_data:			JSONType	|	None = None
+	data:				JSONType	|	None = None
 
 @dataclass
 class	StateMachine[S: Enum, E: Enum, C]:
@@ -50,19 +65,17 @@ class	StateMachine[S: Enum, E: Enum, C]:
 	def	add_transition(self, from_state: S, event: E, to_state: S, func: Action[C]) -> None:
 		self.transitions[(from_state, event)] = (to_state, func)
 
-	def	transition(self, event: E):
-		key = (self.current_state, event)
-	
+	def	next_transition(self, state: S, event: E) -> tuple[S, Action[C]]:
+		try:
+			return (self.transitions[(state, event)])
+		except KeyError as e:
+			raise InvalidTransition(f"Cannot {event.name} when {state.name}") from e
 
-@dataclass
-class	ParseContext:
-	category:			str			|	None = None
-	column:				str			|	None = None
-	subcategory:		str			|	None = None
-	query_page:			str			|	None = None
-	query_parameters:	str			|	None = None
-	crude_data:			JSONType	|	None = None
-	data:				JSONType	|	None = None
+	def	handle(self, ctx: C, state: S, event: E) -> S:
+		next_state, action = self.next_transition(state, event)
+		action(ctx)
+		return (next_state)
+	
 
 class	FSMConsults:
 	def	__init__(self):

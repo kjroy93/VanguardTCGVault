@@ -1,19 +1,19 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    pipeline.py                                        :+:      :+:    :+:    #
+#    builder.py                                         :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/04 16:19:46 by marvin            #+#    #+#              #
-#    Updated: 2026/05/04 16:19:46 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/09 18:31:47 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
 from parsers.vanguard_parser		import VanguardParser
 from data.vanguard_data				import VanguardStorage
-from api_builder.vanguard_api_build	import VanguardScrapper
+from wiki_api.vanguard_api_build	import VanguardScrapper
 from classifier.vanguard_classifier	import VanguardClassifier
 
 class	VanguardPipeline:

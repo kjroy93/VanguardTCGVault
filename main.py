@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 20:26:40 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/09 20:47:00 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,17 +14,59 @@
 import asyncio
 
 # Library
-from api_builder.fsm				import fsm
-from api_builder.fsm				import user_input
-from api_builder				import routine
-from cards.fsm						import CardFSM
-from api_builder.fsm.query_builder	import make_query
-from api_builder.fsm.fetch			import fetch_routine
+from scrapper						import actions
 from parsers.vanguard_parser		import VanguardParser
 from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
 from classifier.vanguard_classifier	import VanguardClassifier
-from api_builder.vanguard_api_build	import MediaWikiAPI, VanguardScrapper
+from wiki_api.vanguard_api_build	import MediaWikiAPI, VanguardScrapper
+from scrapper.fsm					import StateMachine, ParseState, ParseContext, ParseEvent
+from cards.fsm						import CardStateMachine, CardState, CardContext, CardEvent
+
+scrapper_sm: StateMachine[ParseState, ParseEvent, ParseContext] = StateMachine()
+card_sm: CardStateMachine[CardState, CardEvent, CardContext] = CardStateMachine()
+
+scrapper_sm.add_transition(
+	ParseState.ENTRY_POINT,
+	ParseEvent.SELECT_CATEGORY,
+	ParseState.MAIN_CATEGORY_SELECTED,
+	actions.select_category
+)
+
+scrapper_sm.add_transition(
+	ParseState.MAIN_CATEGORY_SELECTED,
+	ParseEvent.SELECT_SUBCATEGORY,
+	ParseState.SUB_CATEGORY_SELECTED,
+	actions.select_subcategory
+)
+
+scrapper_sm.add_transition(
+	ParseState.SUB_CATEGORY_SELECTED,
+	ParseEvent.BUILD_QUERY,
+	ParseState.QUERY_BUILT,
+	actions.make_query
+)
+
+scrapper_sm.add_transition(
+	ParseState.QUERY_BUILT,
+	ParseEvent.MAKE_CONSULT,
+	ParseState.SET_CONSULT,
+	actions.set_api_consult
+)
+
+scrapper_sm.add_transition(
+	ParseState.SET_CONSULT,
+	ParseEvent.CLEAN_RESULT,
+	ParseState.URL_PARSED,
+	VanguardParser.parse_links
+)
+
+scrapper_sm.add_transition(
+	ParseState.URL_PARSED,
+	ParseEvent.MAIN_ROUTINE,
+	ParseState.END,
+	actions.routine
+)
 
 async def main():
 	web = MediaWikiAPI()
@@ -36,34 +78,7 @@ async def main():
 	)
 	await pipeline.scrapper.api.init_session()
 	try:
-		state_machine = fsm.FSMContext()
-		state = State.ENTRY_POINT
-
-		while (state != State.END):
-			if (state == State.ENTRY_POINT):
-				state = user_input.entry_point(state_machine)
-			elif (state == State.SELECT_MAIN_CATEGORY):
-				state = user_input.select_category(state_machine)
-			elif (state == State.SELECT_SUBCATEGORY):
-				state = user_input.select_subcategory(state_machine)
-			elif (state == State.BUILD_QUERY):
-				state = make_query(state_machine)
-			elif (state == State.FETCH):
-				state = await fetch_routine(state_machine, pipeline)
-			elif (state == State.PARSE):
-				state = parse_links(state_machine, pipeline)
-			elif (state == State.SCRAP):
-				card_fsm = CardFSM(state_machine)
-				state = await routine.main_scrap_routine(card_fsm, pipeline)
-				if (state == State.ERROR):
-					await pipeline.scrapper.api.close_session()
-					return
-				print("Do you wish to continue the scrap process? [y]es | [n]o")
-				answer = input("> ").strip().lower()
-				if (answer in ("y", "yes")):
-					state = State.ENTRY_POINT
-				elif (answer in ("n", "no")):
-					state = State.END
+		pass
 	finally:
 		await pipeline.scrapper.api.close_session()
 

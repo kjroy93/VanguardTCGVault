@@ -6,22 +6,25 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 20:28:06 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/09 22:03:29 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
-
-# Import
-from typing						import Literal
 
 # Dependencies
 from mwparserfromhell.nodes		import Template
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
-from utils						import utils
-from api_builder.api_constructor	import dict_construct
+from utils.constants			import DICT_S
+from pipeline.builder			import VanguardPipeline
+from scrapper.fsm				import ParseContext as Context
+from utils.utils				import clean_text, remove_from_list
+from classifier.classifier		import process_items, sort_storage_list
 
 class	VanguardParser:
+	def	__init__(self):
+		self.pipeline = VanguardPipeline()
+
 	def separate_urls(self, data: list):
 		no_main_sets = []
 		for i in range(len(data) - 1, -1, -1):
@@ -43,9 +46,6 @@ class	VanguardParser:
 			else:
 				if (cleaner in value):
 					crude.remove(value)
-
-	def make_consults(self, lst: list, format: Literal["consult", "decks"]):
-		return (dict_construct(format, lst))
 	
 	def __process_infobox(self, tpl: Template, data: dict):
 		titles = {}
@@ -81,26 +81,34 @@ class	VanguardParser:
 		used = set()
 
 		for _, card in enumerate(parsed_cardlist):
-			card_name = utils.clean_text(str(card.params[1].value).strip())
+			card_name = clean_text(str(card.params[1].value).strip())
 
 			for link in crude_links:
-				clean_link = utils.clean_text(link)
+				clean_link = clean_text(link)
 				if card_name in clean_link and clean_link not in used:
 					links[clean_link] = clean_link
 					used.add(clean_link)
 					break
 		return (links)
 
-	def	parse_links(fsm: FSMContext, pipeline: VanguardPipeline):
-		links = pipeline.scrapper.obtain_links(fsm.data["response"])
-		pipeline.parser.clean_trash_from_set(fsm.data["page"], links, 4)
+	def	parse_links(self, ctx: Context, pipeline: VanguardPipeline):
+		links = pipeline.scrapper.obtain_links(ctx.response)
+		self.pipeline.parser.clean_trash_from_set(ctx.response, links, 4)
 		parsed_links = remove_from_list(links, [
-			fsm.data["page"],
-			*dict_s.get(fsm.main_category)
+			ctx.response,
+			*DICT_S.get(ctx.response)
 		])
-		process_items(parsed_links, pipeline)
-		if (fsm.answer == "boosters"):
-			sort_storage_list(["LB", "G"], pipeline)
-		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], pipeline)
-		fsm.current_state = State.SCRAP
-		return (fsm.current_state)
+		process_items(parsed_links, self.pipeline)
+		if (ctx.category == "boosters"):
+			sort_storage_list(["LB", "G"], self.pipeline)
+		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], self.pipeline)
+
+	def	parser(self, card_fsm: CardFSM, pipeline: VanguardPipeline):
+		wikitex = pipeline.scrapper.obtain_wikitex(card_fsm.fsm_context.data["api_result"])
+		card_fsm.fsm_context.data["crude_cards"] = pipeline.scrapper.make_cardlist_from_str(wikitex)
+		card_fsm.context.infobox = pipeline.parser.infobox(wikitex)
+		all_links = pipeline.scrapper.obtain_links(card_fsm.fsm_context.data["link_result"])
+		pipeline.parser.clean_trash_from_set(card_fsm.fsm_context.data["page"], all_links, 4, reverse=True)
+		card_fsm.context.links = pipeline.parser.sort_unique_url(
+			card_fsm.fsm_context.data["crude_cards"], all_links
+		)
