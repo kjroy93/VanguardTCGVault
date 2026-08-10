@@ -5,8 +5,8 @@
 #                                                     +:+ +:+         +:+      #
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/05/05 16:07:31 by marvin            #+#    #+#              #
-#    Updated: 2026/08/09 20:47:00 by kmarrero         ###   ########.fr        #
+#    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
+#    Updated: 2026/08/10 17:42:49 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -21,16 +21,16 @@ from pipeline.builder				import VanguardPipeline
 from classifier.vanguard_classifier	import VanguardClassifier
 from wiki_api.vanguard_api_build	import MediaWikiAPI, VanguardScrapper
 from scrapper.fsm					import StateMachine, ParseState, ParseContext, ParseEvent
-from cards.fsm						import CardStateMachine, CardState, CardContext, CardEvent
+# from cards.fsm						import CardStateMachine, CardState, CardContext, CardEvent
 
-scrapper_sm: StateMachine[ParseState, ParseEvent, ParseContext] = StateMachine()
-card_sm: CardStateMachine[CardState, CardEvent, CardContext] = CardStateMachine()
+scrapper_sm: StateMachine[ParseState, ParseEvent, ParseContext, VanguardPipeline] = StateMachine()
+# card_sm: CardStateMachine[CardState, CardEvent, CardContext] = CardStateMachine()
 
 scrapper_sm.add_transition(
 	ParseState.ENTRY_POINT,
 	ParseEvent.SELECT_CATEGORY,
 	ParseState.MAIN_CATEGORY_SELECTED,
-	actions.select_category
+	actions.select_category,
 )
 
 scrapper_sm.add_transition(
@@ -58,7 +58,7 @@ scrapper_sm.add_transition(
 	ParseState.SET_CONSULT,
 	ParseEvent.CLEAN_RESULT,
 	ParseState.URL_PARSED,
-	VanguardParser.parse_links
+	actions.parse_links
 )
 
 scrapper_sm.add_transition(

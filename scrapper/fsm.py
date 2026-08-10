@@ -6,18 +6,18 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/09 20:45:16 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/10 17:32:19 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from dataclasses import dataclass, field
-from enum import Enum, auto
-from typing import Callable
+from typing 		import Callable
+from enum 			import Enum, auto
+from dataclasses	import dataclass, field
 
 # Definitions
 JSONType = dict[str]
-type Action[C] = Callable[[C], None]
+type Action[C, D] = Callable[[C, D], None]
 
 class	InvalidTransition:
 	pass
@@ -52,28 +52,28 @@ class	ParseContext:
 	data:				JSONType	|	None = None
 
 @dataclass
-class	StateMachine[S: Enum, E: Enum, C]:
+class	StateMachine[S: Enum, E: Enum, C, D]:
 	initial_state: S
 	current_state: S = field(init=False)
-	transitions: dict[tuple[S, E], tuple[S, Action[C]]] = field(
-		default_factory=dict[tuple[S, E], tuple[S, Action[C]]]
+	transitions: dict[tuple[S, E], tuple[S, Action[C, D]]] = field(
+		default_factory=dict[tuple[S, E], tuple[S, Action[C, D]]]
 	)
 
 	def	__post_init__(self) -> None:
 		self.current_state = self.initial_state
 		
-	def	add_transition(self, from_state: S, event: E, to_state: S, func: Action[C]) -> None:
+	def	add_transition(self, from_state: S, event: E, to_state: S, func: Action[C, D]) -> None:
 		self.transitions[(from_state, event)] = (to_state, func)
 
-	def	next_transition(self, state: S, event: E) -> tuple[S, Action[C]]:
+	def	next_transition(self, state: S, event: E) -> tuple[S, Action[C, D]]:
 		try:
 			return (self.transitions[(state, event)])
 		except KeyError as e:
 			raise InvalidTransition(f"Cannot {event.name} when {state.name}") from e
 
-	def	handle(self, ctx: C, state: S, event: E) -> S:
+	def	handle(self, ctx: C, state: S, event: E, deps: D) -> S:
 		next_state, action = self.next_transition(state, event)
-		action(ctx)
+		action(ctx, deps)
 		return (next_state)
 	
 

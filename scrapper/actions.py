@@ -6,19 +6,18 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 20:17:07 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/09 21:14:13 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/10 20:28:08 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
 from wiki_api.vanguard_api_build				import header
 from utils.constants							import CATEGORIES
-from utils.utils								import smart_sleep
-from utils.utils 								import construct_rules
 from pipeline.builder							import VanguardPipeline
 from fsm										import ParseContext as Context
+from utils.utils								import smart_sleep, construct_rules
 
-def	select_category():
+def	select_category(ctx: Context):
 	print("Welcome to VanguardTCGScrapper\n")
 	print("What info do you need from the website?")
 
@@ -48,11 +47,11 @@ def	select_category():
 		break
 	
 	answer = options.get(user_input)
-	Context.category = answer
-	Context.column = dispatcher[answer]
+	ctx.category = answer
+	ctx.column = dispatcher[answer]
 
-def	select_subcategory():
-	options = CATEGORIES.get(Context.category)
+def	select_subcategory(ctx: Context):
+	options = CATEGORIES.get(ctx.category)
 	for i, option in enumerate(options):
 		print(f'{i}: {option}')
 	while (True):
@@ -64,26 +63,26 @@ def	select_subcategory():
 			break
 		except ValueError as e:
 			print("Please enter a valid number")
-	Context.subcategory = options[answer]
+	ctx.subcategory = options[answer]
 
-def	make_query():
+def	make_query(ctx: Context):
 	def __dispatcher():
-		def	main_dispatcher():
+		def	main_dispatcher() -> str | None:
 			prefix = {
 				"other": "List of "
 			}
 			return (prefix.get(
-				Context.category,
+				ctx.category,
 				"List of Cardfight!! Vanguard "
 			))
 
-		def sub_dispatcher():
+		def sub_dispatcher() -> str | None:
 			sub_dispatch = {
-				"Unique Booster Sets": Context.subcategory,
-				"Monthly Bushiroad": Context.subcategory
+				"Unique Booster Sets": ctx.subcategory,
+				"Monthly Bushiroad": ctx.subcategory
 			}
-			if (Context.subcategory in sub_dispatch):
-				return (sub_dispatch[Context.subcategory])
+			if (ctx.subcategory in sub_dispatch):
+				return (sub_dispatch[ctx.subcategory])
 
 		result = sub_dispatcher()
 
@@ -92,7 +91,7 @@ def	make_query():
 
 		return (
 			main_dispatcher()
-			+ Context.subcategory
+			+ ctx.subcategory
 		)
 
 	prefix = __dispatcher()
@@ -103,58 +102,8 @@ def	make_query():
 		"page": f"{prefix}",
 		"format": "json"
 	}
-	Context.query_page = prefix
-	Context.query_parameters = param
-
-async def	set_api_consult(pipeline: VanguardPipeline):
-	rules = construct_rules(
-		Context.data["page"].split()[4]
-	)
-	await smart_sleep()
-	pipeline.classifier._define_rules(rules)
-	param = Context.data["param"]
-	response = await pipeline.scrapper.api.get(
-		param,
-		header
-	)
-	error = response.get("Error")
-	if (error is not None):
-		raise RuntimeError(f"Wiki API returned error: {response}")
-	Context.response = response
-
-async def	routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
-	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
-		consult = pipeline.scrapper.api.make_consults(getattr(pipeline.storage, block.lower()), "consult")
-		for tpl in consult.values():
-			card_fsm.fsm_context.data["tpl"] = tpl
-			await make_api_calls(card_fsm, pipeline)
-			parser(card_fsm, pipeline)
-			if (block in ["D", "DZ"]):
-				card_fsm.context.is_d = True
-			card_fsm.state = ParserState.START
-			try:
-				rows = pipeline.storage.prepare_data(card_fsm.fsm_context.data["crude_cards"], card_fsm)
-			except (KeyError, ValueError, AttributeError):
-				state = State.ERROR
-				return (state)
-			columns = column_dispatcher(card_fsm)
-			df = pd.DataFrame(rows, columns=columns)
-			set_number = pipeline.classifier.obtain_set_number(
-				card_fsm.fsm_context.data["crude_cards"][0]
-			)
-			path = build_set_path(
-				category=card_fsm.fsm_context.data["answer"],
-				set_type=card_fsm.fsm_context.data["subcategory"].strip().lower().split()[0],
-				block=block,
-				set_number=set_number
-			)
-			path.parent.mkdir(
-				parents=True,
-				exist_ok=True
-			)
-			path = get_duplicate_path(path)
-			df.to_parquet(path)
-			print(df)
+	ctx.query_page = prefix
+	ctx.query_parameters = param
 
 def	check_url():
 	pass

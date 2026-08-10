@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/08 20:09:12 by marvin            #+#    #+#              #
-#    Updated: 2026/08/09 21:13:36 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/10 20:31:31 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,23 +16,10 @@ import pandas 						as pd
 # Library
 from cards.fsm						import CardFSM
 from data.check_data_base			import build_set_path
-from parsers.vanguard_parser		import VanguardParser
-from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
-from classifier.vanguard_classifier	import VanguardClassifier
-from wiki_api.vanguard_api_build	import MediaWikiAPI, VanguardScrapper
+from fsm							import ParseContext as Context
 
-def	parser(card_fsm: CardFSM, pipeline: VanguardPipeline):
-	wikitex = pipeline.scrapper.obtain_wikitex(card_fsm.fsm_context.data["api_result"])
-	card_fsm.fsm_context.data["crude_cards"] = pipeline.scrapper.make_cardlist_from_str(wikitex)
-	card_fsm.context.infobox = pipeline.parser.infobox(wikitex)
-	all_links = pipeline.scrapper.obtain_links(card_fsm.fsm_context.data["link_result"])
-	pipeline.parser.clean_trash_from_set(card_fsm.fsm_context.data["page"], all_links, 4, reverse=True)
-	card_fsm.context.links = pipeline.parser.sort_unique_url(
-		card_fsm.fsm_context.data["crude_cards"], all_links
-	)
-
-def	column_dispatcher(fsm: CardFSM):
+def	column_dispatcher(ctx: Context):
 	dispatcher = {
 		"table": ["Code", "Name", "Grade",
 				"Faction", "FactionType", "Type",
@@ -41,15 +28,15 @@ def	column_dispatcher(fsm: CardFSM):
 				"Grade", "Faction", "FactionType",
 				"Type", "Release", "URL"]
 	}
-	return (dispatcher[fsm.fsm_context.data["columns"]])
+	return (dispatcher[ctx.data["columns"]])
 
 async def	main_scrap_routine(card_fsm: CardFSM, pipeline: VanguardPipeline):
 	for block in ["LB", "LL", "G", "V", "D", "DZ"]:
 		consult = pipeline.scrapper.api.make_consults(getattr(pipeline.storage, block.lower()), "consult")
 		for tpl in consult.values():
 			card_fsm.fsm_context.data["tpl"] = tpl
-			await make_api_calls(card_fsm, pipeline)
-			parser(card_fsm, pipeline)
+			await pipeline.scrapper.api.api_calls(card_fsm, pipeline)
+			pipeline.parser.parser(card_fsm, pipeline)
 			if (block in ["D", "DZ"]):
 				card_fsm.context.is_d = True
 			card_fsm.state = ParserState.START

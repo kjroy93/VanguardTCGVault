@@ -6,9 +6,12 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/09 22:03:29 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/10 20:54:00 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+# Imports
+from typing 					import Union, Literal
 
 # Dependencies
 from mwparserfromhell.nodes		import Template
@@ -22,8 +25,6 @@ from utils.utils				import clean_text, remove_from_list
 from classifier.classifier		import process_items, sort_storage_list
 
 class	VanguardParser:
-	def	__init__(self):
-		self.pipeline = VanguardPipeline()
 
 	def separate_urls(self, data: list):
 		no_main_sets = []
@@ -91,24 +92,70 @@ class	VanguardParser:
 					break
 		return (links)
 
-	def	parse_links(self, ctx: Context, pipeline: VanguardPipeline):
-		links = pipeline.scrapper.obtain_links(ctx.response)
-		self.pipeline.parser.clean_trash_from_set(ctx.response, links, 4)
+	def	parse_links(self, ctx: Context, deps: VanguardPipeline):
+		links = deps.scrapper.obtain_links(ctx.response)
+		deps.parser.clean_trash_from_set(ctx.response, links, 4)
 		parsed_links = remove_from_list(links, [
 			ctx.response,
 			*DICT_S.get(ctx.response)
 		])
-		process_items(parsed_links, self.pipeline)
+		process_items(parsed_links, deps)
 		if (ctx.category == "boosters"):
-			sort_storage_list(["LB", "G"], self.pipeline)
-		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], self.pipeline)
+			sort_storage_list(["LB", "G"], deps)
+		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
 
-	def	parser(self, card_fsm: CardFSM, pipeline: VanguardPipeline):
-		wikitex = pipeline.scrapper.obtain_wikitex(card_fsm.fsm_context.data["api_result"])
-		card_fsm.fsm_context.data["crude_cards"] = pipeline.scrapper.make_cardlist_from_str(wikitex)
-		card_fsm.context.infobox = pipeline.parser.infobox(wikitex)
-		all_links = pipeline.scrapper.obtain_links(card_fsm.fsm_context.data["link_result"])
-		pipeline.parser.clean_trash_from_set(card_fsm.fsm_context.data["page"], all_links, 4, reverse=True)
-		card_fsm.context.links = pipeline.parser.sort_unique_url(
-			card_fsm.fsm_context.data["crude_cards"], all_links
+	def make_consults(self, lst: list, format: Literal["consult", "decks"]) -> dict[int, dict[str, str]]:
+		def __dict_construct(consult: Union[Literal["consult", "decks"]], lst: list):
+			if (consult == "consult"):
+				return {
+					i: {
+					"action": "query",
+					"format": "json",
+					"prop": "revisions",
+					"titles": value,
+					"rvprop": "content",
+					"rvslots": "main"
+				}
+				for i, value in enumerate(lst)
+			}
+			if (consult == "decks"):
+				return {
+					i: {
+					"action": "parse",
+					"page": value,
+					"prop": "text",
+					"format": "json"
+					}
+					for i, value in enumerate(lst)
+				}
+			else:
+				return {
+					value: {
+						"action": "parse",
+						"page": value,
+						"format": "json"
+					}
+					for _, value in enumerate(lst)
+				}
+		return (__dict_construct(format, lst))
+
+	def	make_cardlist_from_str(self, wikitex: Wikicode):
+		lst = []
+		for tpl in wikitex.filter_templates():
+			if ("CardList" in tpl.name):
+				lst.append(tpl)
+		lst = remove_from_list(lst, ["{{CardList/header/D}}",
+							   "{{CardList/footer}}", "{{CardList/header}}",
+							   "{{CardList/header/V}}"
+							])
+		return (lst)
+
+	def	parser(self, ctx: Context, deps: VanguardPipeline):
+		wikitex = deps.scrapper.obtain_wikitex(ctx.data["api_result"])
+		ctx.data["crude_cards"] = self.make_cardlist_from_str(wikitex)
+		ctx.infobox = self.infobox(wikitex)
+		all_links = deps.scrapper.obtain_links(ctx.data["link_result"])
+		self.clean_trash_from_set(ctx.data["page"], all_links, 4, reverse=True)
+		ctx.links = self.sort_unique_url(
+			ctx.data["crude_cards"], all_links
 		)

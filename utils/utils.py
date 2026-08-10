@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 20:20:58 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/10 20:11:52 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -60,3 +60,4 @@ def clean_text(text: str) -> str:
 		text = text.replace(char, "")
 
 	return (text.strip())
+

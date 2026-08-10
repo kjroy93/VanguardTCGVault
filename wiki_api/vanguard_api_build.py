@@ -6,20 +6,22 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:24:34 by marvin            #+#    #+#              #
-#    Updated: 2026/08/09 19:09:11 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/10 21:02:07 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from typing import List, Union, Literal
+from typing 						import List, Union
 
 # Dependencies
 import	aiohttp
 import	mwparserfromhell
 from	mwparserfromhell.wikicode	import Wikicode
+from	scrapper.fsm				import ParseContext as Context
 
 # Libraries
-from utils.utils				import remove_from_list, smart_sleep
+from pipeline.builder				import VanguardPipeline
+from utils.utils					import remove_from_list, smart_sleep, construct_rules
 
 # Definitions
 JSONType = dict[str]
@@ -64,62 +66,7 @@ class	MediaWikiAPI:
 			headers=headers
 		) as response:
 			return (await response.json())
-	
-	async def	make_api_calls(self):
-		def	define_param(tpl: dict):
-			links = {
-				"action": "parse",
-				"page": tpl.get("titles"),
-				"prop": "links",
-				"format": "json"
-			}
-			return (links)
-		card_fsm.fsm_context.data["link_param"] = define_param(card_fsm.fsm_context.data["tpl"])
-		await smart_sleep()
-		card_fsm.fsm_context.data["api_result"] = await self.get(
-			params=card_fsm.fsm_context.data["tpl"],
-			headers=header
-		)
-		await smart_sleep()
-		card_fsm.fsm_context.data["link_result"] = await self.get(
-			params=card_fsm.fsm_context.data["link_param"],
-			headers=header
-		)
-		
-	def make_consults(self, lst: list, format: Literal["consult", "decks"]) -> dict[int, dict[str, str]]:
-		def dict_construct(consult: Union[Literal["consult", "decks"]], lst: list):
-			if (consult == "consult"):
-				return {
-					i: {
-					"action": "query",
-					"format": "json",
-					"prop": "revisions",
-					"titles": value,
-					"rvprop": "content",
-					"rvslots": "main"
-				}
-				for i, value in enumerate(lst)
-			}
-			if (consult == "decks"):
-				return {
-					i: {
-					"action": "parse",
-					"page": value,
-					"prop": "text",
-					"format": "json"
-					}
-					for i, value in enumerate(lst)
-				}
-			else:
-				return {
-					value: {
-						"action": "parse",
-						"page": value,
-						"format": "json"
-					}
-					for _, value in enumerate(lst)
-				}
-		return (dict_construct(format, lst))
+
 
 class	VanguardScrapper:
 	def	__init__(self, api: MediaWikiAPI):
@@ -151,14 +98,40 @@ class	VanguardScrapper:
 			return (mwparserfromhell.parse(page.get("revisions", {})[0].get("slots", {}).get("main", {}).get("*")))
 		except (StopIteration, IndexError):
 			return (None)
-	
-	def	make_cardlist_from_str(self, wikitex: Wikicode):
-		lst = []
-		for tpl in wikitex.filter_templates():
-			if ("CardList" in tpl.name):
-				lst.append(tpl)
-		lst = remove_from_list(lst, ["{{CardList/header/D}}",
-							   "{{CardList/footer}}", "{{CardList/header}}",
-							   "{{CardList/header/V}}"
-							])
-		return (lst)
+
+	async def	set_api_consult(self, ctx: Context, deps: VanguardPipeline):
+		rules = construct_rules(
+			ctx.data["page"].split()[4]
+		)
+		await smart_sleep()
+		deps.classifier._define_rules(rules)
+		param = ctx.data["param"]
+		response = await self.api.get(
+			param,
+			header
+		)
+		error = response.get("Error")
+		if (error is not None):
+			raise RuntimeError(f"Wiki API returned error: {response}")
+		ctx.response = response
+
+	async def	api_calls(self, ctx: Context):
+		def	define_param(tpl: dict):
+			links = {
+				"action": "parse",
+				"page": tpl.get("titles"),
+				"prop": "links",
+				"format": "json"
+			}
+			return (links)
+		ctx.data["link_param"] = define_param(ctx.data["tpl"])
+		await smart_sleep()
+		ctx.data["api_result"] = await self.api.get(
+			params=ctx.data["tpl"],
+			headers=header
+		)
+		await smart_sleep()
+		ctx.data["link_result"] = await self.api.get(
+			params=ctx.data["link_param"],
+			headers=header
+		)
