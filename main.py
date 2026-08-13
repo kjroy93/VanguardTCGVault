@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/13 17:48:46 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 18:31:28 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ import asyncio
 
 # Library
 from parsers.vanguard_parser		import VanguardParser
-from data.vanguard_data				import VanguardStorage
+# from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
 from classifier.vanguard_classifier	import VanguardClassifier
 from wiki_api.vanguard_api			import MediaWikiAPI, VanguardScrapper
@@ -23,7 +23,7 @@ from scrapper.vanguard_routine		import VanguardRoutine
 from scrapper.fsm					import StateMachine, ParseState, ParseContext, ParseEvent
 # from cards.fsm						import CardStateMachine, CardState, CardContext, CardEvent
 
-scrapper_sm: StateMachine[ParseState, ParseEvent, ParseContext, VanguardPipeline] = StateMachine()
+scrapper_sm: StateMachine[ParseState, ParseEvent, ParseContext, VanguardPipeline] = StateMachine(ParseState.ENTRY_POINT)
 # card_sm: CardStateMachine[CardState, CardEvent, CardContext] = CardStateMachine()
 
 scrapper_sm.add_transition(
@@ -68,18 +68,34 @@ scrapper_sm.add_transition(
 	VanguardRoutine.main_scrap_routine
 )
 
+events = [
+    ParseEvent.SELECT_CATEGORY,
+    ParseEvent.SELECT_SUBCATEGORY,
+    ParseEvent.BUILD_QUERY,
+    ParseEvent.MAKE_CONSULT,
+    ParseEvent.CLEAN_RESULT,
+    ParseEvent.MAIN_ROUTINE,
+]
+
 async def main():
 	web = MediaWikiAPI()
 	pipeline = VanguardPipeline(
 		VanguardParser(),
-		VanguardStorage(),
 		VanguardScrapper(web),
 		VanguardClassifier()
 	)
+	context = ParseContext()
 	await pipeline.scrapper.api.init_session()
 	try:
-		
-		pass
+		for event in events:
+			print(f"{scrapper_sm.current_state.name}")
+			print(f"-- {(event.name)} -->",
+		 		end="")
+			await scrapper_sm.handle(
+				context,
+				event,
+				pipeline
+			)
 	finally:
 		await pipeline.scrapper.api.close_session()
 

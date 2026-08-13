@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 17:45:57 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 19:19:11 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -37,7 +37,7 @@ class	VanguardRoutine:
 	def	__init__(self, deps: VanguardPipeline):
 		self.deps = deps
 	
-	def	parse_links(self, ctx: Context, deps: VanguardPipeline):
+	def	parse_links(ctx: Context, deps: VanguardPipeline):
 		links = deps.scrapper.obtain_links(ctx.response)
 		deps.parser.clean_trash_from_set(ctx.response, links, 4)
 		parsed_links = remove_from_list(links, [
@@ -49,14 +49,14 @@ class	VanguardRoutine:
 			sort_storage_list(["LB", "G"], deps)
 		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
 
-	async def	set_api_consult(self, ctx: Context, deps: VanguardPipeline):
+	async def	set_api_consult(ctx: Context, deps: VanguardPipeline):
 		rules = construct_rules(
-			ctx.data["page"].split()[4]
+			ctx.query_parameters["page"].split()[4]
 		)
 		await smart_sleep()
 		deps.classifier._define_rules(rules)
-		param = ctx.data["param"]
-		response = await self.deps.scrapper.api.get(
+		param = ctx.query_parameters
+		response = await deps.scrapper.api.get(
 			param,
 			header
 		)
@@ -65,7 +65,7 @@ class	VanguardRoutine:
 			raise RuntimeError(f"Wiki API returned error: {response}")
 		ctx.response = response
 
-	def	select_category(ctx: Context):
+	def	select_category(ctx: Context, deps: VanguardPipeline):
 		print("Welcome to VanguardTCGScrapper\n")
 		print("What info do you need from the website?")
 
@@ -85,12 +85,12 @@ class	VanguardRoutine:
 			"cards": "cards"
 		}
 
-		for k,v in options.values():
+		for k,v in options.items():
 			print(f'{k}: {v}')
 		
 		while (True):
 			user_input = int(input("> ").strip().lower())
-			if (user_input is None or user_input not in any(options.keys())):
+			if (user_input not in options):
 				continue
 			break
 		
@@ -98,7 +98,7 @@ class	VanguardRoutine:
 		ctx.category = answer
 		ctx.column = dispatcher[answer]
 
-	def	select_subcategory(ctx: Context):
+	def	select_subcategory(ctx: Context, deps: VanguardPipeline):
 		options = CATEGORIES.get(ctx.category)
 		for i, option in enumerate(options):
 			print(f'{i}: {option}')
@@ -113,7 +113,7 @@ class	VanguardRoutine:
 				print("Please enter a valid number")
 		ctx.subcategory = options[answer]
 
-	def	make_query(ctx: Context):
+	def	make_query(ctx: Context, deps: VanguardPipeline):
 		prefix = dispatcher(ctx)
 		if (prefix is None):
 			raise ValueError("No element selected in query dispatcher")

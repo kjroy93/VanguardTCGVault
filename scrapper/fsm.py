@@ -6,18 +6,19 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 17:45:46 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 19:20:15 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from typing 		import Callable
+import inspect
 from enum 			import Enum, auto
 from dataclasses	import dataclass, field
+from typing 		import Awaitable, Callable
 
 # Definitions
 JSONType = dict[str]
-type Action[C, D] = Callable[[C, D], None]
+type Action[C, D] = Callable[[C, D], None | Awaitable[None]]
 
 class	InvalidTransition:
 	pass
@@ -77,10 +78,13 @@ class	StateMachine[S: Enum, E: Enum, C, D]:
 		except KeyError as e:
 			raise InvalidTransition(f"Cannot {event.name} when {state.name}") from e
 
-	def	handle(self, ctx: C, state: S, event: E, deps: D) -> S:
-		next_state, action = self.next_transition(state, event)
-		action(ctx, deps)
-		return (next_state)
+	async def	handle(self, ctx: C, event: E, deps: D) -> S:
+		next_state, action = self.next_transition(self.current_state, event)
+		result = action(ctx, deps)
+		if inspect.isawaitable(result):
+			await result
+		self.current_state = next_state
+		return (self.current_state)
 
 class	Consult(Enum):
 	CHECK_DATABASE		=	auto()

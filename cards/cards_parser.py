@@ -3,43 +3,43 @@
 #                                                         :::      ::::::::    #
 #    cards_parser.py                                    :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 18:12:51 by marvin            #+#    #+#              #
-#    Updated: 2026/05/12 18:12:51 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/13 18:14:10 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
-from utils import utils
+# from utils import utils
 
-def	raw_table_data_prepare(template: list) -> list:
-	data = []
-	for i in template:
-		try:
-			raw_value = utils.convert_to_str(i)
-		except (AttributeError):
-			value = i
-			data.append(value)
-			continue
-		try:
-			value = utils.convert_to_int(raw_value)
-		except (ValueError):
-			value = raw_value
-		if (value != None):
-			data.append(value)
-	return (data)
+# def	raw_table_data_prepare(template: list) -> list:
+# 	data = []
+# 	for i in template:
+# 		try:
+# 			raw_value = utils.convert_to_str(i)
+# 		except (AttributeError):
+# 			value = i
+# 			data.append(value)
+# 			continue
+# 		try:
+# 			value = utils.convert_to_int(raw_value)
+# 		except (ValueError):
+# 			value = raw_value
+# 		if (value != None):
+# 			data.append(value)
+# 	return (data)
 
-def	parse_single_card(card: list[str | int]):
-	parsed_row = raw_table_data_prepare(card)
-	return (parsed_row)
+# def	parse_single_card(card: list[str | int]):
+# 	parsed_row = raw_table_data_prepare(card)
+# 	return (parsed_row)
 
-def	parse_dual_cards(cards: list[list[str | int]]):
-	l = []
-	for card in cards:
-		parsed_row = raw_table_data_prepare(card)
-		l.append(parsed_row)
-	return (l)
+# def	parse_dual_cards(cards: list[list[str | int]]):
+# 	l = []
+# 	for card in cards:
+# 		parsed_row = raw_table_data_prepare(card)
+# 		l.append(parsed_row)
+# 	return (l)
 
-def	parse_deck():
-	pass
+# def	parse_deck():
+# 	pass
