@@ -6,21 +6,21 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 17:34:17 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 17:45:57 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Dependencies
 import pandas						as pd
 
-# Imports
+# Library
 from wiki_api.vanguard_api			import header
 from pipeline.builder				import VanguardPipeline
 from utils.constants				import DICT_S, CATEGORIES
 from scrapper.fsm					import ParseContext as Context
 from classifier.classifier			import process_items, sort_storage_list
+from data.check_data_base			import build_set_path, get_duplicate_path
 from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
-from data.check_data_base			import build_set_path, get
 
 def	column_dispatcher(ctx: Context):
 	dispatcher = {
@@ -131,8 +131,8 @@ class	VanguardRoutine:
 		ctx.infobox = deps.parser.infobox(wikitex)
 		all_links = deps.scrapper.obtain_links(ctx.data["link_result"])
 		deps.parser.clean_trash_from_set(ctx.data["page"], all_links, 4, reverse=True)
-		ctx.links = deps.parser.sort_unique_url(
-			ctx.data["crude_cards"], all_links
+		ctx.crude_cards = deps.parser.sort_unique_url(
+			ctx.data, all_links
 		)
 
 	async def	main_scrap_routine(self, ctx: Context, deps: VanguardPipeline):
@@ -145,7 +145,7 @@ class	VanguardRoutine:
 				if (block in ["D", "DZ"]):
 					ctx.is_d = True
 				try:
-					rows = deps.storage.prepare_data(ctx["crude_cards"], ctx)
+					rows = deps.storage.prepare_data(ctx.crude_cards, ctx)
 				except (KeyError, ValueError, AttributeError) as e:
 					return (e)
 				columns = column_dispatcher(ctx)

@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 17:24:23 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 17:45:46 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -50,6 +50,7 @@ class	ParseContext:
 	infobox:			dict		|	None = None
 	tpl:				dict		|	None = None
 	link_param:			dict		|	None = None
+	crude_cards:		dict		|	None = None
 	api_result:			JSONType	|	None = None
 	response:			JSONType	|	None = None
 	crude_data:			JSONType	|	None = None

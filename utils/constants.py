@@ -6,9 +6,12 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/08 19:02:11 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 17:43:06 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
+
+# Import
+from pathlib	import Path
 
 CATEGORIES = {
 	"boosters": [
@@ -74,3 +77,80 @@ DICT_S = {
 		"Thailand"
 	]
 }
+
+SET_PATHS = {
+	"boosters": {
+		"booster": {
+			"folder": "boosters/booster sets",
+			"prefix": "set"
+		},
+		"extra": {
+			"folder": "boosters/extra booster sets",
+			"prefix": "extra"
+		},
+		"character": {
+			"folder": "boosters/character booster sets",
+			"prefix": "character"
+		},
+		"clan": {
+			"folder": "boosters/clan booster sets",
+			"prefix": "clan"
+		},
+		"title": {
+			"folder": "boosters/title booster sets",
+			"prefix": "title"
+		},
+		"unique": {
+			"folder": "boosters/unique booster sets",
+			"prefix": "unique"
+		}
+	},
+	"decks": {
+		"trial": {
+			"folder": "decks/trial decks",
+			"prefix": "deck"
+		},
+		"legend": {
+			"folder": "decks/legend decks",
+			"prefix": "deck"
+		},
+		"start": {
+			"folder": "decks/start decks",
+			"prefix": "deck"
+		},
+		"character": {
+			"folder": "decks/character decks",
+			"prefix": "deck"
+		},
+		"structure": {
+			"folder": "decks/structure decks",
+			"prefix": "deck"
+		}
+	},
+	"specials": {
+		"fighters": {
+			"folder": "specials/fighters collections",
+			"prefix": "specials"
+		},
+		"revival": {
+			"folder": "specials/revival collections",
+			"prefix": "specials"
+		},
+		"collector's": {
+			"folder": "specials/collector's sets",
+			"prefix": "specials"
+		},
+		"special": {
+			"folder": "specials/special series",
+			"prefix": "specials"
+		}
+	},
+	"other": {
+		"main": {
+			"folder": "other",
+			"prefix": "other"
+		}
+	}
+}
+DB_FOLDER = Path("database")
+VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]

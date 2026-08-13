@@ -6,89 +6,29 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/08 17:56:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/13 16:25:29 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 17:43:58 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-from pathlib	import Path
+# Imports
+from pathlib			import Path
 
-SET_PATHS = {
-	"boosters": {
-		"booster": {
-			"folder": "boosters/booster sets",
-			"prefix": "set"
-		},
-		"extra": {
-			"folder": "boosters/extra booster sets",
-			"prefix": "extra"
-		},
-		"character": {
-			"folder": "boosters/character booster sets",
-			"prefix": "character"
-		},
-		"clan": {
-			"folder": "boosters/clan booster sets",
-			"prefix": "clan"
-		},
-		"title": {
-			"folder": "boosters/title booster sets",
-			"prefix": "title"
-		},
-		"unique": {
-			"folder": "boosters/unique booster sets",
-			"prefix": "unique"
-		}
-	},
-	"decks": {
-		"trial": {
-			"folder": "decks/trial decks",
-			"prefix": "deck"
-		},
-		"legend": {
-			"folder": "decks/legend decks",
-			"prefix": "deck"
-		},
-		"start": {
-			"folder": "decks/start decks",
-			"prefix": "deck"
-		},
-		"character": {
-			"folder": "decks/character decks",
-			"prefix": "deck"
-		},
-		"structure": {
-			"folder": "decks/structure decks",
-			"prefix": "deck"
-		}
-	},
-	"specials": {
-		"fighters": {
-			"folder": "specials/fighters collections",
-			"prefix": "specials"
-		},
-		"revival": {
-			"folder": "specials/revival collections",
-			"prefix": "specials"
-		},
-		"collector's": {
-			"folder": "specials/collector's sets",
-			"prefix": "specials"
-		},
-		"special": {
-			"folder": "specials/special series",
-			"prefix": "specials"
-		}
-	},
-	"other": {
-		"main": {
-			"folder": "other",
-			"prefix": "other"
-		}
-	}
-}
+# Library
+from utils.constants	import SET_PATHS, DB_FOLDER
 
-DB_FOLDER = Path("database")
-VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
+def	get_duplicate_path(path: Path) -> Path:
+	if not path.exists():
+		return path
+	
+	stem = path.stem
+	suffix = path.suffix
+	parent = path.parent
+	i = 1
+	while True:
+		new_path = parent / f"{stem}_{i}{suffix}"
+		if not new_path.exists():
+			return new_path
+		i += 1
 
 def build_set_path(category: str,
 				set_type: str,
