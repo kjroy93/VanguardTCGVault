@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/13 18:31:28 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 19:47:10 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ import asyncio
 
 # Library
 from parsers.vanguard_parser		import VanguardParser
-# from data.vanguard_data				import VanguardStorage
+from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
 from classifier.vanguard_classifier	import VanguardClassifier
 from wiki_api.vanguard_api			import MediaWikiAPI, VanguardScrapper
@@ -81,6 +81,7 @@ async def main():
 	web = MediaWikiAPI()
 	pipeline = VanguardPipeline(
 		VanguardParser(),
+		VanguardStorage(),
 		VanguardScrapper(web),
 		VanguardClassifier()
 	)

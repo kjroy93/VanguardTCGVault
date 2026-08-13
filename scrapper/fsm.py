@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 19:20:15 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 19:55:27 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -43,20 +43,31 @@ class	ParseEvent(Enum):
 
 @dataclass
 class	ParseContext:
-	category:			str			|	None = None
-	column:				str			|	None = None
-	subcategory:		str			|	None = None
-	query_page:			str			|	None = None
-	query_parameters:	str			|	None = None
-	infobox:			dict		|	None = None
-	tpl:				dict		|	None = None
-	link_param:			dict		|	None = None
-	crude_cards:		dict		|	None = None
-	api_result:			JSONType	|	None = None
-	response:			JSONType	|	None = None
-	crude_data:			JSONType	|	None = None
-	data:				JSONType	|	None = None
-	is_d:				bool		|	None = None
+	category:			str				| None = None
+	column:				str				| None = None
+	subcategory:		str				| None = None
+	query_page:			str				| None = None
+	query_parameters:	str				| None = None
+	url:				str				| None = None
+	size:				int				| None = 0
+	id:					int				| None = None
+	prepare_data:		int				| None = None
+	infobox:			dict			| None = None
+	tpl:				dict			| None = None
+	link_param:			dict			| None = None
+	crude_cards:		dict			| None = None
+	links:				dict			| None = None
+	row:				list			| None = None
+	rows:				list[object]	| None = []
+	card:				list[str] 		| None = None
+	api_result:			JSONType		| None = None
+	response:			JSONType		| None = None
+	crude_data:			JSONType		| None = None
+	data:				JSONType		| None = None
+	is_d:				bool			| None = None
+	is_deck:			bool 			| None = None
+	is_duplicated: 		bool			| None = None
+	obj:				object			| None = None
 
 @dataclass
 class	StateMachine[S: Enum, E: Enum, C, D]:

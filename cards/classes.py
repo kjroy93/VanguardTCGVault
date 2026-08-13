@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    cards.py                                           :+:      :+:    :+:    #
+#    classes.py                                         :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:43:54 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 15:43:54 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/13 20:02:23 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,14 +19,14 @@ from pydantic	import BaseModel, Field
 class	ScrapCard(BaseModel):
 	Code:			str
 	Name:			str
-	Grade:			int | None = None
-	Faction:		list[str] | None = None
-	FactionType:	str | None = None
-	Type:			str | None = None
-	Rarity:			str | None = None
-	Release:		str | None = None
-	URL:			str | None = None
-	SET_ID:			int | None = None
+	Grade:			int 		| None = None
+	Faction:		list[str]	| None = None
+	FactionType:	str			| None = None
+	Type:			str			| None = None
+	Rarity:			str			| None = None
+	Release:		str			| None = None
+	url:			str			| None = None
+	set_id:			int			| None = None
 
 class	ScrapDeck(BaseModel):
 	Code:			str
@@ -37,7 +37,7 @@ class	ScrapDeck(BaseModel):
 	FactionType:	str
 	Type:			Optional[str] = None
 	Release:		str
-	URL:			str
+	url:			str
 
 class	Card(BaseModel):
 	name:			str

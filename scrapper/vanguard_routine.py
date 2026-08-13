@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 19:19:11 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 20:06:49 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -34,37 +34,7 @@ def	column_dispatcher(ctx: Context):
 	return (dispatcher[ctx.data["columns"]])
 
 class	VanguardRoutine:
-	def	__init__(self, deps: VanguardPipeline):
-		self.deps = deps
-	
-	def	parse_links(ctx: Context, deps: VanguardPipeline):
-		links = deps.scrapper.obtain_links(ctx.response)
-		deps.parser.clean_trash_from_set(ctx.response, links, 4)
-		parsed_links = remove_from_list(links, [
-			ctx.response,
-			*DICT_S.get(ctx.response)
-		])
-		process_items(parsed_links, deps)
-		if (ctx.category == "boosters"):
-			sort_storage_list(["LB", "G"], deps)
-		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
-
-	async def	set_api_consult(ctx: Context, deps: VanguardPipeline):
-		rules = construct_rules(
-			ctx.query_parameters["page"].split()[4]
-		)
-		await smart_sleep()
-		deps.classifier._define_rules(rules)
-		param = ctx.query_parameters
-		response = await deps.scrapper.api.get(
-			param,
-			header
-		)
-		error = response.get("Error")
-		if (error is not None):
-			raise RuntimeError(f"Wiki API returned error: {response}")
-		ctx.response = response
-
+	@staticmethod
 	def	select_category(ctx: Context, deps: VanguardPipeline):
 		print("Welcome to VanguardTCGScrapper\n")
 		print("What info do you need from the website?")
@@ -98,6 +68,7 @@ class	VanguardRoutine:
 		ctx.category = answer
 		ctx.column = dispatcher[answer]
 
+	@staticmethod
 	def	select_subcategory(ctx: Context, deps: VanguardPipeline):
 		options = CATEGORIES.get(ctx.category)
 		for i, option in enumerate(options):
@@ -113,6 +84,7 @@ class	VanguardRoutine:
 				print("Please enter a valid number")
 		ctx.subcategory = options[answer]
 
+	@staticmethod
 	def	make_query(ctx: Context, deps: VanguardPipeline):
 		prefix = dispatcher(ctx)
 		if (prefix is None):
@@ -124,6 +96,36 @@ class	VanguardRoutine:
 		}
 		ctx.query_page = prefix
 		ctx.query_parameters = param
+
+	@staticmethod
+	def	parse_links(ctx: Context, deps: VanguardPipeline):
+		links = deps.scrapper.obtain_links(ctx.response)
+		deps.parser.clean_trash_from_set(ctx.query_page, links, 4)
+		parsed_links = remove_from_list(links, [
+			ctx.response,
+			*DICT_S.get(ctx.response)
+		])
+		process_items(parsed_links, deps)
+		if (ctx.category == "boosters"):
+			sort_storage_list(["LB", "G"], deps)
+		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
+
+	@staticmethod
+	async def	set_api_consult(ctx: Context, deps: VanguardPipeline):
+		rules = construct_rules(
+			ctx.query_parameters["page"].split()[4]
+		)
+		await smart_sleep()
+		deps.classifier._define_rules(rules)
+		param = ctx.query_parameters
+		response = await deps.scrapper.api.get(
+			param,
+			header
+		)
+		error = response.get("Error")
+		if (error is not None):
+			raise RuntimeError(f"Wiki API returned error: {response}")
+		ctx.response = response
 
 	def	parser(self, ctx: Context, deps: VanguardPipeline):
 		wikitex = deps.scrapper.obtain_wikitex(ctx.data["api_result"])
@@ -145,7 +147,7 @@ class	VanguardRoutine:
 				if (block in ["D", "DZ"]):
 					ctx.is_d = True
 				try:
-					rows = deps.storage.prepare_data(ctx.crude_cards, ctx)
+					rows = deps.storage.prepare_metadata(ctx.crude_cards, ctx)
 				except (KeyError, ValueError, AttributeError) as e:
 					return (e)
 				columns = column_dispatcher(ctx)
