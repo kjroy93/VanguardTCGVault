@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/10 17:32:19 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 17:24:23 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,13 +23,13 @@ class	InvalidTransition:
 	pass
 
 class	ParseState(Enum):
-	ENTRY_POINT				=	auto()
-	MAIN_CATEGORY_SELECTED	= 	auto()
-	SUB_CATEGORY_SELECTED	=	auto()
-	QUERY_BUILT				=	auto()
-	SET_CONSULT				=	auto()
-	URL_PARSED				=	auto()
-	END						=	auto()
+	ENTRY_POINT				= auto()
+	MAIN_CATEGORY_SELECTED	= auto()
+	SUB_CATEGORY_SELECTED	= auto()
+	QUERY_BUILT				= auto()
+	SET_CONSULT				= auto()
+	URL_PARSED				= auto()
+	END						= auto()
 
 class	ParseEvent(Enum):
 	SELECT_CATEGORY			= auto()
@@ -47,9 +47,14 @@ class	ParseContext:
 	subcategory:		str			|	None = None
 	query_page:			str			|	None = None
 	query_parameters:	str			|	None = None
+	infobox:			dict		|	None = None
+	tpl:				dict		|	None = None
+	link_param:			dict		|	None = None
+	api_result:			JSONType	|	None = None
 	response:			JSONType	|	None = None
 	crude_data:			JSONType	|	None = None
 	data:				JSONType	|	None = None
+	is_d:				bool		|	None = None
 
 @dataclass
 class	StateMachine[S: Enum, E: Enum, C, D]:
@@ -75,7 +80,14 @@ class	StateMachine[S: Enum, E: Enum, C, D]:
 		next_state, action = self.next_transition(state, event)
 		action(ctx, deps)
 		return (next_state)
-	
+
+class	Consult(Enum):
+	CHECK_DATABASE		=	auto()
+	REQUIRE_DATABASE	=	auto()
+	MAKE_CONSULT 		=	auto()
+	READY				=	auto()
+	STORE_INFO			=	auto()
+	END					=	auto()
 
 class	FSMConsults:
 	def	__init__(self):
@@ -96,11 +108,3 @@ class	FSMConsults:
 		self.d: str | dict = None
 		self.dz: str | dict = None
 		self.current_state: str | None = None
-
-class	Consult(Enum):
-	CHECK_DATABASE		=	auto()
-	REQUIRE_DATABASE	=	auto()
-	MAKE_CONSULT 		=	auto()
-	READY				=	auto()
-	STORE_INFO			=	auto()
-	END					=	auto()

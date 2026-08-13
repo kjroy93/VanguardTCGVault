@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/10 20:11:52 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 17:10:20 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ import asyncio
 import unicodedata
 
 # Dependencies
-from mwparserfromhell.nodes.extras import Parameter
+from mwparserfromhell.nodes.extras	import Parameter
+from scrapper.fsm					import ParseContext as Context
 
 def	remove_from_list(sets: list, to_delete: list):
 	return ([s for s in sets if not any(pattern in s for pattern in to_delete)])
@@ -61,3 +62,27 @@ def clean_text(text: str) -> str:
 
 	return (text.strip())
 
+def dispatcher(ctx: Context):
+	def	main_dispatcher() -> str | None:
+		prefix = {
+			"other": "List of "
+		}
+		return (prefix.get(
+			ctx.category,
+			"List of Cardfight!! Vanguard "
+		))
+
+	def sub_dispatcher() -> str | None:
+		sub_dispatch = {
+			"Unique Booster Sets": ctx.subcategory,
+			"Monthly Bushiroad": ctx.subcategory
+		}
+		if (ctx.subcategory in sub_dispatch):
+			return (sub_dispatch[ctx.subcategory])
+
+	result = sub_dispatcher()
+
+	if (result is not None):
+		return (result)
+
+	return (main_dispatcher() + ctx.subcategory)

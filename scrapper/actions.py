@@ -6,12 +6,12 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 20:17:07 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/10 20:28:08 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/13 16:24:44 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
-from wiki_api.vanguard_api_build				import header
+from wiki_api.vanguard_api				import header
 from utils.constants							import CATEGORIES
 from pipeline.builder							import VanguardPipeline
 from fsm										import ParseContext as Context

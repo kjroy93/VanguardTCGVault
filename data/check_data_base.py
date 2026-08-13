@@ -1,16 +1,16 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    make_consult.py                                    :+:      :+:    :+:    #
+#    check_data_base.py                                 :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/08 17:56:17 by marvin            #+#    #+#              #
-#    Updated: 2026/05/08 17:56:17 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/13 16:25:29 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-from pathlib import Path
+from pathlib	import Path
 
 SET_PATHS = {
 	"boosters": {
