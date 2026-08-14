@@ -6,11 +6,12 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/13 17:43:06 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 19:38:02 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Import
+import os
 from pathlib	import Path
 
 CATEGORIES = {
@@ -154,3 +155,6 @@ SET_PATHS = {
 }
 DB_FOLDER = Path("database")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
+
+DATA_DIR = "database"
+FILE = os.path.join(DATA_DIR ,"urls.json")

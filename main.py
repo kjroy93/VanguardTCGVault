@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/13 19:47:10 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 16:09:35 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -99,41 +99,6 @@ async def main():
 			)
 	finally:
 		await pipeline.scrapper.api.close_session()
-
-# async def main():
-# 	web = MediaWikiAPI()
-# 	pipeline = VanguardPipeline(
-# 		VanguardScrapper(web),
-# 		VanguardParser(),
-# 		VanguardClassifier(),
-# 		VanguardStorage()
-# 	)
-# 	await pipeline.scrapper.api.init_session()
-# 	state_machine = fsm.FSMContext()
-# 	state = State.ENTRY_POINT
-# 	while (state != State.END):
-# 		if (state == State.ENTRY_POINT):
-# 			state = menus.entry_point(state_machine)
-# 		elif (state == State.SELECT_MAIN_CATEGORY):
-# 			state = menus.select_category(state_machine)
-# 		elif (state == State.SELECT_SUBCATEGORY):
-# 			state = menus.select_subcategory(state_machine)
-# 		elif (state == State.BUILD_QUERY):
-# 			state = make_query(state_machine)
-# 		elif (state == State.FETCH):
-# 			state = await fetch_routine(state_machine, pipeline.scrapper)
-# 		elif (state == State.PARSE):
-# 			pipeline.classifier._define_rules(construct_rules(state_machine.main_category.capitalize()))
-# 			state = parse_links(
-# 				state_machine, pipeline.parser, pipeline.storage,
-# 				pipeline.scrapper, pipeline.classifier
-# 			)
-# 			dz_consults = pipeline.parser.make_consults(pipeline.storage.g)
-# 			api_answer = await pipeline.scrapper.api.get(params=dz_consults[13], headers=header)
-# 			wikitex = pipeline.scrapper.obtain_wikitex(api_answer)
-# 			data = pipeline.scrapper.make_cardlist_from_str(wikitex=wikitex)
-# 			infobox = pipeline.parser.infobox(wikitex)
-# 			data = pipeline.storage.prepare_data([data[2]], 6, infobox=infobox)
 
 if __name__ == "__main__":
 	try:

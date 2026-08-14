@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 20:06:49 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 19:48:34 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,7 @@ import pandas						as pd
 from wiki_api.vanguard_api			import header
 from pipeline.builder				import VanguardPipeline
 from utils.constants				import DICT_S, CATEGORIES
-from scrapper.fsm					import ParseContext as Context
+from scrapper.fsm					import PipelineContext as Context
 from classifier.classifier			import process_items, sort_storage_list
 from data.check_data_base			import build_set_path, get_duplicate_path
 from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
@@ -127,7 +127,8 @@ class	VanguardRoutine:
 			raise RuntimeError(f"Wiki API returned error: {response}")
 		ctx.response = response
 
-	def	parser(self, ctx: Context, deps: VanguardPipeline):
+	@staticmethod
+	def	parser(ctx: Context, deps: VanguardPipeline):
 		wikitex = deps.scrapper.obtain_wikitex(ctx.data["api_result"])
 		ctx.data["crude_cards"] = deps.parser.make_cardlist_from_str(wikitex)
 		ctx.infobox = deps.parser.infobox(wikitex)
@@ -137,15 +138,14 @@ class	VanguardRoutine:
 			ctx.data, all_links
 		)
 
-	async def	main_scrap_routine(self, ctx: Context, deps: VanguardPipeline):
+	async def	main_scrap_routine(ctx: Context, deps: VanguardPipeline):
 		for block in ["LB", "LL", "G", "V", "D", "DZ"]:
 			consult = deps.parser.make_consults(getattr(deps.storage, block.lower()), "consult")
 			for tpl in consult.values():
 				ctx.tpl = tpl
 				await deps.scrapper.api_calls(ctx.tpl)
-				self.parser(ctx, deps)
-				if (block in ["D", "DZ"]):
-					ctx.is_d = True
+				VanguardRoutine.parser(ctx, deps)
+				ctx.is_d = block in ["D", "DZ"]
 				try:
 					rows = deps.storage.prepare_metadata(ctx.crude_cards, ctx)
 				except (KeyError, ValueError, AttributeError) as e:

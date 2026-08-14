@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/13 19:55:27 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 19:36:17 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ type Action[C, D] = Callable[[C, D], None | Awaitable[None]]
 class	InvalidTransition:
 	pass
 
-class	ParseState(Enum):
+class	PipelineState(Enum):
 	ENTRY_POINT				= auto()
 	MAIN_CATEGORY_SELECTED	= auto()
 	SUB_CATEGORY_SELECTED	= auto()
@@ -32,7 +32,7 @@ class	ParseState(Enum):
 	URL_PARSED				= auto()
 	END						= auto()
 
-class	ParseEvent(Enum):
+class	PipelineEvent(Enum):
 	SELECT_CATEGORY			= auto()
 	SELECT_SUBCATEGORY		= auto()
 	BUILD_QUERY				= auto()
@@ -42,14 +42,14 @@ class	ParseEvent(Enum):
 	ERROR					= auto()
 
 @dataclass
-class	ParseContext:
+class	PipelineContext:
 	category:			str				| None = None
 	column:				str				| None = None
 	subcategory:		str				| None = None
 	query_page:			str				| None = None
 	query_parameters:	str				| None = None
 	url:				str				| None = None
-	size:				int				| None = 0
+	size:				int				| None = None
 	id:					int				| None = None
 	prepare_data:		int				| None = None
 	infobox:			dict			| None = None
@@ -58,7 +58,7 @@ class	ParseContext:
 	crude_cards:		dict			| None = None
 	links:				dict			| None = None
 	row:				list			| None = None
-	rows:				list[object]	| None = []
+	rows:				list[object]	| None = None
 	card:				list[str] 		| None = None
 	api_result:			JSONType		| None = None
 	response:			JSONType		| None = None
