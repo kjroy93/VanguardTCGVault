@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 19:48:34 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 22:12:12 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,14 +15,14 @@ import pandas						as pd
 
 # Library
 from wiki_api.vanguard_api			import header
+from scrapper.fsm					import SetContext
 from pipeline.builder				import VanguardPipeline
 from utils.constants				import DICT_S, CATEGORIES
-from scrapper.fsm					import PipelineContext as Context
 from classifier.classifier			import process_items, sort_storage_list
 from data.check_data_base			import build_set_path, get_duplicate_path
 from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
 
-def	column_dispatcher(ctx: Context):
+def	column_dispatcher(set_ctx: SetContext):
 	dispatcher = {
 		"table": ["Code", "Name", "Grade",
 				"Faction", "FactionType", "Type",
@@ -31,11 +31,11 @@ def	column_dispatcher(ctx: Context):
 				"Grade", "Faction", "FactionType",
 				"Type", "Release", "URL"]
 	}
-	return (dispatcher[ctx.data["columns"]])
+	return (dispatcher[set_ctx.column])
 
 class	VanguardRoutine:
 	@staticmethod
-	def	select_category(ctx: Context, deps: VanguardPipeline):
+	def	select_category(set_ctx: SetContext, deps: VanguardPipeline):
 		print("Welcome to VanguardTCGScrapper\n")
 		print("What info do you need from the website?")
 
@@ -65,12 +65,12 @@ class	VanguardRoutine:
 			break
 		
 		answer = options.get(user_input)
-		ctx.category = answer
-		ctx.column = dispatcher[answer]
+		set_ctx.category = answer
+		set_ctx.column = dispatcher[answer]
 
 	@staticmethod
-	def	select_subcategory(ctx: Context, deps: VanguardPipeline):
-		options = CATEGORIES.get(ctx.category)
+	def	select_subcategory(set_ctx: SetContext, deps: VanguardPipeline):
+		options = CATEGORIES.get(set_ctx.category)
 		for i, option in enumerate(options):
 			print(f'{i}: {option}')
 		while (True):
@@ -82,11 +82,11 @@ class	VanguardRoutine:
 				break
 			except ValueError as e:
 				print("Please enter a valid number")
-		ctx.subcategory = options[answer]
+		set_ctx.subcategory = options[answer]
 
 	@staticmethod
-	def	make_query(ctx: Context, deps: VanguardPipeline):
-		prefix = dispatcher(ctx)
+	def	make_query(set_ctx: SetContext, deps: VanguardPipeline):
+		prefix = dispatcher(set_ctx)
 		if (prefix is None):
 			raise ValueError("No element selected in query dispatcher")
 		param = {
@@ -94,30 +94,30 @@ class	VanguardRoutine:
 			"page": f"{prefix}",
 			"format": "json"
 		}
-		ctx.query_page = prefix
-		ctx.query_parameters = param
+		set_ctx.query_page = prefix
+		set_ctx.query_parameters = param
 
 	@staticmethod
-	def	parse_links(ctx: Context, deps: VanguardPipeline):
-		links = deps.scrapper.obtain_links(ctx.response)
-		deps.parser.clean_trash_from_set(ctx.query_page, links, 4)
+	def	parse_links(set_ctx: SetContext, deps: VanguardPipeline):
+		links = deps.scrapper.obtain_links(set_ctx.response)
+		deps.parser.clean_trash_from_set(set_ctx.query_page, links, 4)
 		parsed_links = remove_from_list(links, [
-			ctx.response,
-			*DICT_S.get(ctx.response)
+			set_ctx.response,
+			*DICT_S.get(set_ctx.response)
 		])
 		process_items(parsed_links, deps)
-		if (ctx.category == "boosters"):
+		if (set_ctx.category == "boosters"):
 			sort_storage_list(["LB", "G"], deps)
 		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
 
 	@staticmethod
-	async def	set_api_consult(ctx: Context, deps: VanguardPipeline):
+	async def	set_api_consult(set_ctx: SetContext, deps: VanguardPipeline):
 		rules = construct_rules(
-			ctx.query_parameters["page"].split()[4]
+			set_ctx.query_parameters["page"].split()[4]
 		)
 		await smart_sleep()
 		deps.classifier._define_rules(rules)
-		param = ctx.query_parameters
+		param = set_ctx.query_parameters
 		response = await deps.scrapper.api.get(
 			param,
 			header
@@ -125,39 +125,39 @@ class	VanguardRoutine:
 		error = response.get("Error")
 		if (error is not None):
 			raise RuntimeError(f"Wiki API returned error: {response}")
-		ctx.response = response
+		set_ctx.response = response
 
 	@staticmethod
-	def	parser(ctx: Context, deps: VanguardPipeline):
-		wikitex = deps.scrapper.obtain_wikitex(ctx.data["api_result"])
-		ctx.data["crude_cards"] = deps.parser.make_cardlist_from_str(wikitex)
-		ctx.infobox = deps.parser.infobox(wikitex)
-		all_links = deps.scrapper.obtain_links(ctx.data["link_result"])
-		deps.parser.clean_trash_from_set(ctx.data["page"], all_links, 4, reverse=True)
-		ctx.crude_cards = deps.parser.sort_unique_url(
-			ctx.data, all_links
+	def	__parser(set_ctx: SetContext, deps: VanguardPipeline):
+		wikitex = deps.scrapper.obtain_wikitex(set_ctx.api_result)
+		set_ctx.crude_cards = deps.parser.make_cardlist_from_str(wikitex)
+		set_ctx.infobox = deps.parser.infobox(wikitex)
+		all_links = deps.scrapper.obtain_links(set_ctx.crude_cards)
+		deps.parser.clean_trash_from_set(set_ctx.query_parameters["page"], all_links, 4, reverse=True)
+		set_ctx.links = deps.parser.sort_unique_url(
+			set_ctx.crude_cards, all_links
 		)
 
-	async def	main_scrap_routine(ctx: Context, deps: VanguardPipeline):
+	async def	main_scrap_routine(set_ctx: SetContext, deps: VanguardPipeline):
 		for block in ["LB", "LL", "G", "V", "D", "DZ"]:
 			consult = deps.parser.make_consults(getattr(deps.storage, block.lower()), "consult")
 			for tpl in consult.values():
-				ctx.tpl = tpl
-				await deps.scrapper.api_calls(ctx.tpl)
-				VanguardRoutine.parser(ctx, deps)
-				ctx.is_d = block in ["D", "DZ"]
+				set_ctx.tpl = tpl
+				await deps.scrapper.api_calls(set_ctx.tpl)
+				VanguardRoutine.__parser(set_ctx, deps)
+				set_ctx.is_d = block in ["D", "DZ"]
 				try:
-					rows = deps.storage.prepare_metadata(ctx.crude_cards, ctx)
+					rows = deps.storage.prepare_metadata(set_ctx.crude_cards, set_ctx)
 				except (KeyError, ValueError, AttributeError) as e:
 					return (e)
-				columns = column_dispatcher(ctx)
+				columns = column_dispatcher(set_ctx)
 				df = pd.DataFrame(rows, columns=columns)
 				set_number = deps.classifier.obtain_set_number(
-					ctx.crude_cards[0]
+					set_ctx.crude_cards[0]
 				)
 				path = build_set_path(
-					category=ctx.category,
-					set_type=ctx.subcategory.strip().lower().split()[0],
+					category=set_ctx.category,
+					set_type=set_ctx.subcategory.strip().lower().split()[0],
 					block=block,
 					set_number=set_number
 				)

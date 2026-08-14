@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:24:34 by marvin            #+#    #+#              #
-#    Updated: 2026/08/13 17:27:19 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 21:55:18 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,6 +18,7 @@ import	aiohttp
 import	mwparserfromhell
 
 # Libraries
+from scrapper.fsm	import SetContext
 from utils.utils	import smart_sleep
 
 # Definitions
@@ -96,7 +97,7 @@ class	VanguardScrapper:
 		except (StopIteration, IndexError):
 			return (None)
 
-	async def	api_calls(self, tpl: dict):
+	async def	api_calls(self, ctx: SetContext):
 
 		def	define_param(tpl: dict):
 			links = {
@@ -107,10 +108,10 @@ class	VanguardScrapper:
 			}
 			return (links)
 
-		param = define_param(tpl)
+		param = define_param(ctx.tpl)
 		await smart_sleep()
 		api_result = await self.api.get(
-			params=tpl["tpl"],
+			params=ctx.tpl,
 			headers=header
 		)
 		await smart_sleep()
@@ -119,4 +120,5 @@ class	VanguardScrapper:
 			headers=header
 		)
 
-		return (api_result, link_result)
+		ctx.api_result = api_result
+		ctx.links = link_result

@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/14 16:09:35 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 21:53:57 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,66 +15,66 @@ import asyncio
 
 # Library
 from parsers.vanguard_parser		import VanguardParser
+from scrapper.vanguard_routine		import VanguardRoutine
 from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
 from classifier.vanguard_classifier	import VanguardClassifier
 from wiki_api.vanguard_api			import MediaWikiAPI, VanguardScrapper
-from scrapper.vanguard_routine		import VanguardRoutine
-from scrapper.fsm					import StateMachine, ParseState, ParseContext, ParseEvent
+from scrapper.fsm					import StateMachine, PipelineState, SetContext, PipelineEvent
 # from cards.fsm						import CardStateMachine, CardState, CardContext, CardEvent
 
-scrapper_sm: StateMachine[ParseState, ParseEvent, ParseContext, VanguardPipeline] = StateMachine(ParseState.ENTRY_POINT)
+scrapper_sm: StateMachine[PipelineState, PipelineEvent, SetContext, VanguardPipeline] = StateMachine(PipelineState.ENTRY_POINT)
 # card_sm: CardStateMachine[CardState, CardEvent, CardContext] = CardStateMachine()
 
 scrapper_sm.add_transition(
-	ParseState.ENTRY_POINT,
-	ParseEvent.SELECT_CATEGORY,
-	ParseState.MAIN_CATEGORY_SELECTED,
+	PipelineState.ENTRY_POINT,
+	PipelineEvent.SELECT_CATEGORY,
+	PipelineState.MAIN_CATEGORY_SELECTED,
 	VanguardRoutine.select_category,
 )
 
 scrapper_sm.add_transition(
-	ParseState.MAIN_CATEGORY_SELECTED,
-	ParseEvent.SELECT_SUBCATEGORY,
-	ParseState.SUB_CATEGORY_SELECTED,
+	PipelineState.MAIN_CATEGORY_SELECTED,
+	PipelineEvent.SELECT_SUBCATEGORY,
+	PipelineState.SUB_CATEGORY_SELECTED,
 	VanguardRoutine.select_subcategory
 )
 
 scrapper_sm.add_transition(
-	ParseState.SUB_CATEGORY_SELECTED,
-	ParseEvent.BUILD_QUERY,
-	ParseState.QUERY_BUILT,
+	PipelineState.SUB_CATEGORY_SELECTED,
+	PipelineEvent.BUILD_QUERY,
+	PipelineState.QUERY_BUILT,
 	VanguardRoutine.make_query
 )
 
 scrapper_sm.add_transition(
-	ParseState.QUERY_BUILT,
-	ParseEvent.MAKE_CONSULT,
-	ParseState.SET_CONSULT,
+	PipelineState.QUERY_BUILT,
+	PipelineEvent.MAKE_CONSULT,
+	PipelineState.SET_CONSULT,
 	VanguardRoutine.set_api_consult
 )
 
 scrapper_sm.add_transition(
-	ParseState.SET_CONSULT,
-	ParseEvent.CLEAN_RESULT,
-	ParseState.URL_PARSED,
+	PipelineState.SET_CONSULT,
+	PipelineEvent.CLEAN_RESULT,
+	PipelineState.URL_PARSED,
 	VanguardRoutine.parse_links
 )
 
 scrapper_sm.add_transition(
-	ParseState.URL_PARSED,
-	ParseEvent.MAIN_ROUTINE,
-	ParseState.END,
+	PipelineState.URL_PARSED,
+	PipelineEvent.MAIN_ROUTINE,
+	PipelineState.END,
 	VanguardRoutine.main_scrap_routine
 )
 
 events = [
-    ParseEvent.SELECT_CATEGORY,
-    ParseEvent.SELECT_SUBCATEGORY,
-    ParseEvent.BUILD_QUERY,
-    ParseEvent.MAKE_CONSULT,
-    ParseEvent.CLEAN_RESULT,
-    ParseEvent.MAIN_ROUTINE,
+    PipelineEvent.SELECT_CATEGORY,
+    PipelineEvent.SELECT_SUBCATEGORY,
+    PipelineEvent.BUILD_QUERY,
+    PipelineEvent.MAKE_CONSULT,
+    PipelineEvent.CLEAN_RESULT,
+    PipelineEvent.MAIN_ROUTINE,
 ]
 
 async def main():
@@ -85,12 +85,12 @@ async def main():
 		VanguardScrapper(web),
 		VanguardClassifier()
 	)
-	context = ParseContext()
+	context = SetContext()
 	await pipeline.scrapper.api.init_session()
 	try:
 		for event in events:
 			print(f"{scrapper_sm.current_state.name}")
-			print(f"-- {(event.name)} -->",
+			print(f"-- {(event.name)} -->\n",
 		 		end="")
 			await scrapper_sm.handle(
 				context,

@@ -6,29 +6,38 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/14 19:36:50 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 21:26:49 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
+from typing						import Callable
 from enum						import Enum, auto
 from dataclasses				import dataclass, field
-from typing						import Callable
 
 # Dependencies
-from mwparserfromhell.wikicode	import Wikicode
+pass
 
 # Library
-from utils.constants			import NATIONS
+pass
 
 # Definitions
 type Action[C] = Callable[[C], None]
+
 class	InvalidTransition:
 	pass
 
 @dataclass
 class	CardContext:
-	pass
+	url:			str		| None = None
+	size:			int		| None = 0
+	id:				int		| None = None
+	prepare_data:	int		| None = None
+	row:			list	| None = None
+	card:			list	| None = None
+	infobox:		dict	| None = None
+	is_duplicated: 	bool	| None = None
+	obj:			object	| None = None
 	
 class	CardState(Enum):
 	ENTRY_POINT	= auto()

@@ -6,7 +6,7 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 19:36:17 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 22:01:02 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,32 +42,21 @@ class	PipelineEvent(Enum):
 	ERROR					= auto()
 
 @dataclass
-class	PipelineContext:
+class	SetContext:
 	category:			str				| None = None
-	column:				str				| None = None
 	subcategory:		str				| None = None
 	query_page:			str				| None = None
 	query_parameters:	str				| None = None
-	url:				str				| None = None
-	size:				int				| None = None
-	id:					int				| None = None
-	prepare_data:		int				| None = None
-	infobox:			dict			| None = None
+	column:				str				| None = None
 	tpl:				dict			| None = None
-	link_param:			dict			| None = None
-	crude_cards:		dict			| None = None
+	response:			dict			| None = None
+	api_result:			dict			| None = None
 	links:				dict			| None = None
-	row:				list			| None = None
+	infobox:			dict			| None = None
+	crude_cards:		list			| None = None
 	rows:				list[object]	| None = None
-	card:				list[str] 		| None = None
-	api_result:			JSONType		| None = None
-	response:			JSONType		| None = None
-	crude_data:			JSONType		| None = None
-	data:				JSONType		| None = None
 	is_d:				bool			| None = None
-	is_deck:			bool 			| None = None
-	is_duplicated: 		bool			| None = None
-	obj:				object			| None = None
+	is_deck:			bool			| None = None
 
 @dataclass
 class	StateMachine[S: Enum, E: Enum, C, D]:
@@ -96,31 +85,3 @@ class	StateMachine[S: Enum, E: Enum, C, D]:
 			await result
 		self.current_state = next_state
 		return (self.current_state)
-
-class	Consult(Enum):
-	CHECK_DATABASE		=	auto()
-	REQUIRE_DATABASE	=	auto()
-	MAKE_CONSULT 		=	auto()
-	READY				=	auto()
-	STORE_INFO			=	auto()
-	END					=	auto()
-
-class	FSMConsults:
-	def	__init__(self):
-		self.reset()
-	
-	def reset(self):
-		self.answer: str | None = None
-		self.answer_lb : bool | None = None
-		self.answer_ll : bool | None = None
-		self.answer_g : bool | None = None
-		self.answer_v : bool | None = None
-		self.answer_d : bool | None = None
-		self.answer_dz : bool | None = None
-		self.lb: str | dict = None
-		self.ll: str | dict = None
-		self.g: str | dict = None
-		self.v: str | dict = None
-		self.d: str | dict = None
-		self.dz: str | dict = None
-		self.current_state: str | None = None

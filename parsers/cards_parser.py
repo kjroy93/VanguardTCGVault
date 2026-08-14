@@ -6,19 +6,19 @@
 #    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 19:26:28 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/14 21:57:07 by kmarrero         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from typing				import Callable, Union
 from dataclasses		import dataclass
 from enum				import Enum, auto
+from typing				import Callable, Union
 
 # Library
 from utils				import utils
 from utils.constants	import NATIONS
-from scrapper.fsm		import PipelineContext as Context
+from cards.fsm			import CardContext
 
 class	CardType(Enum):
 	SINGLE_CARD	= auto()
@@ -65,22 +65,22 @@ class	CardsParser:
 		pass
 
 	@staticmethod
-	def normalize_length(ctx: Context):
-		if (ctx.size < 6):
-			ctx.row.insert(len(ctx.row), '')
+	def normalize_length(card_ctx: CardContext):
+		if (card_ctx.size < 6):
+			card_ctx.row.insert(len(card_ctx.row), '')
 		i = 0
-		while (ctx.size != 6):
+		while (card_ctx.size != 6):
 			try:
-				if (ctx.row[i] == '' or
-						ctx.row[i] == "V" or
-						ctx.row[i] == "D" or
-						ctx.row[i] == "DZ"):
-					ctx.row.pop(i)
+				if (card_ctx.row[i] == '' or
+						card_ctx.row[i] == "V" or
+						card_ctx.row[i] == "D" or
+						card_ctx.row[i] == "DZ"):
+					card_ctx.row.pop(i)
 					i = 0
-					ctx.size = len(ctx.row)
+					card_ctx.size = len(card_ctx.row)
 					continue
 				i += 1
-				ctx.size = len(ctx.row)
+				card_ctx.size = len(card_ctx.row)
 			except (IndexError):
 				break
 
@@ -144,4 +144,7 @@ class	CardsParser:
 				"cards": 0
 			}
 		}
-		return (dispatcher(card_type))
+		return (dispatcher[card_type])
+
+	def	get_handler(self, card_type: CardType):
+		return (self._dispatcher[card_type])
