@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    utils.py                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/13 17:10:20 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 14:06:17 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ import unicodedata
 
 # Dependencies
 from mwparserfromhell.nodes.extras	import Parameter
-from scrapper.fsm					import ParseContext as Context
+from scrapper.fsm					import SetContext
 
 def	remove_from_list(sets: list, to_delete: list):
 	return ([s for s in sets if not any(pattern in s for pattern in to_delete)])
@@ -62,27 +62,27 @@ def clean_text(text: str) -> str:
 
 	return (text.strip())
 
-def dispatcher(ctx: Context):
+def dispatcher(set_ctx: SetContext):
 	def	main_dispatcher() -> str | None:
 		prefix = {
 			"other": "List of "
 		}
 		return (prefix.get(
-			ctx.category,
+			set_ctx.category,
 			"List of Cardfight!! Vanguard "
 		))
 
 	def sub_dispatcher() -> str | None:
 		sub_dispatch = {
-			"Unique Booster Sets": ctx.subcategory,
-			"Monthly Bushiroad": ctx.subcategory
+			"Unique Booster Sets": set_ctx.subcategory,
+			"Monthly Bushiroad": set_ctx.subcategory
 		}
-		if (ctx.subcategory in sub_dispatch):
-			return (sub_dispatch[ctx.subcategory])
+		if (set_ctx.subcategory in sub_dispatch):
+			return (sub_dispatch[set_ctx.subcategory])
 
 	result = sub_dispatcher()
 
 	if (result is not None):
 		return (result)
 
-	return (main_dispatcher() + ctx.subcategory)
+	return (main_dispatcher() + set_ctx.subcategory)

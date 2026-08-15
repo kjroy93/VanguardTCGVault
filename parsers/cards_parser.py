@@ -3,29 +3,22 @@
 #                                                         :::      ::::::::    #
 #    cards_parser.py                                    :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 21:57:07 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 16:37:36 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from dataclasses		import dataclass
-from enum				import Enum, auto
-from typing				import Callable, Union
+from dataclasses				import dataclass
+from typing						import Callable, Union
 
 # Library
-from utils				import utils
-from utils.constants	import NATIONS
-from cards.fsm			import CardContext
-
-class	CardType(Enum):
-	SINGLE_CARD	= auto()
-	DUAL_CARD	= auto()
-	DUAL_NATION	= auto()
-	PROMO		= auto()
-	DECK		= auto()
+from utils						import utils
+from utils.constants			import NATIONS
+from cards.fsm					import CardContext
+from parsers.types				import MetadataType, CardType
 
 @dataclass
 class	CardsParser:
@@ -121,30 +114,30 @@ class	CardsParser:
 			CardType.SINGLE_CARD: {
 				"prepare": None,
 				"parse": CardsParser.parse_single_card,
-				"cards": 1
+				"cards": MetadataType.SINGLE
 			},
 			CardType.PROMO: {
 				"prepare": self.__promo,
 				"parse": CardsParser.parse_single_card,
-				"cards": 1
+				"cards": MetadataType.SINGLE
 			},
 			CardType.DUAL_NATION: {
 				"prepare": self.__dual_nations,
 				"parse": CardsParser.parse_single_card,
-				"cards": 1
+				"cards": MetadataType.SINGLE
 			},
 			CardType.DUAL_CARD: {
 				"prepare": self.__split_card,
 				"parse": CardsParser.parse_dual_cards,
-				"cards": 2
+				"cards": MetadataType.DUAL
 			},
 			CardType.DECK: {
 				"prepare": self.__decks,
 				"parse": CardsParser.parse_deck,
-				"cards": 0
+				"cards": MetadataType.DECK
 			}
 		}
 		return (dispatcher[card_type])
 
 	def	get_handler(self, card_type: CardType):
-		return (self._dispatcher[card_type])
+		return (self._dispatcher(card_type))

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    classes.py                                         :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:43:54 by marvin            #+#    #+#              #
-#    Updated: 2026/08/13 20:02:23 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 17:55:16 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,8 +25,8 @@ class	ScrapCard(BaseModel):
 	Type:			str			| None = None
 	Rarity:			str			| None = None
 	Release:		str			| None = None
-	url:			str			| None = None
-	set_id:			int			| None = None
+	URL:			str			| None = None
+	SET_ID:			int			| None = None
 
 class	ScrapDeck(BaseModel):
 	Code:			str

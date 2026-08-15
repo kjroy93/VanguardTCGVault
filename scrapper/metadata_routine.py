@@ -3,63 +3,57 @@
 #                                                         :::      ::::::::    #
 #    metadata_routine.py                                :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 21:22:30 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 16:38:36 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-# Imports
-from enum					import Enum, auto
-
 # Library
 from utils.constants		import NATIONS
+from scrapper.fsm			import SetContext
 from cards.fsm				import CardContext
-from parsers.cards_parser	import CardType, CardsParser
-
-class	MetadataType(Enum):
-	DECK	= auto()
-	SINGLE	= auto()
-	DUAL	= auto()
+from parsers.cards_parser	import CardsParser
+from parsers.types			import CardType
 
 class	MetadataRoutine:
 	def	__init__(self, parser: CardsParser):
 		self.parser = parser
 
-	def __classify(self, ctx: CardContext) -> CardType:
-		if (len(ctx.card)) == 8:
+	def __classify(self, card_ctx: CardContext, set_ctx: SetContext) -> CardType:
+		if (len(card_ctx.card)) == 8:
 			return (CardType.DUAL_CARD)
 
 		nations = sum(
 			1
-			for value in ctx.card
+			for value in card_ctx.card
 			if str(value) in NATIONS
 		)
 
 		if (nations >= 2):
 			return (CardType.DUAL_NATION)
 
-		if (ctx.is_deck):
+		if (set_ctx.is_deck):
 			return (CardType.DECK)
 
 		return (CardType.SINGLE_CARD)
 
-	def	run(self, ctx: CardContext):
-		card = ctx.card
-		card_type = self.__classify(ctx)
+	def	run(self, card_ctx: CardContext, set_ctx: SetContext):
+		card = card_ctx.card
+		card_type = self.__classify(card_ctx, set_ctx)
 		handler = self.parser.get_handler(card_type)
 		data = card
 
 		if (handler["prepare"] is not None):
 			data = handler["prepare"](data)
 
-		ctx.row = handler["parse"](data)
-		ctx.prepare_data = handler["cards"]
+		card_ctx.row = handler["parse"](data)
+		card_ctx.prepare_data = handler["cards"]
 
 		if (card_type != CardType.DUAL_CARD):
-			ctx.size = len(ctx.row)
-			self.parser.normalize_length(ctx)
-		self.parser.normalize_length(ctx)
+			card_ctx.size = len(card_ctx.row)
+			self.parser.normalize_length(card_ctx)
+		self.parser.normalize_length(card_ctx)
 
-		return (ctx.row)
+		return (card_ctx.row)

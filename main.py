@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    main.py                                            :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/14 21:53:57 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 16:32:11 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -89,9 +89,7 @@ async def main():
 	await pipeline.scrapper.api.init_session()
 	try:
 		for event in events:
-			print(f"{scrapper_sm.current_state.name}")
-			print(f"-- {(event.name)} -->\n",
-		 		end="")
+			print(f"state machine is in {scrapper_sm.current_state.name} --> next event: {(event.name)}\n", end="")
 			await scrapper_sm.handle(
 				context,
 				event,

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    vanguard_data.py                                   :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/08/14 21:25:46 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 17:20:30 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,10 +17,12 @@ from mwparserfromhell.nodes		import Template
 from utils.utils				import clean_text
 from parsers.row_factory		import RowFactory
 from scrapper.fsm				import SetContext
+from parsers.cards_parser		import CardsParser
 from cards.fsm					import CardContext
 from data.update_database		import LinkStorage
 from cards.classes				import ScrapCard, ScrapDeck
-from scrapper.metadata_routine	import MetadataRoutine, MetadataType
+from scrapper.metadata_routine	import MetadataRoutine
+from parsers.types				import MetadataType
 
 handlers = {
 	MetadataType.DECK:		RowFactory.construct_decks,
@@ -40,7 +42,9 @@ class	VanguardStorage:
 		self.v =			[]
 		self.d =			[]
 		self.dz	=			[]
-		self.metadata = 	MetadataRoutine()
+		card_parser = 		CardsParser()
+		self.metadata = 	MetadataRoutine(card_parser)
+		self.link_storage =	LinkStorage()
 
 	def _add_item(self, key: str, item: str):
 		if item not in self._seen[key]:
@@ -56,30 +60,28 @@ class	VanguardStorage:
 				break
 
 	def	manage_url(self, url, next_id, ctx: CardContext):
-		set_id, is_new = LinkStorage.get_or_create(url, next_id)
+		set_id, is_new = self.link_storage.get_or_create(url, next_id)
 		ctx.id = set_id
 		ctx.url = url
-		ctx.is_duplicated = not is_new
+		ctx.already_scraped = not is_new
 		if (is_new):
 			self.next_id += 1
-		else:
-			ctx.url = None
 
 	def	prepare_metadata(self,
 					  wikitex: list[Template],
 					  set_ctx: SetContext) -> list:
 
+		self.next_id = len(self.link_storage._links)
 		for template in wikitex:
 			card_ctx = CardContext()
 			card_ctx.card = template.params
 			card_ctx.id = self.next_id
-			self.obtain_url(clean_text(template.params[1]).strip(), set_ctx, card_ctx)
+			self.obtain_url(clean_text(str(template.params[1])).strip(), set_ctx, card_ctx)
 			self.manage_url(card_ctx.url, card_ctx.id, card_ctx)
-			self.metadata.run(card_ctx)
+			self.metadata.run(card_ctx, set_ctx)
 			card_ctx.obj = (ScrapDeck if set_ctx.is_deck else ScrapCard)
 			handler = handlers[card_ctx.prepare_data]
 			handler(card_ctx, set_ctx)
-			set_ctx.rows.append(card_ctx.obj)
 
 		data = [
 			row.model_dump(exclude_none=True)

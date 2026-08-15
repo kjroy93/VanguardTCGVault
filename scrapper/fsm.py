@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    fsm.py                                             :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 22:01:02 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 17:16:16 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,7 +54,7 @@ class	SetContext:
 	links:				dict			| None = None
 	infobox:			dict			| None = None
 	crude_cards:		list			| None = None
-	rows:				list[object]	| None = None
+	rows:				list[object] 	= field(default_factory=list)
 	is_d:				bool			| None = None
 	is_deck:			bool			| None = None
 

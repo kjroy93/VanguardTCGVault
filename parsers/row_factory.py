@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    row_factory.py                                     :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 21:07:05 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 17:54:56 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -67,9 +67,15 @@ class	RowFactory:
 
 	@staticmethod
 	def	construct_row(card_ctx: CardContext, set_ctx: SetContext) -> object:
-		release = RowFactory.get_release(card_ctx.infobox)
+		release = RowFactory.get_release(set_ctx.infobox)
 		faction = RowFactory.prepare_faction(card_ctx.row)
 		RowFactory.prepare_grade(card_ctx.row)
+		print("DEBUG id")
+		print("id:", card_ctx.id)
+
+		id = int(card_ctx.id)
+
+		print("id final:", repr(id))
 		try:
 			row = card_ctx.obj(
 				Code =			card_ctx.row[0],
@@ -80,7 +86,7 @@ class	RowFactory:
 				Type = 			card_ctx.row[4],
 				Rarity = 		card_ctx.row[5],
 				Release = 		release,
-				URL = 			card_ctx.url,
+				URL = 			card_ctx.url if card_ctx.already_scraped == False else "Reprint",
 				SET_ID =		int(card_ctx.id)
 			)
 			set_ctx.rows.append(row)
@@ -94,7 +100,7 @@ class	RowFactory:
 				Type = 			"None",
 				Rarity = 		"None",
 				Release = 		release,
-				URL =			set_ctx.url,
+				URL =			card_ctx.url,
 				SET_ID = 		int(card_ctx.id)
 			)
 			set_ctx.rows.append(row)

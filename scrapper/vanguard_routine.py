@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    vanguard_routine.py                                :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/14 22:12:12 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 17:54:44 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -101,11 +101,11 @@ class	VanguardRoutine:
 	def	parse_links(set_ctx: SetContext, deps: VanguardPipeline):
 		links = deps.scrapper.obtain_links(set_ctx.response)
 		deps.parser.clean_trash_from_set(set_ctx.query_page, links, 4)
-		parsed_links = remove_from_list(links, [
-			set_ctx.response,
-			*DICT_S.get(set_ctx.response)
+		set_ctx.links = remove_from_list(links, [
+			set_ctx.query_page,
+			*DICT_S.get(set_ctx.category)
 		])
-		process_items(parsed_links, deps)
+		process_items(set_ctx.links, deps)
 		if (set_ctx.category == "boosters"):
 			sort_storage_list(["LB", "G"], deps)
 		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
@@ -132,7 +132,7 @@ class	VanguardRoutine:
 		wikitex = deps.scrapper.obtain_wikitex(set_ctx.api_result)
 		set_ctx.crude_cards = deps.parser.make_cardlist_from_str(wikitex)
 		set_ctx.infobox = deps.parser.infobox(wikitex)
-		all_links = deps.scrapper.obtain_links(set_ctx.crude_cards)
+		all_links = deps.scrapper.obtain_links(set_ctx.links)
 		deps.parser.clean_trash_from_set(set_ctx.query_parameters["page"], all_links, 4, reverse=True)
 		set_ctx.links = deps.parser.sort_unique_url(
 			set_ctx.crude_cards, all_links
@@ -143,7 +143,7 @@ class	VanguardRoutine:
 			consult = deps.parser.make_consults(getattr(deps.storage, block.lower()), "consult")
 			for tpl in consult.values():
 				set_ctx.tpl = tpl
-				await deps.scrapper.api_calls(set_ctx.tpl)
+				await deps.scrapper.api_calls(set_ctx)
 				VanguardRoutine.__parser(set_ctx, deps)
 				set_ctx.is_d = block in ["D", "DZ"]
 				try:

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    fsm.py                                             :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/14 21:26:49 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 17:05:04 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,15 +29,15 @@ class	InvalidTransition:
 
 @dataclass
 class	CardContext:
-	url:			str		| None = None
-	size:			int		| None = 0
-	id:				int		| None = None
-	prepare_data:	int		| None = None
-	row:			list	| None = None
-	card:			list	| None = None
-	infobox:		dict	| None = None
-	is_duplicated: 	bool	| None = None
-	obj:			object	| None = None
+	url:				str		| None = None
+	size:				int		| None = 0
+	id:					int		| None = None
+	prepare_data:		int		| None = None
+	row:				list	| None = None
+	card:				list	| None = None
+	infobox:			dict	| None = None
+	already_scraped: 	bool	| None = None
+	obj:				object	| None = None
 	
 class	CardState(Enum):
 	ENTRY_POINT	= auto()
