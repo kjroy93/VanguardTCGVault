@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 18:15:02 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 00:00:03 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -51,13 +51,11 @@ class	VanguardStorage:
 			self._seen[key].add(item)
 			getattr(self, key.lower()).append(item)
 
-	def	obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
-		text_word = set(text.split())
-		for url in set_ctx.links.keys():
-			url_words = set(url.split())
-			if (text_word.issubset(url_words)):
-				card_ctx.url = url
-				break
+	def obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
+		url = set_ctx.links.get(text)
+		if (url is None):
+			raise KeyError(f"URL not found for card: {text}")
+		card_ctx.url = url
 
 	def	manage_url(self, url, next_id, ctx: CardContext):
 		set_id, is_new = self.link_storage.get_or_create(url, next_id)

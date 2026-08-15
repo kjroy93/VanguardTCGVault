@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 16:06:59 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 00:27:49 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -152,6 +152,7 @@ SET_PATHS = {
 		}
 	}
 }
+
 DB_FOLDER = Path("database")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 

@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 23:13:33 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 01:25:44 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ from mwparserfromhell.nodes		import Template
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
-from utils.utils				import clean_text, remove_from_list
+from utils.utils				import clean_text, remove_from_list, make_custom_alphabet
 
 class	VanguardParser:
 	def separate_urls(self, data: list):
@@ -74,16 +74,7 @@ class	VanguardParser:
 
 	def sort_unique_url(self, parsed_cardlist: list[Template], crude_links: list[str]):
 		links = {}
-		alphabet = {}
-		
-		for link in crude_links:
-			clean_link = clean_text(link)
-			if (not clean_link):
-				continue
-			letter = clean_link[0]
-			if (letter not in alphabet):
-				alphabet[letter] = {}
-			alphabet[letter][clean_link] = link
+		alphabet = make_custom_alphabet(crude_links)
 
 		for _, card in enumerate(parsed_cardlist):
 			card_name = clean_text(str(card.params[1].value).strip())
@@ -93,6 +84,14 @@ class	VanguardParser:
 			if (letter not in alphabet):
 				continue
 			link = alphabet[letter].get(card_name)
+			if (link is None):
+				matches = [
+					original_link
+					for clean_link, original_link in alphabet[letter].items()
+					if card_name in clean_link
+				]
+				if (len(matches)) == 1:
+					link = matches[0]
 			if (link is not None):
 				links[card_name] = link
 		return (links)

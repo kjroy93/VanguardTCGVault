@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 23:11:43 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 01:37:15 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,9 +16,9 @@ import pandas						as pd
 # Library
 from wiki_api.vanguard_api			import header
 from pipeline.builder				import VanguardPipeline
-from utils.constants				import DICT_S, CATEGORIES
 from classifier.classifier			import process_items, sort_storage_list
-from data.check_data_base			import build_set_path, get_duplicate_path
+from data							import check_data_base
+from utils.constants				import DICT_S, CATEGORIES, VALID_DATABASES
 from routine.fsm					import SetContext, StateMachine, PipelineState
 from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
 
@@ -140,9 +140,16 @@ class	VanguardRoutine:
 
 	@staticmethod
 	async def	main_scrap_routine(set_ctx: SetContext, deps: VanguardPipeline):
-		for block in ["LB", "LL", "G", "V", "D", "DZ"]:
-			consult = deps.parser.make_consults(getattr(deps.storage, block.lower()), "consult")
-			for tpl in consult.values():
+		for block in VALID_DATABASES:
+			database = getattr(deps.storage, block.lower())
+			consult = deps.parser.make_consults(database, "consult")
+			for set_number, tpl in consult.items():
+				if (check_data_base.set_exists(set_ctx, block, set_number)):
+					print(
+						f"Skiping existing set: "
+						f"{block} {set_number + 1}"
+					)
+					continue
 				set_ctx.tpl = tpl
 				await deps.scrapper.api_calls(set_ctx)
 				VanguardRoutine.__parser(set_ctx, deps)
@@ -153,20 +160,17 @@ class	VanguardRoutine:
 					return (e)
 				columns = column_dispatcher(set_ctx)
 				df = pd.DataFrame(rows, columns=columns)
-				set_number = deps.classifier.obtain_set_number(
-					set_ctx.crude_cards[0]
-				)
-				path = build_set_path(
+				path = check_data_base.build_set_path(
 					category=set_ctx.category,
 					set_type=set_ctx.subcategory.strip().lower().split()[0],
 					block=block,
-					set_number=set_number
+					set_number=set_number + 1
 				)
 				path.parent.mkdir(
 					parents=True,
 					exist_ok=True
 				)
-				path = get_duplicate_path(path)
+				path = check_data_base.get_duplicate_path(path)
 				df.to_parquet(path)
 				print(df)
 

@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 22:47:39 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 23:44:13 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -87,3 +87,15 @@ def dispatcher(set_ctx: SetContext):
 		return (result)
 
 	return (main_dispatcher() + set_ctx.subcategory)
+
+def	make_custom_alphabet(crude_links: list[str]):
+	alphabet = {}
+	for link in crude_links:
+		clean_link = clean_text(link)
+		if (not clean_link):
+			continue
+		letter = clean_link[0]
+		if (letter not in alphabet):
+			alphabet[letter] = {}
+		alphabet[letter][clean_link] = link
+	return (alphabet)
