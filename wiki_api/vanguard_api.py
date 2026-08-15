@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:24:34 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 15:15:13 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:47:58 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ import	aiohttp
 import	mwparserfromhell
 
 # Libraries
-from scrapper.fsm	import SetContext
+from routine.fsm	import SetContext
 from utils.utils	import smart_sleep
 
 # Definitions

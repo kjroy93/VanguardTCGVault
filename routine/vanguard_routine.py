@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 18:13:57 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:43:54 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,11 +15,11 @@ import pandas						as pd
 
 # Library
 from wiki_api.vanguard_api			import header
-from routine.fsm					import SetContext
 from pipeline.builder				import VanguardPipeline
 from utils.constants				import DICT_S, CATEGORIES
 from classifier.classifier			import process_items, sort_storage_list
 from data.check_data_base			import build_set_path, get_duplicate_path
+from routine.fsm					import SetContext, StateMachine, PipelineState
 from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
 
 def	column_dispatcher(set_ctx: SetContext):
@@ -138,6 +138,7 @@ class	VanguardRoutine:
 			set_ctx.crude_cards, all_links
 		)
 
+	@staticmethod
 	async def	main_scrap_routine(set_ctx: SetContext, deps: VanguardPipeline):
 		for block in ["LB", "LL", "G", "V", "D", "DZ"]:
 			consult = deps.parser.make_consults(getattr(deps.storage, block.lower()), "consult")
@@ -168,3 +169,18 @@ class	VanguardRoutine:
 				path = get_duplicate_path(path)
 				df.to_parquet(path)
 				print(df)
+
+	@staticmethod
+	def	ask_user(set_ctx: SetContext, deps: StateMachine):
+		while (True):
+			print("Do you wish to continue with the web scrapping? [y]es, [n]o: ")
+			answer = input(str("> ").strip().lower())
+			if (answer not in ["y", "n"]):
+				print("Invalid answer")
+				continue
+			if (answer == "y"):
+				break
+			else:
+				deps.current_state = PipelineState.FINISH
+				break
+				

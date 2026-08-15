@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/15 18:14:12 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:44:54 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,8 +64,15 @@ scrapper_sm.add_transition(
 scrapper_sm.add_transition(
 	PipelineState.URL_PARSED,
 	PipelineEvent.MAIN_ROUTINE,
-	PipelineState.END,
+	PipelineState.DONE,
 	VanguardRoutine.main_scrap_routine
+)
+
+scrapper_sm.add_transition(
+	PipelineState.DONE,
+	PipelineEvent.ASK_IF_CONTINUE,
+	PipelineState.ENTRY_POINT,
+	VanguardRoutine.ask_user
 )
 
 events = [
@@ -74,7 +81,7 @@ events = [
     PipelineEvent.BUILD_QUERY,
     PipelineEvent.MAKE_CONSULT,
     PipelineEvent.CLEAN_RESULT,
-    PipelineEvent.MAIN_ROUTINE,
+    PipelineEvent.MAIN_ROUTINE
 ]
 
 async def main():
@@ -88,13 +95,21 @@ async def main():
 	context = SetContext()
 	await pipeline.scrapper.api.init_session()
 	try:
-		for event in events:
-			print(f"state machine is in {scrapper_sm.current_state.name} --> next event: {(event.name)}\n", end="")
-			await scrapper_sm.handle(
+		while (True):
+			for event in events:
+				print(f"state machine is in {scrapper_sm.current_state.name} --> next event: {(event.name)}\n", end="")
+				await scrapper_sm.handle(
+					context,
+					event,
+					pipeline
+				)
+			scrapper_sm.handle(
 				context,
-				event,
-				pipeline
+				PipelineEvent.ASK_IF_CONTINUE,
+				scrapper_sm
 			)
+			if (scrapper_sm.current_state == PipelineState.FINISH):
+				break
 	finally:
 		await pipeline.scrapper.api.close_session()
 

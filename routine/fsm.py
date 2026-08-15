@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 18:14:25 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:45:15 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,7 +29,8 @@ class	PipelineState(Enum):
 	QUERY_BUILT				= auto()
 	SET_CONSULT				= auto()
 	URL_PARSED				= auto()
-	END						= auto()
+	DONE					= auto()
+	FINISH					= auto()
 
 class	PipelineEvent(Enum):
 	SELECT_CATEGORY			= auto()
@@ -38,6 +39,7 @@ class	PipelineEvent(Enum):
 	MAKE_CONSULT			= auto()
 	CLEAN_RESULT			= auto()
 	MAIN_ROUTINE			= auto()
+	ASK_IF_CONTINUE			= auto()
 	ERROR					= auto()
 
 @dataclass

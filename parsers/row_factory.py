@@ -6,12 +6,12 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 17:54:56 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:48:28 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
-from scrapper.fsm	import SetContext
+from routine.fsm	import SetContext
 from cards.fsm		import CardContext
 
 class	RowFactory:

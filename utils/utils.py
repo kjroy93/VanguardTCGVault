@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 14:06:17 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:47:40 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,7 @@ import unicodedata
 
 # Dependencies
 from mwparserfromhell.nodes.extras	import Parameter
-from scrapper.fsm					import SetContext
+from routine.fsm					import SetContext
 
 def	remove_from_list(sets: list, to_delete: list):
 	return ([s for s in sets if not any(pattern in s for pattern in to_delete)])
