@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    vanguard_parser.py                                 :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: kmarrero <kmarrero@student.42.fr>          +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/13 16:36:49 by kmarrero         ###   ########.fr        #
+#    Updated: 2026/08/15 23:13:33 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -74,17 +74,27 @@ class	VanguardParser:
 
 	def sort_unique_url(self, parsed_cardlist: list[Template], crude_links: list[str]):
 		links = {}
-		used = set()
+		alphabet = {}
+		
+		for link in crude_links:
+			clean_link = clean_text(link)
+			if (not clean_link):
+				continue
+			letter = clean_link[0]
+			if (letter not in alphabet):
+				alphabet[letter] = {}
+			alphabet[letter][clean_link] = link
 
 		for _, card in enumerate(parsed_cardlist):
 			card_name = clean_text(str(card.params[1].value).strip())
-
-			for link in crude_links:
-				clean_link = clean_text(link)
-				if card_name in clean_link and clean_link not in used:
-					links[clean_link] = clean_link
-					used.add(clean_link)
-					break
+			if (not card_name):
+				raise TypeError("Card name cannot be empty")
+			letter = card_name[0]
+			if (letter not in alphabet):
+				continue
+			link = alphabet[letter].get(card_name)
+			if (link is not None):
+				links[card_name] = link
 		return (links)
 
 	def make_consults(self, lst: list, format: Literal["consult", "decks"]) -> dict[int, dict[str, str]]:

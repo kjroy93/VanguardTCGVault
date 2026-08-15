@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 18:47:40 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 22:47:39 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -59,6 +59,7 @@ def clean_text(text: str) -> str:
 
 	for char in invisible_chars:
 		text = text.replace(char, "")
+		text = text.replace('_', ' ')
 
 	return (text.strip())
 

@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 20:06:54 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 20:47:47 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -104,7 +104,7 @@ class	RowFactory:
 		for i in range(len(card_ctx.row)):
 			release = RowFactory.get_release(set_ctx.infobox)
 			faction = RowFactory.prepare_faction(card_ctx.row[i])
-			RowFactory.prepare_grade(card_ctx.row)
+			RowFactory.prepare_grade(card_ctx.row[i])
 			try:
 				row = card_ctx.obj(
 					Code =			card_ctx.row[i][0],
