@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    vanguard_classifier.py                             :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: marvin <marvin@student.42.fr>              +#+  +:+       +#+         #
+#    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:22:01 by marvin            #+#    #+#              #
-#    Updated: 2026/05/05 15:22:01 by marvin           ###   ########.fr        #
+#    Updated: 2026/08/15 19:23:40 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,8 +29,10 @@ class	VanguardClassifier:
 		return (int(number))
 
 	def	classify(self, name: str) -> str:
-		num = self.obtain_set_number(name)
-		if (num in (16, 17) and "Booster" in name):
+		if (
+			name.startswith("Booster Set")
+			and self.obtain_set_number(name) in (16, 17)
+		):
 			return ("LL")
 		for pattern, key in self._rules:
 			if (re.match(pattern, name)):

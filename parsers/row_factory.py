@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 18:48:28 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 20:06:54 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -38,7 +38,7 @@ class	RowFactory:
 
 	@staticmethod
 	def	construct_decks(card_ctx: CardContext, set_ctx: SetContext) -> object:
-		release = RowFactory.get_release(card_ctx.infobox)
+		release = RowFactory.get_release(set_ctx.infobox)
 		faction = RowFactory.prepare_faction(card_ctx.row)
 		try:
 			row = card_ctx.obj(
@@ -70,12 +70,6 @@ class	RowFactory:
 		release = RowFactory.get_release(set_ctx.infobox)
 		faction = RowFactory.prepare_faction(card_ctx.row)
 		RowFactory.prepare_grade(card_ctx.row)
-		print("DEBUG id")
-		print("id:", card_ctx.id)
-
-		id = int(card_ctx.id)
-
-		print("id final:", repr(id))
 		try:
 			row = card_ctx.obj(
 				Code =			card_ctx.row[0],
@@ -108,7 +102,7 @@ class	RowFactory:
 	@staticmethod
 	def	construct_rows(card_ctx: CardContext, set_ctx: SetContext):
 		for i in range(len(card_ctx.row)):
-			release = RowFactory.get_release(card_ctx.infobox)
+			release = RowFactory.get_release(set_ctx.infobox)
 			faction = RowFactory.prepare_faction(card_ctx.row[i])
 			RowFactory.prepare_grade(card_ctx.row)
 			try:

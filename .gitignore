@@ -222,6 +222,7 @@ __marimo__/
 *.json
 *.parquet
 *.csv
+*database
 
 # Python
 __pycache__/

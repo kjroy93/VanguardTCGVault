@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/15 18:44:54 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:56:35 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -97,7 +97,8 @@ async def main():
 	try:
 		while (True):
 			for event in events:
-				print(f"state machine is in {scrapper_sm.current_state.name} --> next event: {(event.name)}\n", end="")
+				print(f" --> state machine current state: {scrapper_sm.current_state.name}\n", end="")
+				print(f" --> next event: {(event.name)}\n", end="")
 				await scrapper_sm.handle(
 					context,
 					event,

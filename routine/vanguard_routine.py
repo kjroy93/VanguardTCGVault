@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 18:43:54 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 20:02:05 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -140,7 +140,7 @@ class	VanguardRoutine:
 
 	@staticmethod
 	async def	main_scrap_routine(set_ctx: SetContext, deps: VanguardPipeline):
-		for block in ["LB", "LL", "G", "V", "D", "DZ"]:
+		for block in ["LL", "LB", "G", "V", "D", "DZ"]:
 			consult = deps.parser.make_consults(getattr(deps.storage, block.lower()), "consult")
 			for tpl in consult.values():
 				set_ctx.tpl = tpl
