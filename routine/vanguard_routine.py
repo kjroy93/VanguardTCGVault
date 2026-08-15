@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 17:54:44 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:13:57 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,7 +15,7 @@ import pandas						as pd
 
 # Library
 from wiki_api.vanguard_api			import header
-from scrapper.fsm					import SetContext
+from routine.fsm					import SetContext
 from pipeline.builder				import VanguardPipeline
 from utils.constants				import DICT_S, CATEGORIES
 from classifier.classifier			import process_items, sort_storage_list

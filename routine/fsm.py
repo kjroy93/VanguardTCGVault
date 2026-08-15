@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 17:16:16 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:14:25 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,6 @@ from dataclasses	import dataclass, field
 from typing 		import Awaitable, Callable
 
 # Definitions
-JSONType = dict[str]
 type Action[C, D] = Callable[[C, D], None | Awaitable[None]]
 
 class	InvalidTransition:

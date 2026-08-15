@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 17:20:30 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:15:02 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -16,13 +16,13 @@ from mwparserfromhell.nodes		import Template
 # Library
 from utils.utils				import clean_text
 from parsers.row_factory		import RowFactory
-from scrapper.fsm				import SetContext
+from routine.fsm				import SetContext
 from parsers.cards_parser		import CardsParser
 from cards.fsm					import CardContext
 from data.update_database		import LinkStorage
-from cards.classes				import ScrapCard, ScrapDeck
-from scrapper.metadata_routine	import MetadataRoutine
 from parsers.types				import MetadataType
+from routine.metadata_routine	import MetadataRoutine
+from cards.classes				import ScrapCard, ScrapDeck
 
 handlers = {
 	MetadataType.DECK:		RowFactory.construct_decks,

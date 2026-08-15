@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/15 16:32:11 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:14:12 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,12 +15,12 @@ import asyncio
 
 # Library
 from parsers.vanguard_parser		import VanguardParser
-from scrapper.vanguard_routine		import VanguardRoutine
+from routine.vanguard_routine		import VanguardRoutine
 from data.vanguard_data				import VanguardStorage
 from pipeline.builder				import VanguardPipeline
 from classifier.vanguard_classifier	import VanguardClassifier
 from wiki_api.vanguard_api			import MediaWikiAPI, VanguardScrapper
-from scrapper.fsm					import StateMachine, PipelineState, SetContext, PipelineEvent
+from routine.fsm					import StateMachine, PipelineState, SetContext, PipelineEvent
 # from cards.fsm						import CardStateMachine, CardState, CardContext, CardEvent
 
 scrapper_sm: StateMachine[PipelineState, PipelineEvent, SetContext, VanguardPipeline] = StateMachine(PipelineState.ENTRY_POINT)

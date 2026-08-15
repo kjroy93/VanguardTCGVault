@@ -6,16 +6,16 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 16:38:36 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/15 18:13:45 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
 from utils.constants		import NATIONS
-from scrapper.fsm			import SetContext
+from parsers.types			import CardType
+from routine.fsm			import SetContext
 from cards.fsm				import CardContext
 from parsers.cards_parser	import CardsParser
-from parsers.types			import CardType
 
 class	MetadataRoutine:
 	def	__init__(self, parser: CardsParser):
