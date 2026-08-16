@@ -6,12 +6,15 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 16:20:50 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 17:40:04 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Import
-from pathlib	import Path
+from pathlib		import Path
+
+# Library
+from routine.fsm	import PipelineEvent
 
 CATEGORIES = {
 	"boosters": [
@@ -166,3 +169,12 @@ REQUIRED_FIELDS = {
 	4: "Type",
 	5: "Rarity"
 }
+
+EVENTS = [
+	PipelineEvent.SELECT_CATEGORY,
+	PipelineEvent.SELECT_SUBCATEGORY,
+	PipelineEvent.BUILD_QUERY,
+	PipelineEvent.MAKE_CONSULT,
+	PipelineEvent.CLEAN_RESULT,
+	PipelineEvent.MAIN_ROUTINE
+]

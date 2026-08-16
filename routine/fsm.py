@@ -6,15 +6,15 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 16:55:50 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 17:36:56 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
 import inspect
-from enum 			import Enum, auto
-from dataclasses	import dataclass, field
-from typing 		import Awaitable, Callable
+from enum 						import Enum, auto
+from dataclasses				import dataclass, field
+from typing 					import Awaitable, Callable
 
 # Definitions
 type Action[C, D] = Callable[[C, D], None | Awaitable[None]]
