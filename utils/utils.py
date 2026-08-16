@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 02:48:56 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 02:50:57 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -45,7 +45,7 @@ def	convert_to_int(element: str):
 	raise ValueError
 
 async def	smart_sleep():
-	x = random.randint(2, 4)
+	x = random.randint(4, 6)
 	await asyncio.sleep(x)
 
 def clean_text(text: str) -> str:
