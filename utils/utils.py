@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 02:50:57 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 15:00:53 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,6 +27,9 @@ def	remove_from_list(sets: list, to_delete: list):
 def	construct_rules(rule: str):
 	param = f"^{re.escape(rule)}"
 	rules = [
+		(r"^P Special", "V"),
+		(r"^P&V", "V"),
+		(r"^Special", "V"),
 		(r"^DZ", "DZ"),
 		(r"^D", "D"),
 		(r"^G", "G"),
@@ -91,7 +94,7 @@ def dispatcher(set_ctx: SetContext):
 
 	return (main_dispatcher() + set_ctx.subcategory)
 
-def	make_custom_alphabet(crude_links: list[str]):
+def	make_custom_alphabet(crude_links: list[str]) -> dict[str, dict[str]]:
 	alphabet = {}
 	for link in crude_links:
 		clean_link = clean_text(link)

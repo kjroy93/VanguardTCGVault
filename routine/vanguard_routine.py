@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 03:21:03 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 14:09:56 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -108,7 +108,7 @@ class	VanguardRoutine:
 		process_items(set_ctx.links, deps)
 		if (set_ctx.category == "boosters"):
 			sort_storage_list(["LB", "G"], deps)
-		sort_storage_list(["LB", "LL", "G", "V", "D", "DZ"], deps)
+		sort_storage_list(VALID_DATABASES, deps)
 
 	@staticmethod
 	async def	set_api_consult(set_ctx: SetContext, deps: VanguardPipeline):
