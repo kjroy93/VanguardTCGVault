@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 23:44:13 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 02:42:17 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,6 +15,7 @@ import re
 import random
 import asyncio
 import unicodedata
+from html							import unescape
 
 # Dependencies
 from mwparserfromhell.nodes.extras	import Parameter
@@ -61,6 +62,8 @@ def clean_text(text: str) -> str:
 		text = text.replace(char, "")
 		text = text.replace('_', ' ')
 
+	text = re.sub(r"\s+", " ", text)
+	text = unescape(text)
 	return (text.strip())
 
 def dispatcher(set_ctx: SetContext):

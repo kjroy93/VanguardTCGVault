@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/15 18:56:35 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 02:35:28 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -104,7 +104,7 @@ async def main():
 					event,
 					pipeline
 				)
-			scrapper_sm.handle(
+			await scrapper_sm.handle(
 				context,
 				PipelineEvent.ASK_IF_CONTINUE,
 				scrapper_sm
