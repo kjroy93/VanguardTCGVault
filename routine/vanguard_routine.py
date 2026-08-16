@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 01:37:15 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 03:21:03 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,9 +15,9 @@ import pandas						as pd
 
 # Library
 from wiki_api.vanguard_api			import header
+from data							import check_data_base
 from pipeline.builder				import VanguardPipeline
 from classifier.classifier			import process_items, sort_storage_list
-from data							import check_data_base
 from utils.constants				import DICT_S, CATEGORIES, VALID_DATABASES
 from routine.fsm					import SetContext, StateMachine, PipelineState
 from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
