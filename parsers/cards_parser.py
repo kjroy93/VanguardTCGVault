@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 20:03:18 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/17 01:40:25 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -108,7 +108,14 @@ class	CardsParser:
 		pass
 
 	def __decks(self, data: list):
-		card = self.__dual_nations(data)
+		result = sum(
+			1 for nation in NATIONS
+			if nation in data
+		)
+		if (result > 1):
+			card = self.__dual_nations(data)
+			return (card)
+		card = data
 		return (card)
 
 	def	_dispatcher(self, card_type: CardType) -> dict[str, Union[Callable | int]]:

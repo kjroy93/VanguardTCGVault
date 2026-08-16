@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 19:41:43 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/17 01:56:53 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,10 +49,11 @@ CATEGORIES = {
 
 NATIONS = {
 	"Dragon Empire",
-	"Stoicheia",
 	"Dark States",
+	"Brandt Gate",
+	"Stoicheia",
 	"Keter Sanctuary",
-	"Brandt Gate"
+	"Lyrical Monasterio"
 }
 
 
