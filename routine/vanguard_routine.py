@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 18:01:59 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 18:05:54 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -176,7 +176,7 @@ class	VanguardRoutine:
 					df.to_parquet(path)
 					print(df)
 			except (KeyError, ValueError, AttributeError, TypeError) as e:
-					print(f"Current set {tpl["titles"]} gave the error {e}")
+					print(f"Current set {tpl["titles"]} gave the error: {e}")
 					continue
 
 	@staticmethod
