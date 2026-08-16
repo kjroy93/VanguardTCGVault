@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 16:54:40 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 18:01:59 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -20,7 +20,7 @@ from pipeline.builder				import VanguardPipeline
 from classifier.classifier			import process_items, sort_storage_list
 from utils.constants				import DICT_S, CATEGORIES, VALID_DATABASES
 from routine.fsm					import SetContext, StateMachine, PipelineState
-from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher
+from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher, convert_to_int
 
 def	column_dispatcher(set_ctx: SetContext):
 	dispatcher = {
@@ -36,34 +36,38 @@ def	column_dispatcher(set_ctx: SetContext):
 class	VanguardRoutine:
 	@staticmethod
 	def	select_category(set_ctx: SetContext, deps: VanguardPipeline):
-		print("Welcome to VanguardTCGScrapper\n")
-		print("What info do you need from the website?")
-
-		options = {
-			0: "boosters",
-			1: "specials",
-			2: "decks",
-			3: "others",
-			4: "cards"
-		}
-
-		dispatcher = {
-			"boosters": "table",
-			"specials": "table",
-			"decks": "decks",
-			"others": "",
-			"cards": "cards"
-		}
-
-		for k,v in options.items():
-			print(f'{k}: {v}')
-		
 		while (True):
-			user_input = int(input("> ").strip().lower())
-			if (user_input not in options):
+			try:
+				print("Welcome to VanguardTCGScrapper\n")
+				print("What info do you need from the website?")
+
+				options = {
+					0: "boosters",
+					1: "specials",
+					2: "decks",
+					3: "others",
+					4: "cards"
+				}
+
+				dispatcher = {
+					"boosters": "table",
+					"specials": "table",
+					"decks": "decks",
+					"others": "",
+					"cards": "cards"
+				}
+
+				for k,v in options.items():
+					print(f'{k}: {v}')
+
+				user_input = convert_to_int((input("> ").strip().lower()))
+				if (user_input not in options):
+					continue
+				break
+			except ValueError as e:
+				print(f"Not valid input: {e}\n")
 				continue
-			break
-		
+
 		answer = options.get(user_input)
 		set_ctx.category = answer
 		set_ctx.column = dispatcher[answer]

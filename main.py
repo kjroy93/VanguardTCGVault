@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/16 17:40:34 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 17:58:37 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -63,5 +63,5 @@ async def main():
 if (__name__ == "__main__"):
 	try:
 		asyncio.run(main())
-	except (KeyboardInterrupt):
+	except (KeyboardInterrupt, EOFError):
 		print("Program Close")
