@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/08 17:56:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 01:42:51 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 15:55:00 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -27,7 +27,7 @@ def	get_duplicate_path(path: Path) -> Path:
 	i = 1
 	while True:
 		new_path = parent / f"{stem}_{i}{suffix}"
-		if not new_path.exists():
+		if (not new_path.exists()):
 			return new_path
 		i += 1
 

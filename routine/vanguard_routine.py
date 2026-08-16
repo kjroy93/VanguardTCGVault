@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 14:09:56 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 16:54:40 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -143,36 +143,37 @@ class	VanguardRoutine:
 		for block in VALID_DATABASES:
 			database = getattr(deps.storage, block.lower())
 			consult = deps.parser.make_consults(database, "consult")
-			for set_number, tpl in consult.items():
-				if (check_data_base.set_exists(set_ctx, block, set_number)):
-					print(
-						f"Skiping existing set: "
-						f"{block} {set_number + 1}"
-					)
-					continue
-				set_ctx.tpl = tpl
-				await deps.scrapper.api_calls(set_ctx)
-				VanguardRoutine.__parser(set_ctx, deps)
-				set_ctx.is_d = block in ["D", "DZ"]
-				try:
+			try:
+				for set_number, tpl in consult.items():
+					if (check_data_base.set_exists(set_ctx, block, set_number)):
+						print(
+							f"Skiping existing set: "
+							f"{block} {set_number + 1}"
+						)
+						continue
+					set_ctx.tpl = tpl
+					await deps.scrapper.api_calls(set_ctx)
+					VanguardRoutine.__parser(set_ctx, deps)
+					set_ctx.is_d = block in ["D", "DZ"]
 					rows = deps.storage.prepare_metadata(set_ctx.crude_cards, set_ctx)
-				except (KeyError, ValueError, AttributeError) as e:
-					return (e)
-				columns = column_dispatcher(set_ctx)
-				df = pd.DataFrame(rows, columns=columns)
-				path = check_data_base.build_set_path(
-					category=set_ctx.category,
-					set_type=set_ctx.subcategory.strip().lower().split()[0],
-					block=block,
-					set_number=set_number + 1
-				)
-				path.parent.mkdir(
-					parents=True,
-					exist_ok=True
-				)
-				path = check_data_base.get_duplicate_path(path)
-				df.to_parquet(path)
-				print(df)
+					columns = column_dispatcher(set_ctx)
+					df = pd.DataFrame(rows, columns=columns)
+					path = check_data_base.build_set_path(
+						category=set_ctx.category,
+						set_type=set_ctx.subcategory.strip().lower().split()[0],
+						block=block,
+						set_number=set_number + 1
+					)
+					path.parent.mkdir(
+						parents=True,
+						exist_ok=True
+					)
+					path = check_data_base.get_duplicate_path(path)
+					df.to_parquet(path)
+					print(df)
+			except (KeyError, ValueError, AttributeError, TypeError) as e:
+					print(f"Current set {tpl["titles"]} gave the error {e}")
+					continue
 
 	@staticmethod
 	def	ask_user(set_ctx: SetContext, deps: StateMachine):
@@ -183,8 +184,6 @@ class	VanguardRoutine:
 				print("Invalid answer")
 				continue
 			if (answer == "y"):
-				break
-			else:
-				deps.current_state = PipelineState.FINISH
-				break
+				return (PipelineState.ENTRY_POINT)
+			return (PipelineState.FINISH)
 				

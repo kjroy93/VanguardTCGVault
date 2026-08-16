@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 00:27:49 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 16:20:50 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -157,3 +157,12 @@ DB_FOLDER = Path("database")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 
 FILE = DB_FOLDER / "urls.json"
+
+REQUIRED_FIELDS = {
+	0: "Code",
+	1: "Name",
+	2: "Grade",
+	3: "Faction",
+	4: "Type",
+	5: "Rarity"
+}

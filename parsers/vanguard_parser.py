@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 01:25:44 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 16:50:26 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -52,16 +52,16 @@ class	VanguardParser:
 			value = str(param.value).strip()
 			value = value.replace("<br/>", "").replace("<br>", "")
 
-			if "title" in name:
+			if ("title" in name):
 				idx = "".join([c for c in name if c.isdigit()])
 				titles[idx] = value.lower()
 
-			elif "info" in name:
+			elif ("info" in name):
 				idx = "".join([c for c in name if c.isdigit()])
 				infos[idx] = value
 
 		for idx in infos:
-			if idx in titles:
+			if (idx in titles):
 				data[titles[idx]] = infos[idx]
 		return (data)
 		
@@ -79,7 +79,7 @@ class	VanguardParser:
 		for _, card in enumerate(parsed_cardlist):
 			card_name = clean_text(str(card.params[1].value).strip())
 			if (not card_name):
-				raise TypeError("Card name cannot be empty")
+				raise TypeError(f"Card name cannot be empty {card.params}")
 			letter = card_name[0]
 			if (letter not in alphabet):
 				continue

@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 16:07:31 by kjroy93           #+#    #+#              #
-#    Updated: 2026/08/16 02:35:28 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 16:58:59 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -113,8 +113,9 @@ async def main():
 				break
 	finally:
 		await pipeline.scrapper.api.close_session()
+		print("Session Closed")
 
-if __name__ == "__main__":
+if (__name__ == "__main__"):
 	try:
 		asyncio.run(main())
 	except (KeyboardInterrupt):

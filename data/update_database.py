@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:40:18 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 17:40:41 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 16:00:48 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -28,7 +28,6 @@ class	LinkStorage:
 
 	def	__save_data(self):
 		FILE.parent.mkdir(parents=True, exist_ok=True)
-
 		with FILE.open("w", encoding="utf-8") as f:
 			json.dump(
 				self._links,

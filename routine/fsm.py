@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 18:45:15 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 16:55:50 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -82,7 +82,10 @@ class	StateMachine[S: Enum, E: Enum, C, D]:
 	async def	handle(self, ctx: C, event: E, deps: D) -> S:
 		next_state, action = self.next_transition(self.current_state, event)
 		result = action(ctx, deps)
-		if inspect.isawaitable(result):
-			await result
-		self.current_state = next_state
+		if (inspect.isawaitable(result)):
+			result = await result
+		if (result is not None):
+			self.current_state = result
+		else:
+			self.current_state = next_state
 		return (self.current_state)
