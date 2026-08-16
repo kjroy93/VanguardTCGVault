@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 16:45:04 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 18:58:55 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,15 +64,18 @@ class	RowFactory:
 	def	construct_decks(card_ctx: CardContext, set_ctx: SetContext) -> object:
 		release = RowFactory.get_release(set_ctx.infobox)
 		faction = RowFactory.prepare_faction(card_ctx.row)
+		RowFactory.prepare_grade(card_ctx.row)
 		row = card_ctx.obj(
 			Code =			card_ctx.row[0],
-			Amount =		card_ctx.row[1],
-			Name =			card_ctx.row[2],
-			Grade = 		card_ctx.row[3],
+			Name =			card_ctx.row[1],
+			Grade = 		card_ctx.row[2],
 			Faction =		faction,
 			FactionType =	"Nation" if set_ctx.is_d else "Clan",
-			Type = 			card_ctx.row[5],
+			Type = 			card_ctx.row[4],
+			Amount =		card_ctx.row[5],
 			Release = 		release,
+			URL =			card_ctx.url if card_ctx.already_scraped == False else "Reprint",
+			SET_ID =		int(card_ctx.id)
 		)
 		set_ctx.rows.append(row)
 

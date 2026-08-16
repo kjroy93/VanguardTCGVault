@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 18:13:45 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 19:47:07 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -33,6 +33,9 @@ class	MetadataRoutine:
 
 		if (nations >= 2):
 			return (CardType.DUAL_NATION)
+
+		if ("Deck" in set_ctx.tpl.get("titles")):
+			set_ctx.is_deck = True
 
 		if (set_ctx.is_deck):
 			return (CardType.DECK)

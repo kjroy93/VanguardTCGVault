@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/15 16:37:36 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 20:03:18 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -54,8 +54,9 @@ class	CardsParser:
 		return (l)
 
 	@staticmethod
-	def	parse_deck():
-		pass
+	def	parse_deck(card: list[str | int]):
+		parsed_row = CardsParser.raw_table_data_prepare(card)
+		return (parsed_row)
 
 	@staticmethod
 	def normalize_length(card_ctx: CardContext):
@@ -107,7 +108,8 @@ class	CardsParser:
 		pass
 
 	def __decks(self, data: list):
-		pass
+		card = self.__dual_nations(data)
+		return (card)
 
 	def	_dispatcher(self, card_type: CardType) -> dict[str, Union[Callable | int]]:
 		dispatcher = {

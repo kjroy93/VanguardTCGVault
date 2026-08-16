@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 18:05:54 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 20:01:57 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,24 +14,13 @@
 import pandas						as pd
 
 # Library
-from wiki_api.vanguard_api			import header
+from wiki_api.vanguard_api			import HEADER
 from data							import check_data_base
 from pipeline.builder				import VanguardPipeline
 from classifier.classifier			import process_items, sort_storage_list
-from utils.constants				import DICT_S, CATEGORIES, VALID_DATABASES
 from routine.fsm					import SetContext, StateMachine, PipelineState
-from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher, convert_to_int
-
-def	column_dispatcher(set_ctx: SetContext):
-	dispatcher = {
-		"table": ["Code", "Name", "Grade",
-				"Faction", "FactionType", "Type",
-				"Rarity", "Release", "URL", "SET_ID"],
-		"deck": ["Code", "Amount", "Name",
-				"Grade", "Faction", "FactionType",
-				"Type", "Release", "URL"]
-	}
-	return (dispatcher[set_ctx.column])
+from utils.constants				import DICT_S, CATEGORIES, VALID_DATABASES, OPTIONS
+from utils.utils					import remove_from_list, smart_sleep, construct_rules, dispatcher, convert_to_int, column_dispatcher
 
 class	VanguardRoutine:
 	@staticmethod
@@ -41,36 +30,19 @@ class	VanguardRoutine:
 				print("Welcome to VanguardTCGScrapper\n")
 				print("What info do you need from the website?")
 
-				options = {
-					0: "boosters",
-					1: "specials",
-					2: "decks",
-					3: "others",
-					4: "cards"
-				}
-
-				dispatcher = {
-					"boosters": "table",
-					"specials": "table",
-					"decks": "decks",
-					"others": "",
-					"cards": "cards"
-				}
-
-				for k,v in options.items():
+				for k,v in OPTIONS.items():
 					print(f'{k}: {v}')
 
 				user_input = convert_to_int((input("> ").strip().lower()))
-				if (user_input not in options):
+				if (user_input not in OPTIONS):
 					continue
 				break
 			except ValueError as e:
 				print(f"Not valid input: {e}\n")
 				continue
 
-		answer = options.get(user_input)
+		answer = OPTIONS.get(user_input)
 		set_ctx.category = answer
-		set_ctx.column = dispatcher[answer]
 
 	@staticmethod
 	def	select_subcategory(set_ctx: SetContext, deps: VanguardPipeline):
@@ -124,7 +96,7 @@ class	VanguardRoutine:
 		param = set_ctx.query_parameters
 		response = await deps.scrapper.api.get(
 			param,
-			header
+			HEADER
 		)
 		error = response.get("Error")
 		if (error is not None):
@@ -147,8 +119,9 @@ class	VanguardRoutine:
 		for block in VALID_DATABASES:
 			database = getattr(deps.storage, block.lower())
 			consult = deps.parser.make_consults(database, "consult")
-			try:
-				for set_number, tpl in consult.items():
+			for set_number, tpl in consult.items():
+				try:
+					snapshot = deps.storage.link_storage.get_snapshot()
 					if (check_data_base.set_exists(set_ctx, block, set_number)):
 						print(
 							f"Skiping existing set: "
@@ -175,8 +148,12 @@ class	VanguardRoutine:
 					path = check_data_base.get_duplicate_path(path)
 					df.to_parquet(path)
 					print(df)
-			except (KeyError, ValueError, AttributeError, TypeError) as e:
-					print(f"Current set {tpl["titles"]} gave the error: {e}")
+					if (set_ctx.is_deck == True):
+						set_ctx.is_deck = False
+				except (KeyError, ValueError, AttributeError, TypeError, IndexError) as e:
+					print(f"Current set {tpl.get("titles")} gave the error: {e}")
+					deps.storage.link_storage.rollback(snapshot)
+					set_ctx.is_deck = False
 					continue
 
 	@staticmethod

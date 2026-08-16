@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:43:54 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 17:55:16 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 19:01:33 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,8 +17,8 @@ from typing		import Literal, Optional, Annotated, Union
 from pydantic	import BaseModel, Field
 
 class	ScrapCard(BaseModel):
-	Code:			str
-	Name:			str
+	Code:			str			| None = None
+	Name:			str			| None = None
 	Grade:			int 		| None = None
 	Faction:		list[str]	| None = None
 	FactionType:	str			| None = None
@@ -29,15 +29,16 @@ class	ScrapCard(BaseModel):
 	SET_ID:			int			| None = None
 
 class	ScrapDeck(BaseModel):
-	Code:			str
-	Amount:			Optional[int] = None
-	Name:			str
-	Grade:			Optional[int] = None
-	Faction:		str
-	FactionType:	str
-	Type:			Optional[str] = None
-	Release:		str
-	url:			str
+	Code:			str			| None = None
+	Name:			str			| None = None
+	Grade:			int			| None = None
+	Faction:		list[str]	| None = None
+	FactionType:	str			| None = None
+	Type:			str			| None = None
+	Amount:			int			| None = None
+	Release:		str			| None = None
+	URL:			str			| None = None
+	SET_ID:			int			| None = None
 
 class	Card(BaseModel):
 	name:			str

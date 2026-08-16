@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 17:58:22 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 19:28:27 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -48,7 +48,6 @@ class	SetContext:
 	subcategory:		str				| None = None
 	query_page:			str				| None = None
 	query_parameters:	str				| None = None
-	column:				str				| None = None
 	tpl:				dict			| None = None
 	response:			dict			| None = None
 	api_result:			dict			| None = None

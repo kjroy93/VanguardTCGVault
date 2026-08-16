@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 16:50:26 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 18:21:07 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,6 +18,7 @@ from mwparserfromhell.nodes		import Template
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
+from utils.constants			import TRASH_HEADERS
 from utils.utils				import clean_text, remove_from_list, make_custom_alphabet
 
 class	VanguardParser:
@@ -136,8 +137,5 @@ class	VanguardParser:
 		for tpl in wikitex.filter_templates():
 			if ("CardList" in tpl.name):
 				lst.append(tpl)
-		lst = remove_from_list(lst, ["{{CardList/header/D}}",
-							   "{{CardList/footer}}", "{{CardList/header}}",
-							   "{{CardList/header/V}}"
-							])
+		lst = remove_from_list(lst, TRASH_HEADERS)
 		return (lst)

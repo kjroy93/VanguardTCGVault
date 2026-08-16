@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:23:17 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 17:51:12 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 19:28:58 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -105,3 +105,16 @@ def	make_custom_alphabet(crude_links: list[str]) -> dict[str, dict[str]]:
 			alphabet[letter] = {}
 		alphabet[letter][clean_link] = link
 	return (alphabet)
+
+def	column_dispatcher(set_ctx: SetContext):
+	dispatcher = {
+		"table": ["Code", "Name", "Grade",
+				"Faction", "FactionType", "Type",
+				"Rarity", "Release", "URL", "SET_ID"],
+		"deck": ["Code", "Name", "Grade",
+		   		"Faction", "FactionType", "Type",
+				"Amount", "Release", "URL", "SET_ID"]
+	}
+	if (set_ctx.is_deck):
+		return (dispatcher.get("deck"))
+	return (dispatcher.get("table"))

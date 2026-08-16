@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 17:40:04 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 19:41:43 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -73,7 +73,7 @@ DICT_S = {
 	],
 	"specials": [
 		"List",
-		"Thailand"
+		"Thailand",
 	],
 	"decks": [
 		"List",
@@ -178,3 +178,19 @@ EVENTS = [
 	PipelineEvent.CLEAN_RESULT,
 	PipelineEvent.MAIN_ROUTINE
 ]
+
+TRASH_HEADERS = [
+	"{{CardList/header/D}}",
+	"{{CardList/footer}}",
+	"{{CardList/header}}",
+	"{{CardList/header/V}}",
+	"{{CardList/header/TD}}"
+]
+
+OPTIONS = {
+	0: "boosters",
+	1: "specials",
+	2: "decks",
+	3: "others",
+	4: "cards"
+}

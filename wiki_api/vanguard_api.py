@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:24:34 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 16:34:19 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/16 19:34:46 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ from utils.utils	import smart_sleep
 
 # Definitions
 JSONType = dict[str]
-header = {
+HEADER = {
 	"User-Agent": "VanguardScrapper/1.1 (Python; contact: kmarrero1993@gmail.com)"
 }
 
@@ -112,12 +112,12 @@ class	VanguardScrapper:
 		await smart_sleep()
 		api_result = await self.api.get(
 			params=ctx.tpl,
-			headers=header
+			headers=HEADER
 		)
 		await smart_sleep()
 		link_result = await self.api.get(
 			params=param,
-			headers=header
+			headers=HEADER
 		)
 
 		ctx.api_result = api_result
