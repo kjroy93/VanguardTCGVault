@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:24:34 by marvin            #+#    #+#              #
-#    Updated: 2026/08/16 19:34:46 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/17 03:48:47 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ from utils.utils	import smart_sleep
 # Definitions
 JSONType = dict[str]
 HEADER = {
-	"User-Agent": "VanguardScrapper/1.1 (Python; contact: kmarrero1993@gmail.com)"
+	"User-Agent": "VanguardScrapper/1.104 (Python; contact: kmarrero1993@gmail.com)"
 }
 
 # Classes

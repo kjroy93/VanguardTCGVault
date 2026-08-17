@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/17 01:56:53 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/17 03:06:18 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -158,6 +158,7 @@ SET_PATHS = {
 }
 
 DB_FOLDER = Path("database")
+FAILURE_FILE = path = Path("database/failed_sets.json")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 
 FILE = DB_FOLDER / "urls.json"
@@ -185,7 +186,8 @@ TRASH_HEADERS = [
 	"{{CardList/footer}}",
 	"{{CardList/header}}",
 	"{{CardList/header/V}}",
-	"{{CardList/header/TD}}"
+	"{{CardList/header/TD}}",
+	"{{CardList/header/TD/D}}"
 ]
 
 OPTIONS = {

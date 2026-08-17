@@ -6,16 +6,12 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 20:01:57 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/17 03:53:34 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
-# Dependencies
-import pandas						as pd
-
 # Library
 from wiki_api.vanguard_api			import HEADER
-from data							import check_data_base
 from pipeline.builder				import VanguardPipeline
 from classifier.classifier			import process_items, sort_storage_list
 from routine.fsm					import SetContext, StateMachine, PipelineState
@@ -109,52 +105,39 @@ class	VanguardRoutine:
 		set_ctx.crude_cards = deps.parser.make_cardlist_from_str(wikitex)
 		set_ctx.infobox = deps.parser.infobox(wikitex)
 		all_links = deps.scrapper.obtain_links(set_ctx.links)
-		deps.parser.clean_trash_from_set(set_ctx.query_parameters["page"], all_links, 4, reverse=True)
+		deps.parser.clean_trash_from_set(
+			set_ctx.query_parameters["page"], all_links,
+			4, reverse=True
+		)
 		set_ctx.links = deps.parser.sort_unique_url(
 			set_ctx.crude_cards, all_links
 		)
 
 	@staticmethod
 	async def	main_scrap_routine(set_ctx: SetContext, deps: VanguardPipeline):
+		failed_sets = []
 		for block in VALID_DATABASES:
 			database = getattr(deps.storage, block.lower())
 			consult = deps.parser.make_consults(database, "consult")
 			for set_number, tpl in consult.items():
+				arguments = {"block": block, "set_number": set_number}
 				try:
 					snapshot = deps.storage.link_storage.get_snapshot()
-					if (check_data_base.set_exists(set_ctx, block, set_number)):
-						print(
-							f"Skiping existing set: "
-							f"{block} {set_number + 1}"
-						)
+					if (deps.storage.check_existence(set_ctx, arguments)):
 						continue
 					set_ctx.tpl = tpl
 					await deps.scrapper.api_calls(set_ctx)
 					VanguardRoutine.__parser(set_ctx, deps)
 					set_ctx.is_d = block in ["D", "DZ"]
 					rows = deps.storage.prepare_metadata(set_ctx.crude_cards, set_ctx)
-					columns = column_dispatcher(set_ctx)
-					df = pd.DataFrame(rows, columns=columns)
-					path = check_data_base.build_set_path(
-						category=set_ctx.category,
-						set_type=set_ctx.subcategory.strip().lower().split()[0],
-						block=block,
-						set_number=set_number + 1
-					)
-					path.parent.mkdir(
-						parents=True,
-						exist_ok=True
-					)
-					path = check_data_base.get_duplicate_path(path)
-					df.to_parquet(path)
-					print(df)
-					if (set_ctx.is_deck == True):
+					arguments["data"] = rows
+					deps.storage.create_dataframe(arguments, set_ctx, column_dispatcher(set_ctx))
+					if (set_ctx.is_deck):
 						set_ctx.is_deck = False
 				except (KeyError, ValueError, AttributeError, TypeError, IndexError) as e:
-					print(f"Current set {tpl.get("titles")} gave the error: {e}")
-					deps.storage.link_storage.rollback(snapshot)
-					set_ctx.is_deck = False
-					continue
+					print(f"Current set {tpl.get('titles')} gave the error: {e}")
+					deps.storage.failure_routine(failed_sets, set_ctx, snapshot, e)
+		deps.storage.json_with_failures(failed_sets)
 
 	@staticmethod
 	def	ask_user(set_ctx: SetContext, deps: StateMachine):
@@ -167,4 +150,3 @@ class	VanguardRoutine:
 			if (answer == "y"):
 				return (PipelineState.ENTRY_POINT)
 			return (PipelineState.FINISH)
-				

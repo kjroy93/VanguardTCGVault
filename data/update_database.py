@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:40:18 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 18:39:33 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/08/17 03:32:40 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -49,8 +49,11 @@ class	LinkStorage:
 	def	get_snapshot(self):
 		return (set(self._links))
 
-	def	rollback(self, snapshot):
+	def rollback(self, snapshot):
 		current_keys = set(self._links)
 		new_keys = current_keys - snapshot
+
 		for key in new_keys:
 			del self._links[key]
+
+		self.__save_data()
