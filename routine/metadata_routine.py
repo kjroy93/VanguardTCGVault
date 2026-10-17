@@ -6,12 +6,11 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/17 22:40:32 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 01:04:20 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Library
-from utils.constants		import NATIONS
 from parsers.types			import CardType
 from routine.fsm			import SetContext
 from cards.fsm				import CardContext
@@ -22,35 +21,38 @@ class	MetadataRoutine:
 		self.parser = parser
 
 	def __classify(self, card_ctx: CardContext, set_ctx: SetContext) -> CardType:
-		nations = sum(
-			1
-			for param in card_ctx.card
-			if str(param.value).strip() in NATIONS
-		)
+		template_types = {
+			"CardList": CardType.SINGLE_CARD,
+			"CardListV": CardType.SINGLE_CARD,
+			"CardList2": CardType.DUAL_CARD,
+			"CardList2N": CardType.DUAL_NATION,
+			"Deck": CardType.DECK
+		}
 		
-		if (card_ctx.size == 8 and nations != 2):
-			return (CardType.DUAL_CARD)
-
-		if (card_ctx.size == 8 and nations == 2):
-			return (CardType.DUAL_NATION)
-
 		if ("Deck" in set_ctx.tpl.get("titles")):
 			set_ctx.is_deck = True
+			card_type = template_types.get("Deck")
+			return (card_type)
 
-		if (set_ctx.is_deck):
-			return (CardType.DECK)
+		card_type = template_types.get(card_ctx.name)
 
-		return (CardType.SINGLE_CARD)
+		if (card_type is None):
+			raise ValueError(
+				f"Unknown card template: "
+				+ f"{card_ctx.name}"
+				+ f"{set_ctx.tpl.get("titles")}"
+			)
+
+		return (card_type)
 
 	def	run(self, card_ctx: CardContext, set_ctx: SetContext):
 		card_type = self.__classify(card_ctx, set_ctx)
 		handler = self.parser.get_handler(card_type)
-		data = card_ctx.card
 
 		if (handler["prepare"] is not None):
-			data = handler["prepare"](data)
+			handler["prepare"](card_ctx)
 
-		card_ctx.row = handler["parse"](data)
+		card_ctx.row = handler["parse"](card_ctx)
 		card_ctx.prepare_data = handler["cards"]
 		self.parser.validate_row_length(card_ctx.row)
 

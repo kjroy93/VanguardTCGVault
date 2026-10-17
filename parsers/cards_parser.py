@@ -6,13 +6,13 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/17 22:52:47 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 00:40:31 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
 from dataclasses				import dataclass
-from typing						import Callable, Union
+from typing						import Callable, Union, Literal
 
 # Library
 from utils						import utils
@@ -23,21 +23,22 @@ from parsers.types				import MetadataType, CardType
 @dataclass
 class	CardsParser:
 	@staticmethod
-	def	raw_table_data_prepare(template: list) -> list:
+	def	raw_table_data_prepare(template: list,
+	                              control: Literal["card", "deck"]
+								  = "card") -> list:
 		data = []
 		columns = [0, 1, 2, 3, 4, 5]
 		for i in columns:
 			if (i == 2):
 				information = utils.convert_to_int(template[i])
+			if (control == "deck" and i == 5):
+				information = utils.convert_to_int(template[i])
 			else:
+				if (isinstance(template[i], list)):
+					continue
 				information = utils.convert_to_str(template[i])
 			data.append(information)
 		return (data)
-
-	@staticmethod
-	def	parse_single_card(card: list[str | int]):
-		parsed_row = CardsParser.raw_table_data_prepare(card)
-		return (parsed_row)
 
 	@staticmethod
 	def	parse_dual_cards(cards: list[list[str | int]]):
@@ -48,8 +49,20 @@ class	CardsParser:
 		return (l)
 
 	@staticmethod
-	def	parse_deck(card: list[str | int]):
-		parsed_row = CardsParser.raw_table_data_prepare(card)
+	def	parse_card(card_ctx: CardContext, control: str):
+		if (card_ctx.name == "CardListV"):
+			card = []
+			
+			for i, template in enumerate(card_ctx.card):
+				if (i != 2):
+					card.append(template)
+			parsed_row = CardsParser.raw_table_data_prepare(card)	
+			return (parsed_row)
+		
+		if (control != "deck"):
+			parsed_row = CardsParser.raw_table_data_prepare(card_ctx)
+		else:
+			parsed_row = CardsParser.raw_table_data_prepare(card_ctx, "deck")
 		return (parsed_row)
 
 	@staticmethod
@@ -59,27 +72,27 @@ class	CardsParser:
 				f"Amount of data invalid in card {card_ctx.card}: {card_ctx.row!r}"
 			)
 
-	def	__split_card(self, data: list):
-		if (len(data) != 8):
-			raise ValueError(f"Expected 8 parameters: {data!r}")
+	def	__split_card(self, card_ctx: CardContext):
+		if (len(card_ctx.size) != 8):
+			raise ValueError(f"Expected 8 parameters: {card_ctx.card!r}")
 
-		code, name_a, grade_a, name_b, grade_b, faction, card_type, rarity = data
+		code, name_a, grade_a, name_b, grade_b, faction, card_type, rarity = card_ctx.card
 		return [
 			[code, name_a, grade_a, faction, card_type, rarity],
 			[code, name_b, grade_b, faction, card_type, rarity],
 		]
 
-	def	__dual_nations(self, data: list):
+	def	__dual_nations(self, card_ctx: CardContext):
 		nations = []
 		card = []
-		for i in data:
+		for i in card_ctx.card:
 			if (str(i) in NATIONS):
 				nation = str(i)
 				nations.append(nation)
 				continue
 			card.append(i)
 		card.insert(3, nations)
-		return (card)
+		card_ctx.card = card
 	
 	def	__promo(self, data: list):
 		pass
@@ -99,17 +112,17 @@ class	CardsParser:
 		dispatcher = {
 			CardType.SINGLE_CARD: {
 				"prepare": None,
-				"parse": CardsParser.parse_single_card,
+				"parse": CardsParser.parse_card,
 				"cards": MetadataType.SINGLE
 			},
 			CardType.PROMO: {
 				"prepare": self.__promo,
-				"parse": CardsParser.parse_single_card,
+				"parse": CardsParser.parse_card,
 				"cards": MetadataType.SINGLE
 			},
 			CardType.DUAL_NATION: {
 				"prepare": self.__dual_nations,
-				"parse": CardsParser.parse_single_card,
+				"parse": CardsParser.parse_card,
 				"cards": MetadataType.SINGLE
 			},
 			CardType.DUAL_CARD: {
@@ -119,7 +132,7 @@ class	CardsParser:
 			},
 			CardType.DECK: {
 				"prepare": self.__decks,
-				"parse": CardsParser.parse_deck,
+				"parse": CardsParser.parse_card,
 				"cards": MetadataType.DECK
 			}
 		}

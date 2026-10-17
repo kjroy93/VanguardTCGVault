@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/10/17 22:33:44 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 00:44:45 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -137,6 +137,7 @@ class	VanguardStorage:
 			}
 		)
 		self.link_storage.rollback(saved_urls)
+		set_ctx.rows.clear()
 		set_ctx.is_deck = False
 
 	def	json_with_failures(self, failed_sets: list[dict]):

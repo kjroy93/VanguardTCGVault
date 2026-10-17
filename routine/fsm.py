@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 19:28:27 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 00:45:42 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -44,21 +44,21 @@ class	PipelineEvent(Enum):
 
 @dataclass
 class	SetContext:
-	category:			str				| None = None
-	subcategory:		str				| None = None
-	query_page:			str				| None = None
-	query_parameters:	str				| None = None
-	tpl:				dict			| None = None
-	response:			dict			| None = None
-	api_result:			dict			| None = None
-	set_page_titles: list[str] | None = None
-	card_links_response: dict | None = None
-	card_page_titles_by_name: dict[str, str] | None = None
-	infobox:			dict			| None = None
-	crude_cards:		list			| None = None
-	rows:				list[object] 	= field(default_factory=list)
-	is_d:				bool			| None = None
-	is_deck:			bool			| None = None
+	category:					str				| None = None
+	subcategory:				str				| None = None
+	query_page:					str				| None = None
+	query_parameters:			str				| None = None
+	tpl:						dict			| None = None
+	response:					dict			| None = None
+	api_result:					dict			| None = None
+	set_page_titles:			list[str] 		| None = None
+	card_links_response:		dict 			| None = None
+	card_page_titles_by_name:	dict[str, str]	| None = None
+	infobox:					dict			| None = None
+	crude_cards:				list			| None = None
+	rows:						list[object] 	= field(default_factory=list)
+	is_d:						bool			| None = None
+	is_deck:					bool			| None = None
 
 @dataclass
 class	StateMachine[S: Enum, E: Enum, C, D]:

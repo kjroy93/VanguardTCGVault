@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/10/17 22:53:53 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 00:46:39 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,9 +18,6 @@ from dataclasses					import dataclass, field
 # Dependencies
 from mwparserfromhell.nodes.extras	import Parameter
 
-# Library
-pass
-
 # Definitions
 type Action[C] = Callable[[C], None]
 
@@ -29,16 +26,16 @@ class	InvalidTransition:
 
 @dataclass
 class	CardContext:
-	url:				str		| None = None
-	size:				int		| None = 0
-	id:					int		| None = None
-	prepare_data:		int		| None = None
-	row:				list	| None = None
+	url:				str				| None = None
+	size:				int				| None = 0
+	id:					int				| None = None
+	prepare_data:		int				| None = None
+	row:				list			| None = None
 	card:				list[Parameter]	| None = None
-	infobox:			dict	| None = None
-	already_scraped: 	bool	| None = None
-	name:				str		| None = None
-	obj:				object	| None = None
+	infobox:			dict			| None = None
+	already_scraped: 	bool			| None = None
+	name:				str				| None = None
+	obj:				object			| None = None
 	
 class	CardState(Enum):
 	ENTRY_POINT	= auto()

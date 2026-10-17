@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 18:58:55 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 00:51:20 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -29,13 +29,13 @@ class	RowFactory:
 		if (isinstance(row[3], list)):
 			return (row[3])
 		if (row[3] == '-'):
-			return (["None"])
+			return ([])
 		return ([row[3]])
 
 	@staticmethod
 	def	prepare_grade(row: list):
 		if (row[2] == '' or row[2] == '-'):
-			row[2] = 0
+			row[2] = None
 
 	@staticmethod
 	def	_validate_context(card_ctx: CardContext, set_ctx: SetContext):
