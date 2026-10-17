@@ -73,29 +73,29 @@ class	VanguardParser:
 				box = self.__process_infobox(tpl, box)
 		return (box)
 
-	def sort_unique_url(self, parsed_cardlist: list[Template], crude_links: list[str]):
-		links = {}
-		alphabet = make_custom_alphabet(crude_links)
+	def sort_unique_url(self, parsed_cardlist: list[Template], candidate_card_page_titles: list[str]):
+		card_page_titles_by_name = {}
+		card_page_titles_by_initial = make_custom_alphabet(candidate_card_page_titles)
 
 		for _, card in enumerate(parsed_cardlist):
 			card_name = clean_text(str(card.params[1].value).strip())
 			if (not card_name):
 				raise TypeError(f"Card name cannot be empty {card.params}")
 			letter = card_name[0]
-			if (letter not in alphabet):
+			if (letter not in card_page_titles_by_initial):
 				continue
-			link = alphabet[letter].get(card_name)
-			if (link is None):
-				matches = [
-					original_link
-					for clean_link, original_link in alphabet[letter].items()
-					if card_name in clean_link
+			matched_page_title = card_page_titles_by_initial[letter].get(card_name)
+			if (matched_page_title is None):
+				matching_page_titles = [
+					original_page_title
+					for normalized_page_title, original_page_title in card_page_titles_by_initial[letter].items()
+					if card_name in normalized_page_title
 				]
-				if (len(matches)) == 1:
-					link = matches[0]
-			if (link is not None):
-				links[card_name] = link
-		return (links)
+				if (len(matching_page_titles)) == 1:
+					matched_page_title = matching_page_titles[0]
+			if (matched_page_title is not None):
+				card_page_titles_by_name[card_name] = matched_page_title
+		return (card_page_titles_by_name)
 
 	def make_consults(self, lst: list, format: Literal["consult", "decks"]) -> dict[int, dict[str, str]]:
 		def __dict_construct(consult: Union[Literal["consult", "decks"]], lst: list):

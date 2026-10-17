@@ -71,11 +71,11 @@ class	VanguardScrapper:
 		self.api = api
 
 	def	obtain_links(self, data: JSONType):
-		sets = []
-		for link in data["parse"]["links"]:
-			if (link.get("ns") == 0):
-				sets.append(link["*"])
-		return (sets)
+		page_titles = []
+		for page_link in data["parse"]["links"]:
+			if (page_link.get("ns") == 0):
+				page_titles.append(page_link["*"])
+		return (page_titles)
 	
 	def	obtain_wikitex(self, curl: JSONType) -> str:
 		"""
@@ -100,25 +100,25 @@ class	VanguardScrapper:
 	async def	api_calls(self, ctx: SetContext):
 
 		def	define_param(tpl: dict):
-			links = {
+			card_links_params = {
 				"action": "parse",
 				"page": tpl.get("titles"),
 				"prop": "links",
 				"format": "json"
 			}
-			return (links)
+			return (card_links_params)
 
-		param = define_param(ctx.tpl)
+		card_links_params = define_param(ctx.tpl)
 		await smart_sleep()
 		api_result = await self.api.get(
 			params=ctx.tpl,
 			headers=HEADER
 		)
 		await smart_sleep()
-		link_result = await self.api.get(
-			params=param,
+		card_links_response = await self.api.get(
+			params=card_links_params,
 			headers=HEADER
 		)
 
 		ctx.api_result = api_result
-		ctx.links = link_result
+		ctx.card_links_response = card_links_response

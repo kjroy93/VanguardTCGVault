@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/17 01:40:25 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/17 22:52:47 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -25,19 +25,13 @@ class	CardsParser:
 	@staticmethod
 	def	raw_table_data_prepare(template: list) -> list:
 		data = []
-		for i in template:
-			try:
-				raw_value = utils.convert_to_str(i)
-			except (AttributeError):
-				value = i
-				data.append(value)
-				continue
-			try:
-				value = utils.convert_to_int(raw_value)
-			except (ValueError):
-				value = raw_value
-			if (value != None):
-				data.append(value)
+		columns = [0, 1, 2, 3, 4, 5]
+		for i in columns:
+			if (i == 2):
+				information = utils.convert_to_int(template[i])
+			else:
+				information = utils.convert_to_str(template[i])
+			data.append(information)
 		return (data)
 
 	@staticmethod
@@ -59,38 +53,21 @@ class	CardsParser:
 		return (parsed_row)
 
 	@staticmethod
-	def normalize_length(card_ctx: CardContext):
-		if (card_ctx.size < 6):
-			card_ctx.row.insert(len(card_ctx.row), '')
-		i = 0
-		while (card_ctx.size != 6):
-			try:
-				if (card_ctx.row[i] == '' or
-						card_ctx.row[i] == "V" or
-						card_ctx.row[i] == "D" or
-						card_ctx.row[i] == "DZ"):
-					card_ctx.row.pop(i)
-					i = 0
-					card_ctx.size = len(card_ctx.row)
-					continue
-				i += 1
-				card_ctx.size = len(card_ctx.row)
-			except (IndexError):
-				break
+	def validate_row_length(card_ctx: CardContext):
+		if (card_ctx.size != 6 or card_ctx.size != 8):
+			raise ValueError(
+				f"Amount of data invalid in card {card_ctx.card}: {card_ctx.row!r}"
+			)
 
 	def	__split_card(self, data: list):
-		card_a = []
-		card_b = []
-		i = 5
-		if (len(data) > 6):
-			card_a = data[0:3]
-			card_b = data[3:]
-		while (len(card_b) < 6):
-			card_b.insert(0, card_a[0])
-		while (len(card_a) < 6):
-			card_a.insert(3, card_b[i])
-			i -= 1
-		return ([card_a, card_b])
+		if (len(data) != 8):
+			raise ValueError(f"Expected 8 parameters: {data!r}")
+
+		code, name_a, grade_a, name_b, grade_b, faction, card_type, rarity = data
+		return [
+			[code, name_a, grade_a, faction, card_type, rarity],
+			[code, name_b, grade_b, faction, card_type, rarity],
+		]
 
 	def	__dual_nations(self, data: list):
 		nations = []

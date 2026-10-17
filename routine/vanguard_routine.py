@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/13 16:07:45 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/17 03:53:34 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/17 21:17:42 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,19 +70,6 @@ class	VanguardRoutine:
 		set_ctx.query_parameters = param
 
 	@staticmethod
-	def	parse_links(set_ctx: SetContext, deps: VanguardPipeline):
-		links = deps.scrapper.obtain_links(set_ctx.response)
-		deps.parser.clean_trash_from_set(set_ctx.query_page, links, 4)
-		set_ctx.links = remove_from_list(links, [
-			set_ctx.query_page,
-			*DICT_S.get(set_ctx.category)
-		])
-		process_items(set_ctx.links, deps)
-		if (set_ctx.category == "boosters"):
-			sort_storage_list(["LB", "G"], deps)
-		sort_storage_list(VALID_DATABASES, deps)
-
-	@staticmethod
 	async def	set_api_consult(set_ctx: SetContext, deps: VanguardPipeline):
 		rules = construct_rules(
 			set_ctx.query_parameters["page"].split()[4]
@@ -100,17 +87,30 @@ class	VanguardRoutine:
 		set_ctx.response = response
 
 	@staticmethod
+	def	parse_links(set_ctx: SetContext, deps: VanguardPipeline):
+		category_page_titles = deps.scrapper.obtain_links(set_ctx.response)
+		deps.parser.clean_trash_from_set(set_ctx.query_page, category_page_titles, 4)
+		set_ctx.set_page_titles = remove_from_list(category_page_titles, [
+			set_ctx.query_page,
+			*DICT_S.get(set_ctx.category)
+		])
+		process_items(set_ctx.set_page_titles, deps)
+		if (set_ctx.category == "boosters"):
+			sort_storage_list(["LB", "G"], deps)
+		sort_storage_list(VALID_DATABASES, deps)
+
+	@staticmethod
 	def	__parser(set_ctx: SetContext, deps: VanguardPipeline):
 		wikitex = deps.scrapper.obtain_wikitex(set_ctx.api_result)
 		set_ctx.crude_cards = deps.parser.make_cardlist_from_str(wikitex)
 		set_ctx.infobox = deps.parser.infobox(wikitex)
-		all_links = deps.scrapper.obtain_links(set_ctx.links)
+		candidate_card_page_titles = deps.scrapper.obtain_links(set_ctx.card_links_response)
 		deps.parser.clean_trash_from_set(
-			set_ctx.query_parameters["page"], all_links,
+			set_ctx.query_parameters["page"], candidate_card_page_titles,
 			4, reverse=True
 		)
-		set_ctx.links = deps.parser.sort_unique_url(
-			set_ctx.crude_cards, all_links
+		set_ctx.card_page_titles_by_name = deps.parser.sort_unique_url(
+			set_ctx.crude_cards, candidate_card_page_titles
 		)
 
 	@staticmethod

@@ -94,17 +94,17 @@ def dispatcher(set_ctx: SetContext):
 
 	return (main_dispatcher() + set_ctx.subcategory)
 
-def	make_custom_alphabet(crude_links: list[str]) -> dict[str, dict[str]]:
-	alphabet = {}
-	for link in crude_links:
-		clean_link = clean_text(link)
-		if (not clean_link):
+def	make_custom_alphabet(page_titles: list[str]) -> dict[str, dict[str]]:
+	page_titles_by_initial = {}
+	for page_title in page_titles:
+		normalized_page_title = clean_text(page_title)
+		if (not normalized_page_title):
 			continue
-		letter = clean_link[0]
-		if (letter not in alphabet):
-			alphabet[letter] = {}
-		alphabet[letter][clean_link] = link
-	return (alphabet)
+		letter = normalized_page_title[0]
+		if (letter not in page_titles_by_initial):
+			page_titles_by_initial[letter] = {}
+		page_titles_by_initial[letter][normalized_page_title] = page_title
+	return (page_titles_by_initial)
 
 def	column_dispatcher(set_ctx: SetContext):
 	dispatcher = {

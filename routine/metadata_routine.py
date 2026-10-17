@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/08/16 19:47:07 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/17 22:40:32 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -22,16 +22,16 @@ class	MetadataRoutine:
 		self.parser = parser
 
 	def __classify(self, card_ctx: CardContext, set_ctx: SetContext) -> CardType:
-		if (len(card_ctx.card)) == 8:
-			return (CardType.DUAL_CARD)
-
 		nations = sum(
 			1
-			for value in card_ctx.card
-			if str(value) in NATIONS
+			for param in card_ctx.card
+			if str(param.value).strip() in NATIONS
 		)
+		
+		if (card_ctx.size == 8 and nations != 2):
+			return (CardType.DUAL_CARD)
 
-		if (nations >= 2):
+		if (card_ctx.size == 8 and nations == 2):
 			return (CardType.DUAL_NATION)
 
 		if ("Deck" in set_ctx.tpl.get("titles")):
@@ -43,20 +43,15 @@ class	MetadataRoutine:
 		return (CardType.SINGLE_CARD)
 
 	def	run(self, card_ctx: CardContext, set_ctx: SetContext):
-		card = card_ctx.card
 		card_type = self.__classify(card_ctx, set_ctx)
 		handler = self.parser.get_handler(card_type)
-		data = card
+		data = card_ctx.card
 
 		if (handler["prepare"] is not None):
 			data = handler["prepare"](data)
 
 		card_ctx.row = handler["parse"](data)
 		card_ctx.prepare_data = handler["cards"]
-
-		if (card_type != CardType.DUAL_CARD):
-			card_ctx.size = len(card_ctx.row)
-			self.parser.normalize_length(card_ctx)
-		self.parser.normalize_length(card_ctx)
+		self.parser.validate_row_length(card_ctx.row)
 
 		return (card_ctx.row)

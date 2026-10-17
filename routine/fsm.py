@@ -51,7 +51,9 @@ class	SetContext:
 	tpl:				dict			| None = None
 	response:			dict			| None = None
 	api_result:			dict			| None = None
-	links:				dict			| None = None
+	set_page_titles: list[str] | None = None
+	card_links_response: dict | None = None
+	card_page_titles_by_name: dict[str, str] | None = None
 	infobox:			dict			| None = None
 	crude_cards:		list			| None = None
 	rows:				list[object] 	= field(default_factory=list)

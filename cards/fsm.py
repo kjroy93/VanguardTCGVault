@@ -6,17 +6,17 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/12 17:52:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/15 17:05:04 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/17 22:53:53 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from typing						import Callable
-from enum						import Enum, auto
-from dataclasses				import dataclass, field
+from typing							import Callable
+from enum							import Enum, auto
+from dataclasses					import dataclass, field
 
 # Dependencies
-pass
+from mwparserfromhell.nodes.extras	import Parameter
 
 # Library
 pass
@@ -34,9 +34,10 @@ class	CardContext:
 	id:					int		| None = None
 	prepare_data:		int		| None = None
 	row:				list	| None = None
-	card:				list	| None = None
+	card:				list[Parameter]	| None = None
 	infobox:			dict	| None = None
 	already_scraped: 	bool	| None = None
+	name:				str		| None = None
 	obj:				object	| None = None
 	
 class	CardState(Enum):

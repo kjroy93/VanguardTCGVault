@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/08/17 03:51:52 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/17 22:33:44 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -57,12 +57,6 @@ class	VanguardStorage:
 			self._seen[key].add(item)
 			getattr(self, key.lower()).append(item)
 
-	def obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
-		url = set_ctx.links.get(text)
-		if (url is None):
-			raise KeyError(f"URL not found for card: {text}")
-		card_ctx.url = url
-
 	def	check_existence(self, set_ctx: SetContext, arguments: dict):
 		if (check_data_base.set_exists(
 			set_ctx, block=arguments.get("block"),
@@ -74,6 +68,12 @@ class	VanguardStorage:
 			)
 			return (True)
 		return (False)
+
+	def obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
+		url = set_ctx.card_page_titles_by_name.get(text)
+		if (url is None):
+			raise KeyError(f"URL not found for card: {text}")
+		card_ctx.url = url
 
 	def	manage_url(self, url, next_id, ctx: CardContext):
 		set_id, is_new = self.link_storage.get_or_create(url, next_id)
@@ -91,7 +91,9 @@ class	VanguardStorage:
 		for template in wikitex:
 			card_ctx = CardContext()
 			card_ctx.card = template.params
+			card_ctx.name = template.name
 			card_ctx.id = self.next_id
+			card_ctx.size = len(card_ctx.card)
 			self.obtain_url(clean_text(str(template.params[1])).strip(), set_ctx, card_ctx)
 			self.manage_url(card_ctx.url, card_ctx.id, card_ctx)
 			self.metadata.run(card_ctx, set_ctx)
