@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 01:04:20 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 02:15:47 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,8 +39,8 @@ class	MetadataRoutine:
 		if (card_type is None):
 			raise ValueError(
 				f"Unknown card template: "
-				+ f"{card_ctx.name}"
-				+ f"{set_ctx.tpl.get("titles")}"
+				f"{card_ctx.name}"
+				f"{set_ctx.tpl.get("titles")}"
 			)
 
 		return (card_type)

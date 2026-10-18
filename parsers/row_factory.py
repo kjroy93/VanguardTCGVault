@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 00:51:20 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 02:48:32 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,11 +26,12 @@ class	RowFactory:
 
 	@staticmethod
 	def	prepare_faction(row: list):
-		if (isinstance(row[3], list)):
-			return (row[3])
-		if (row[3] == '-'):
-			return ([])
-		return ([row[3]])
+		faction = row[3]
+		if (faction is None):
+			return (None)
+		if (isinstance(faction, list)):
+			return (faction)
+		return ([faction])
 
 	@staticmethod
 	def	prepare_grade(row: list):
@@ -57,7 +58,7 @@ class	RowFactory:
 					f"(index {index}) in {card}")
 				)
 
-			if (row[index] is None):
+			if (field not in ("Grade", "Type") and row[index] is None):
 				raise(ValueError(f"{field} is None in {card}"))
 
 	@staticmethod

@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:31:47 by marvin            #+#    #+#              #
-#    Updated: 2026/10/18 00:44:45 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 02:09:47 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -91,7 +91,7 @@ class	VanguardStorage:
 		for template in wikitex:
 			card_ctx = CardContext()
 			card_ctx.card = template.params
-			card_ctx.name = template.name
+			card_ctx.name = str(template.name)
 			card_ctx.id = self.next_id
 			card_ctx.size = len(card_ctx.card)
 			self.obtain_url(clean_text(str(template.params[1])).strip(), set_ctx, card_ctx)
@@ -102,7 +102,7 @@ class	VanguardStorage:
 			handler(card_ctx, set_ctx)
 
 		data = [
-			row.model_dump(exclude_none=True)
+			row.model_dump()
 			for row in set_ctx.rows
 		]
 		set_ctx.rows.clear()
