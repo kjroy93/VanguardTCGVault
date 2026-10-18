@@ -163,13 +163,13 @@ VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 
 FILE = DB_FOLDER / "urls.json"
 
+# Rarity may be absent in supplemental card packs; row length is checked by the parser.
 REQUIRED_FIELDS = {
 	0: "Code",
 	1: "Name",
 	2: "Grade",
 	3: "Faction",
-	4: "Type",
-	5: "Rarity"
+	4: "Type"
 }
 
 EVENTS = [
@@ -181,14 +181,16 @@ EVENTS = [
 	PipelineEvent.MAIN_ROUTINE
 ]
 
-TRASH_HEADERS = [
-	"{{CardList/header/D}}",
-	"{{CardList/footer}}",
-	"{{CardList/header}}",
-	"{{CardList/header/V}}",
-	"{{CardList/header/TD}}",
-	"{{CardList/header/TD/D}}"
-]
+CARD_TABLE_HEADERS = {
+	"CardList/header": "card",
+	"CardList/header/V": "card",
+	"CardList/header/D": "card",
+	"CardList/header/TD": "deck",
+	"CardList/header/TD/D": "deck",
+}
+
+CARD_TABLE_FOOTERS = {"Footer", "CardList/footer"}
+CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardList2", "CardList2N"}
 
 OPTIONS = {
 	0: "boosters",

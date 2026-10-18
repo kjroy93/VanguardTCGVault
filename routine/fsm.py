@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/08 17:21:44 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 00:45:42 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:22:37 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -15,6 +15,12 @@ import inspect
 from enum 						import Enum, auto
 from dataclasses				import dataclass, field
 from typing 					import Awaitable, Callable
+
+# Dependencies
+from mwparserfromhell.nodes 	import Template
+
+# Library
+from parsers.types				import TableKind
 
 # Definitions
 type Action[C, D] = Callable[[C, D], None | Awaitable[None]]
@@ -56,6 +62,7 @@ class	SetContext:
 	card_page_titles_by_name:	dict[str, str]	| None = None
 	infobox:					dict			| None = None
 	crude_cards:				list			| None = None
+	card_entries: list[tuple[TableKind, Template]] = field(default_factory=list)
 	rows:						list[object] 	= field(default_factory=list)
 	is_d:						bool			| None = None
 	is_deck:					bool			| None = None

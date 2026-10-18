@@ -102,7 +102,7 @@ class	VanguardRoutine:
 	@staticmethod
 	def	__parser(set_ctx: SetContext, deps: VanguardPipeline):
 		wikitex = deps.scrapper.obtain_wikitex(set_ctx.api_result)
-		set_ctx.crude_cards = deps.parser.make_cardlist_from_str(wikitex)
+		set_ctx.crude_cards = deps.parser.make_cardlist_from_str(wikitex, set_ctx)
 		set_ctx.infobox = deps.parser.infobox(wikitex)
 		candidate_card_page_titles = deps.scrapper.obtain_links(set_ctx.card_links_response)
 		deps.parser.clean_trash_from_set(

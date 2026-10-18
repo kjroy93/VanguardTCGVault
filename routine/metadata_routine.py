@@ -25,14 +25,13 @@ class	MetadataRoutine:
 			"CardList": CardType.SINGLE_CARD,
 			"CardListV": CardType.SINGLE_CARD,
 			"CardList2": CardType.DUAL_CARD,
-			"CardList2N": CardType.DUAL_NATION,
-			"Deck": CardType.DECK
+			"CardList2N": CardType.DUAL_NATION
 		}
 		
-		if ("Deck" in set_ctx.tpl.get("titles")):
-			set_ctx.is_deck = True
-			card_type = template_types.get("Deck")
-			return (card_type)
+		if (card_ctx.table_kind == "deck"):
+			return (CardType.DECK)
+		if (card_ctx.table_kind != "card"):
+			raise ValueError(f"Missing card table type: {card_ctx.name}")
 
 		card_type = template_types.get(card_ctx.name)
 

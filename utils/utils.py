@@ -115,6 +115,15 @@ def	column_dispatcher(set_ctx: SetContext):
 		   		"Faction", "FactionType", "Type",
 				"Amount", "Release", "URL", "SET_ID"]
 	}
+	table_kinds = {table_kind for table_kind, _ in set_ctx.card_entries}
+	if (table_kinds == {"card", "deck"}):
+		columns = dispatcher["table"].copy()
+		columns.insert(columns.index("Rarity") + 1, "Amount")
+		return (columns)
+	if (table_kinds == {"deck"}):
+		return (dispatcher["deck"])
+	if (table_kinds == {"card"}):
+		return (dispatcher["table"])
 	if (set_ctx.is_deck):
 		return (dispatcher.get("deck"))
 	return (dispatcher.get("table"))

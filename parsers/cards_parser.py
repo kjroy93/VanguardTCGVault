@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 02:33:28 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:20:46 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -71,23 +71,22 @@ class	CardsParser:
 
 	@staticmethod
 	def	parse_card(card_ctx: CardContext, control: Literal["deck", "card"] = "card"):
+		card = card_ctx.card
 		if (card_ctx.name == "CardListV"):
-			card = []
-			
-			for i, template in enumerate(card_ctx.card):
-				if (i != 2):
-					card.append(template)
-			parsed_row = CardsParser.raw_table_data_prepare(card)	
-			return (parsed_row)
-		
-		if (control != "deck"):
-			parsed_row = CardsParser.raw_table_data_prepare(card_ctx.card)
-		else:
-			parsed_row = CardsParser.raw_table_data_prepare(card_ctx.card, "deck")
+			card = [param for i, param in enumerate(card) if i != 2]
+		parsed_row = CardsParser.raw_table_data_prepare(card, control)
+		if (card_ctx.table_kind == "card" and len(parsed_row) == 5):
+			parsed_row.append(None)
 		return (parsed_row)
 
 	@staticmethod
+	def parse_deck(card_ctx: CardContext):
+		return CardsParser.parse_card(card_ctx, "deck")
+
+	@staticmethod
 	def validate_row_length(row: list):
+		if (not row):
+			raise ValueError("Expected a card row, got an empty list")
 		if (isinstance(row[0], list)):
 			for r in row:
 				if (len(r) != 6):
@@ -100,8 +99,9 @@ class	CardsParser:
 		nations = []
 		card = []
 		for i in card_ctx.card:
-			if (str(i) in NATIONS):
-				nation = str(i)
+			value = str(i.value if hasattr(i, "value") else i).strip()
+			if (value in NATIONS):
+				nation = value
 				nations.append(nation)
 				continue
 			card.append(i)
@@ -113,11 +113,11 @@ class	CardsParser:
 
 	def __decks(self, card_ctx: CardContext):
 		result = sum(
-			1 for nation in NATIONS
-			if nation in card_ctx.card
+			1 for param in card_ctx.card
+			if str(param.value).strip() in NATIONS
 		)
 		if (result > 1):
-			self.__dual_nations(card_ctx.card)
+			self.__dual_nations(card_ctx)
 
 	def	_dispatcher(self, card_type: CardType) -> dict[str, Union[Callable | int]]:
 		dispatcher = {
@@ -143,7 +143,7 @@ class	CardsParser:
 			},
 			CardType.DECK: {
 				"prepare": self.__decks,
-				"parse": CardsParser.parse_card,
+				"parse": CardsParser.parse_deck,
 				"cards": MetadataType.DECK
 			}
 		}

@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/05 15:17:03 by marvin            #+#    #+#              #
-#    Updated: 2026/08/17 02:29:23 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:21:31 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,8 +18,9 @@ from mwparserfromhell.nodes		import Template
 from mwparserfromhell.wikicode	import Wikicode
 
 # Library
-from utils.constants			import TRASH_HEADERS
-from utils.utils				import clean_text, remove_from_list, make_custom_alphabet
+from routine.fsm 				import SetContext
+from utils.utils				import clean_text, make_custom_alphabet
+from utils.constants 			import CARD_TABLE_HEADERS, CARD_TABLE_FOOTERS, CARD_ROW_TEMPLATES
 
 class	VanguardParser:
 	def separate_urls(self, data: list):
@@ -132,10 +133,30 @@ class	VanguardParser:
 				}
 		return (__dict_construct(format, lst))
 
-	def	make_cardlist_from_str(self, wikitex: Wikicode):
-		lst = []
+	def	make_cardlist_from_str(self, wikitex: Wikicode, set_ctx: SetContext | None = None):
+		card_entries = []
+		table_kind = None
 		for tpl in wikitex.filter_templates():
-			if ("CardList" in tpl.name):
-				lst.append(tpl)
-		lst = remove_from_list(lst, TRASH_HEADERS)
-		return (lst)
+			name = str(tpl.name).strip()
+			if (name in CARD_TABLE_HEADERS):
+				table_kind = CARD_TABLE_HEADERS[name]
+				continue
+			if (name in CARD_TABLE_FOOTERS):
+				table_kind = None
+				continue
+			if (name.startswith("CardList/header")):
+				raise ValueError(f"Unknown card table header: {name}")
+			if (name in CARD_ROW_TEMPLATES):
+				if (table_kind is None):
+					raise ValueError(f"Card outside a recognized table: {tpl}")
+				card_entries.append((table_kind, tpl))
+			elif (name.startswith("CardList")):
+				raise ValueError(f"Unknown card template: {name}")
+		cards = [tpl for _, tpl in card_entries]
+		if (set_ctx is not None):
+			set_ctx.card_entries = card_entries
+			set_ctx.crude_cards = cards
+			set_ctx.is_deck = bool(card_entries) and all(
+				table_kind == "deck" for table_kind, _ in card_entries
+			)
+		return (cards)

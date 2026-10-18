@@ -6,12 +6,15 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/15 16:35:00 by kjroydev          #+#    #+#              #
-#    Updated: 2026/08/15 16:37:55 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:23:26 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 # Imports
-from enum import Enum, auto
+from typing	import Literal
+from enum	import Enum, auto
+
+type TableKind = Literal["card", "deck"]
 
 class	MetadataType(Enum):
 	DECK	= auto()

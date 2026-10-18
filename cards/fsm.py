@@ -17,6 +17,7 @@ from dataclasses					import dataclass, field
 
 # Dependencies
 from mwparserfromhell.nodes.extras	import Parameter
+from parsers.types import TableKind
 
 # Definitions
 type Action[C] = Callable[[C], None]
@@ -35,6 +36,7 @@ class	CardContext:
 	infobox:			dict			| None = None
 	already_scraped: 	bool			| None = None
 	name:				str				| None = None
+	table_kind: TableKind | None = None
 	obj:				object			| None = None
 	
 class	CardState(Enum):

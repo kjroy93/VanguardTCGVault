@@ -88,16 +88,22 @@ class	VanguardStorage:
 					  set_ctx: SetContext) -> list:
 
 		self.next_id = len(self.link_storage._links)
-		for template in wikitex:
+		if (len(wikitex) != len(set_ctx.card_entries) or any(
+			template != entry[1]
+			for template, entry in zip(wikitex, set_ctx.card_entries)
+		)):
+			raise ValueError("Extract card tables with make_cardlist_from_str(wikitext, set_ctx) first")
+		for table_kind, template in set_ctx.card_entries:
 			card_ctx = CardContext()
 			card_ctx.card = template.params
-			card_ctx.name = str(template.name)
+			card_ctx.name = str(template.name).strip()
+			card_ctx.table_kind = table_kind
 			card_ctx.id = self.next_id
 			card_ctx.size = len(card_ctx.card)
 			self.obtain_url(clean_text(str(template.params[1])).strip(), set_ctx, card_ctx)
 			self.manage_url(card_ctx.url, card_ctx.id, card_ctx)
 			self.metadata.run(card_ctx, set_ctx)
-			card_ctx.obj = (ScrapDeck if set_ctx.is_deck else ScrapCard)
+			card_ctx.obj = (ScrapDeck if table_kind == "deck" else ScrapCard)
 			handler = HANDLERS[card_ctx.prepare_data]
 			handler(card_ctx, set_ctx)
 
