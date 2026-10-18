@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/05/13 11:54:05 by marvin            #+#    #+#              #
-#    Updated: 2026/08/17 03:06:18 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:57:27 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -162,6 +162,7 @@ FAILURE_FILE = path = Path("database/failed_sets.json")
 VALID_DATABASES = ["LB", "LL", "G", "V", "D", "DZ"]
 
 FILE = DB_FOLDER / "urls.json"
+SET_INDEX_FILE = DB_FOLDER / "set_index.json"
 
 # Rarity may be absent in supplemental card packs; row length is checked by the parser.
 REQUIRED_FIELDS = {
@@ -190,7 +191,7 @@ CARD_TABLE_HEADERS = {
 }
 
 CARD_TABLE_FOOTERS = {"Footer", "CardList/footer"}
-CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardList2", "CardList2N"}
+CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardListD", "CardList2", "CardList2N"}
 
 OPTIONS = {
 	0: "boosters",

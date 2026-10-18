@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 16:52:57 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 03:20:46 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:58:02 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -72,7 +72,7 @@ class	CardsParser:
 	@staticmethod
 	def	parse_card(card_ctx: CardContext, control: Literal["deck", "card"] = "card"):
 		card = card_ctx.card
-		if (card_ctx.name == "CardListV"):
+		if (card_ctx.name == "CardListV" or card_ctx.name == "CardListD"):
 			card = [param for i, param in enumerate(card) if i != 2]
 		parsed_row = CardsParser.raw_table_data_prepare(card, control)
 		if (card_ctx.table_kind == "card" and len(parsed_row) == 5):

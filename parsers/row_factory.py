@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:39:14 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 02:48:32 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:40:54 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -58,7 +58,7 @@ class	RowFactory:
 					f"(index {index}) in {card}")
 				)
 
-			if (field not in ("Grade", "Type") and row[index] is None):
+			if (field not in ("Grade", "Type", "Faction", "Rarity") and row[index] is None):
 				raise(ValueError(f"{field} is None in {card}"))
 
 	@staticmethod

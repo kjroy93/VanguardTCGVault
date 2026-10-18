@@ -11,6 +11,7 @@
 # **************************************************************************** #
 
 # Imports
+import re
 from typing 					import Union, Literal
 
 # Dependencies
@@ -133,7 +134,19 @@ class	VanguardParser:
 				}
 		return (__dict_construct(format, lst))
 
+	@staticmethod
+	def get_set_code(cards: list[Template]) -> str:
+		if (not cards):
+			raise ValueError("Cannot determine set code without cards")
+		card_code = str(cards[0].get("1").value).strip()
+		match = re.match(r"^([A-Za-z0-9]+(?:-[A-Za-z0-9]+)*)/", card_code)
+		if (match is None):
+			raise ValueError(f"Invalid code in first card of main table: {card_code!r}")
+		return match.group(1).upper()
+
 	def	make_cardlist_from_str(self, wikitex: Wikicode, set_ctx: SetContext | None = None):
+		if (set_ctx is not None):
+			set_ctx.set_code = None
 		card_entries = []
 		table_kind = None
 		for tpl in wikitex.filter_templates():
@@ -154,6 +167,7 @@ class	VanguardParser:
 				raise ValueError(f"Unknown card template: {name}")
 		cards = [tpl for _, tpl in card_entries]
 		if (set_ctx is not None):
+			set_ctx.set_code = self.get_set_code(cards)
 			set_ctx.card_entries = card_entries
 			set_ctx.crude_cards = cards
 			set_ctx.is_deck = bool(card_entries) and all(

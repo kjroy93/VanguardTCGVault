@@ -119,15 +119,18 @@ class	VanguardRoutine:
 		for block in VALID_DATABASES:
 			database = getattr(deps.storage, block.lower())
 			consult = deps.parser.make_consults(database, "consult")
-			for set_number, tpl in consult.items():
-				arguments = {"block": block, "set_number": set_number}
+			for tpl in consult.values():
+				arguments = {"block": block}
 				try:
+					set_ctx.tpl = tpl
+					set_ctx.set_code = None
 					snapshot = deps.storage.link_storage.get_snapshot()
 					if (deps.storage.check_existence(set_ctx, arguments)):
 						continue
-					set_ctx.tpl = tpl
 					await deps.scrapper.api_calls(set_ctx)
 					VanguardRoutine.__parser(set_ctx, deps)
+					if (deps.storage.check_existence(set_ctx, arguments)):
+						continue
 					set_ctx.is_d = block in ["D", "DZ"]
 					rows = deps.storage.prepare_metadata(set_ctx.crude_cards, set_ctx)
 					arguments["data"] = rows

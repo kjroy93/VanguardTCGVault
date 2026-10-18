@@ -24,8 +24,9 @@ from routine.fsm				import SetContext
 from parsers.cards_parser		import CardsParser
 from cards.fsm					import CardContext
 from data.update_database		import LinkStorage
+from data.set_index import SetIndex
 from parsers.types				import MetadataType
-from utils.constants			import FAILURE_FILE
+from utils.constants			import FAILURE_FILE, SET_INDEX_FILE
 from routine.metadata_routine	import MetadataRoutine
 from data						import check_data_base
 from cards.classes				import ScrapCard, ScrapDeck
@@ -51,6 +52,7 @@ class	VanguardStorage:
 		card_parser = 		CardsParser()
 		self.metadata = 	MetadataRoutine(card_parser)
 		self.link_storage =	LinkStorage()
+		self.set_index = SetIndex(SET_INDEX_FILE)
 
 	def _add_item(self, key: str, item: str):
 		if item not in self._seen[key]:
@@ -58,16 +60,23 @@ class	VanguardStorage:
 			getattr(self, key.lower()).append(item)
 
 	def	check_existence(self, set_ctx: SetContext, arguments: dict):
+		if (set_ctx.set_code is None and set_ctx.tpl is not None):
+			set_ctx.set_code = self.set_index.get(set_ctx.tpl["titles"])
+		if (set_ctx.set_code is None):
+			return False
 		if (check_data_base.set_exists(
-			set_ctx, block=arguments.get("block"),
-			set_number=arguments.get("set_number")
+			set_ctx, block=arguments["block"]
 		)):
+			self._remember_set_code(set_ctx)
 			print(
-				f"Skiping existing set: "
-				f"{arguments.get('block')} {arguments.get('set_number') + 1}"
+				f"Skipping existing set: {set_ctx.set_code}"
 			)
 			return (True)
 		return (False)
+
+	def _remember_set_code(self, set_ctx: SetContext):
+		if (set_ctx.tpl is not None and set_ctx.set_code is not None):
+			self.set_index.remember(set_ctx.tpl["titles"], set_ctx.set_code)
 
 	def obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
 		url = set_ctx.card_page_titles_by_name.get(text)
@@ -117,17 +126,26 @@ class	VanguardStorage:
 	def	create_dataframe(self, arguments: dict, set_ctx: SetContext, columns: list[str]):
 		df = pd.DataFrame(arguments.get("data"), columns=columns)
 		path = check_data_base.build_set_path(
-			category=set_ctx.category,
-			set_type=set_ctx.subcategory.strip().lower().split()[0],
-			block=arguments.get("block"),
-			set_number=arguments.get("set_number") + 1
+			set_ctx, block=arguments["block"]
 		)
 		path.parent.mkdir(
 			parents=True,
 			exist_ok=True
 		)
-		path = check_data_base.get_duplicate_path(path)
-		df.to_parquet(path)
+		try:
+			output = path.open("xb")
+		except FileExistsError:
+			self._remember_set_code(set_ctx)
+			print(f"Skipping existing set: {set_ctx.set_code}")
+			return
+		try:
+			with output:
+				df.to_parquet(output)
+		except BaseException:
+			# An interrupted write must not be mistaken for a complete set.
+			path.unlink()
+			raise
+		self._remember_set_code(set_ctx)
 		print(df)
 
 	def	failure_routine(self,

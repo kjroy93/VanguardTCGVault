@@ -55,6 +55,7 @@ class	SetContext:
 	query_page:					str				| None = None
 	query_parameters:			str				| None = None
 	tpl:						dict			| None = None
+	set_code: str | None = None
 	response:					dict			| None = None
 	api_result:					dict			| None = None
 	set_page_titles:			list[str] 		| None = None

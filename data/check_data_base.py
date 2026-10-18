@@ -11,34 +11,20 @@
 # **************************************************************************** #
 
 # Imports
+import re
 from pathlib			import Path
 
 # Library
 from routine.fsm		import SetContext
 from utils.constants	import SET_PATHS, DB_FOLDER
 
-def	get_duplicate_path(path: Path) -> Path:
-	if not path.exists():
-		return path
-	
-	stem = path.stem
-	suffix = path.suffix
-	parent = path.parent
-	i = 1
-	while True:
-		new_path = parent / f"{stem}_{i}{suffix}"
-		if (not new_path.exists()):
-			return new_path
-		i += 1
-
-def build_set_path(category: str,
-				set_type: str,
-				block: str,
-				set_number: int) -> Path:
-	info = SET_PATHS[category][set_type]
-	filename = (
-		f"{block.lower()}_{set_number:02}.parquet"
-	)
+def build_set_path(set_ctx: SetContext, block: str) -> Path:
+	set_type = set_ctx.subcategory.strip().lower().split()[0]
+	info = SET_PATHS[set_ctx.category][set_type]
+	set_code = (set_ctx.set_code or "").strip().upper()
+	if (re.fullmatch(r"[A-Z0-9]+(?:-[A-Z0-9]+)*", set_code) is None):
+		raise ValueError(f"Invalid or missing set code: {set_ctx.set_code!r}")
+	filename = f"{set_code}.parquet"
 	path = (
 		DB_FOLDER
 		/ info["folder"]
@@ -47,15 +33,5 @@ def build_set_path(category: str,
 	)
 	return (path)
 
-def	set_exists(set_ctx: SetContext, block: str, set_number: int) -> bool:
-	set_type = set_ctx.subcategory.strip().lower().split()[0]
-	config = SET_PATHS.get(set_ctx.category, {}).get(set_type)
-	if (config is None):
-		return (False)
-	path: Path = (
-		DB_FOLDER
-		/ config["folder"]
-		/ block.lower()
-		/ f"{block.lower()}_{set_number + 1:02d}.parquet"
-	)
-	return (path.exists())
+def	set_exists(set_ctx: SetContext, block: str) -> bool:
+	return build_set_path(set_ctx, block).is_file()

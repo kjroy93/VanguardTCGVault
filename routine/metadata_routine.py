@@ -6,7 +6,7 @@
 #    By: kjroydev <kjroydev@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/08/14 19:02:26 by kmarrero          #+#    #+#              #
-#    Updated: 2026/10/18 02:15:47 by kjroydev         ###   ########.fr        #
+#    Updated: 2026/10/18 03:56:49 by kjroydev         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,6 +24,7 @@ class	MetadataRoutine:
 		template_types = {
 			"CardList": CardType.SINGLE_CARD,
 			"CardListV": CardType.SINGLE_CARD,
+			"CardListD": CardType.SINGLE_CARD,
 			"CardList2": CardType.DUAL_CARD,
 			"CardList2N": CardType.DUAL_NATION
 		}
