@@ -18,13 +18,13 @@ import pandas					as pd
 from mwparserfromhell.nodes		import Template
 
 # Library
+from data.set_index				import SetIndex
 from utils.utils				import clean_text
 from parsers.row_factory		import RowFactory
 from routine.fsm				import SetContext
 from parsers.cards_parser		import CardsParser
 from cards.fsm					import CardContext
 from data.update_database		import LinkStorage
-from data.set_index import SetIndex
 from parsers.types				import MetadataType
 from utils.constants			import FAILURE_FILE, SET_INDEX_FILE
 from routine.metadata_routine	import MetadataRoutine
@@ -52,7 +52,7 @@ class	VanguardStorage:
 		card_parser = 		CardsParser()
 		self.metadata = 	MetadataRoutine(card_parser)
 		self.link_storage =	LinkStorage()
-		self.set_index = SetIndex(SET_INDEX_FILE)
+		self.set_index =	SetIndex(SET_INDEX_FILE)
 
 	def _add_item(self, key: str, item: str):
 		if item not in self._seen[key]:

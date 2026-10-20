@@ -28,7 +28,7 @@ class	LinkStorage:
 
 	def	__save_data(self):
 		FILE.parent.mkdir(parents=True, exist_ok=True)
-		with FILE.open("w", encoding="utf-8") as f:
+		with (FILE.open("w", encoding="utf-8") as f):
 			json.dump(
 				self._links,
 				f,

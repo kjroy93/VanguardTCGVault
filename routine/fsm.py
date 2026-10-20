@@ -50,12 +50,13 @@ class	PipelineEvent(Enum):
 
 @dataclass
 class	SetContext:
+	block:						str				| None = None
 	category:					str				| None = None
 	subcategory:				str				| None = None
 	query_page:					str				| None = None
 	query_parameters:			str				| None = None
 	tpl:						dict			| None = None
-	set_code: str | None = None
+	set_code:					str				| None = None
 	response:					dict			| None = None
 	api_result:					dict			| None = None
 	set_page_titles:			list[str] 		| None = None
@@ -63,8 +64,8 @@ class	SetContext:
 	card_page_titles_by_name:	dict[str, str]	| None = None
 	infobox:					dict			| None = None
 	crude_cards:				list			| None = None
-	card_entries: list[tuple[TableKind, Template]] = field(default_factory=list)
-	rows:						list[object] 	= field(default_factory=list)
+	card_entries:				list[tuple[TableKind, Template]]	= field(default_factory=list)
+	rows:						list[object]						= field(default_factory=list)
 	is_d:						bool			| None = None
 	is_deck:					bool			| None = None
 

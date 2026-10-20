@@ -117,6 +117,7 @@ class	VanguardRoutine:
 	async def	main_scrap_routine(set_ctx: SetContext, deps: VanguardPipeline):
 		failed_sets = []
 		for block in VALID_DATABASES:
+			set_ctx.block = block
 			database = getattr(deps.storage, block.lower())
 			consult = deps.parser.make_consults(database, "consult")
 			for tpl in consult.values():
