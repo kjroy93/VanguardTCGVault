@@ -122,20 +122,25 @@ class	VanguardStorage:
 		path = check_data_base.build_set_path(
 			set_ctx, block=arguments["block"]
 		)
+		previous_path = path
+		suffix = 1
 		while True:
 			try:
 				previous_df = pd.read_parquet(path)
 			except FileNotFoundError:
-				previous_df = None
 				break
 			if (self._compare_dfs(df, previous_df)):
 				self._skip_existing_set(set_ctx)
 				return
+			break
 		path.parent.mkdir(
 			parents=True,
 			exist_ok=True
 		)
 		try:
+			path = previous_path.with_name(
+				f"{previous_path.stem}_{suffix}_{previous_path.suffix}"
+			)
 			output = path.open("xb")
 		except FileExistsError:
 			self._remember_set_code(set_ctx)
