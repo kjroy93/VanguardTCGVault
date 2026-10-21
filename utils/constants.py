@@ -53,7 +53,8 @@ NATIONS = {
 	"Brandt Gate",
 	"Stoicheia",
 	"Keter Sanctuary",
-	"Lyrical Monasterio"
+	"Lyrical Monasterio",
+	'VSPO!'
 }
 
 

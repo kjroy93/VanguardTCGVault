@@ -34,11 +34,6 @@ class	RowFactory:
 		return ([faction])
 
 	@staticmethod
-	def	prepare_grade(row: list):
-		if (row[2] == '' or row[2] == '-'):
-			row[2] = None
-
-	@staticmethod
 	def	_validate_context(card_ctx: CardContext, set_ctx: SetContext):
 		if (card_ctx.row is None):
 			raise (ValueError(f"Card row is None: {card_ctx.card}"))
@@ -65,7 +60,6 @@ class	RowFactory:
 	def	construct_decks(card_ctx: CardContext, set_ctx: SetContext) -> object:
 		release = RowFactory.get_release(set_ctx.infobox)
 		faction = RowFactory.prepare_faction(card_ctx.row)
-		RowFactory.prepare_grade(card_ctx.row)
 		row = card_ctx.obj(
 			Code =			card_ctx.row[0],
 			Name =			card_ctx.row[1],
@@ -89,9 +83,12 @@ class	RowFactory:
 		)
 		release = RowFactory.get_release(set_ctx.infobox)
 		faction = RowFactory.prepare_faction(card_ctx.row)
-		RowFactory.prepare_grade(card_ctx.row)
 		row = card_ctx.obj(
-			Code =			card_ctx.row[0],
+			Code =			(
+				f"{set_ctx.block}-{card_ctx.row[0]}"
+				if set_ctx.block in ("LB", "LL")
+				else card_ctx.row[0]
+			),
 			Name =			card_ctx.row[1],
 			Grade =			card_ctx.row[2],
 			Faction =		faction,
@@ -114,9 +111,12 @@ class	RowFactory:
 			)
 			release = RowFactory.get_release(set_ctx.infobox)
 			faction = RowFactory.prepare_faction(card_ctx.row[i])
-			RowFactory.prepare_grade(card_ctx.row[i])
 			row = card_ctx.obj(
-				Code =			card_ctx.row[i][0],
+				Code =			(
+					f"{set_ctx.block}-{card_ctx.row[i][0]}"
+					if set_ctx.block in ("LB", "LL")
+					else card_ctx.row[i][0]
+				),
 				Name =			card_ctx.row[i][1],
 				Grade =			card_ctx.row[i][2],
 				Faction =		faction,

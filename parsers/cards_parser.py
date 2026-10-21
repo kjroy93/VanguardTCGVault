@@ -12,6 +12,7 @@
 
 # Imports
 from dataclasses					import dataclass
+from html							import unescape
 from typing							import Callable, Union, Literal
 
 # Dependencies
@@ -40,6 +41,9 @@ class	CardsParser:
 			).strip()
 
 			if (value == ""):
+				data.append(None)
+				continue
+			if (i == 2 and unescape(value) in ("-", "‐", "–", "—")):
 				data.append(None)
 				continue
 			if (i == 2 or (control == "deck" and i == 5)):

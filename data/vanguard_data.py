@@ -132,15 +132,15 @@ class	VanguardStorage:
 			if (self._compare_dfs(df, previous_df)):
 				self._skip_existing_set(set_ctx)
 				return
-			break
+			path = previous_path.with_name(
+				f"{previous_path.stem}_{suffix}{previous_path.suffix}"
+			)
+			suffix += 1
 		path.parent.mkdir(
 			parents=True,
 			exist_ok=True
 		)
 		try:
-			path = previous_path.with_name(
-				f"{previous_path.stem}_{suffix}_{previous_path.suffix}"
-			)
 			output = path.open("xb")
 		except FileExistsError:
 			self._remember_set_code(set_ctx)

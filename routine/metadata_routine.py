@@ -42,7 +42,6 @@ class	MetadataRoutine:
 				f"{card_ctx.name}"
 				f"{set_ctx.tpl.get("titles")}"
 			)
-
 		return (card_type)
 
 	def	run(self, card_ctx: CardContext, set_ctx: SetContext):

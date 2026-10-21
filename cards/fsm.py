@@ -36,7 +36,7 @@ class	CardContext:
 	infobox:			dict			| None = None
 	already_scraped: 	bool			| None = None
 	name:				str				| None = None
-	table_kind: TableKind | None = None
+	table_kind:			TableKind		| None = None
 	obj:				object			| None = None
 	
 class	CardState(Enum):
