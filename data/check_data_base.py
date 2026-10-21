@@ -32,6 +32,3 @@ def build_set_path(set_ctx: SetContext, block: str) -> Path:
 		/ filename
 	)
 	return (path)
-
-def	set_exists(set_ctx: SetContext, block: str) -> bool:
-	return build_set_path(set_ctx, block).is_file()

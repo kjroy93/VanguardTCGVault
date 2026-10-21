@@ -126,12 +126,12 @@ class	VanguardRoutine:
 					set_ctx.tpl = tpl
 					set_ctx.set_code = None
 					snapshot = deps.storage.link_storage.get_snapshot()
-					if (deps.storage.check_existence(set_ctx, arguments)):
+					set_ctx.set_code = deps.storage.set_index.get(tpl["titles"])
+					if (set_ctx.set_code is not None):
+						print(f"Skipping indexed set: {tpl['titles']}")
 						continue
 					await deps.scrapper.api_calls(set_ctx)
 					VanguardRoutine.__parser(set_ctx, deps)
-					if (deps.storage.check_existence(set_ctx, arguments)):
-						continue
 					set_ctx.is_d = block in ["D", "DZ"]
 					rows = deps.storage.prepare_metadata(set_ctx.crude_cards, set_ctx)
 					arguments["data"] = rows

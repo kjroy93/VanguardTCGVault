@@ -12,9 +12,11 @@
 
 # Import
 import json
+from collections	import	Counter
 
 # Dependencies
 import pandas					as pd
+from pandas						import DataFrame
 from mwparserfromhell.nodes		import Template
 
 # Library
@@ -26,10 +28,10 @@ from parsers.cards_parser		import CardsParser
 from cards.fsm					import CardContext
 from data.update_database		import LinkStorage
 from parsers.types				import MetadataType
-from utils.constants			import FAILURE_FILE, SET_INDEX_FILE
 from routine.metadata_routine	import MetadataRoutine
 from data						import check_data_base
 from cards.classes				import ScrapCard, ScrapDeck
+from utils.constants			import FAILURE_FILE, SET_INDEX_FILE
 
 HANDLERS = {
 	MetadataType.DECK:		RowFactory.construct_decks,
@@ -59,24 +61,16 @@ class	VanguardStorage:
 			self._seen[key].add(item)
 			getattr(self, key.lower()).append(item)
 
-	def	check_existence(self, set_ctx: SetContext, arguments: dict):
-		if (set_ctx.set_code is None and set_ctx.tpl is not None):
-			set_ctx.set_code = self.set_index.get(set_ctx.tpl["titles"])
-		if (set_ctx.set_code is None):
-			return False
-		if (check_data_base.set_exists(
-			set_ctx, block=arguments["block"]
-		)):
-			self._remember_set_code(set_ctx)
-			print(
-				f"Skipping existing set: {set_ctx.set_code}"
-			)
-			return (True)
-		return (False)
-
 	def _remember_set_code(self, set_ctx: SetContext):
 		if (set_ctx.tpl is not None and set_ctx.set_code is not None):
 			self.set_index.remember(set_ctx.tpl["titles"], set_ctx.set_code)
+
+	def	_skip_existing_set(self, set_ctx: SetContext):
+		self._remember_set_code(set_ctx)
+		print(f"Skipping existing set: {set_ctx.set_code}")
+
+	def	_compare_dfs(self, current: DataFrame, previous: DataFrame):
+		return (Counter(current["Name"]) == Counter(previous["Name"]))
 
 	def obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
 		url = set_ctx.card_page_titles_by_name.get(text)
@@ -128,6 +122,15 @@ class	VanguardStorage:
 		path = check_data_base.build_set_path(
 			set_ctx, block=arguments["block"]
 		)
+		while True:
+			try:
+				previous_df = pd.read_parquet(path)
+			except FileNotFoundError:
+				previous_df = None
+				break
+			if (self._compare_dfs(df, previous_df)):
+				self._skip_existing_set(set_ctx)
+				return
 		path.parent.mkdir(
 			parents=True,
 			exist_ok=True

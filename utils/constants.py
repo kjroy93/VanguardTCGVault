@@ -85,28 +85,22 @@ DICT_S = {
 SET_PATHS = {
 	"boosters": {
 		"booster": {
-			"folder": "boosters/booster sets",
-			"prefix": "set"
+			"folder": "boosters/booster sets"
 		},
 		"extra": {
-			"folder": "boosters/extra booster sets",
-			"prefix": "extra"
+			"folder": "boosters/extra booster sets"
 		},
 		"character": {
-			"folder": "boosters/character booster sets",
-			"prefix": "character"
+			"folder": "boosters/character booster sets"
 		},
 		"clan": {
-			"folder": "boosters/clan booster sets",
-			"prefix": "clan"
+			"folder": "boosters/clan booster sets"
 		},
 		"title": {
-			"folder": "boosters/title booster sets",
-			"prefix": "title"
+			"folder": "boosters/title booster sets"
 		},
 		"unique": {
-			"folder": "boosters/unique booster sets",
-			"prefix": "unique"
+			"folder": "boosters/unique booster sets"
 		}
 	},
 	"decks": {
