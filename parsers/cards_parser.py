@@ -27,6 +27,14 @@ from parsers.types					import MetadataType, CardType
 @dataclass
 class	CardsParser:
 	@staticmethod
+	def normalize_amount(value: str) -> int:
+		"""Return a fixed amount or the largest endpoint of a quantity range."""
+		parts = [part.strip() for part in value.split("~")]
+		if (len(parts) not in (1, 2) or not all(part.isdecimal() for part in parts)):
+			raise ValueError(f"Invalid deck amount: {value!r}")
+		return max(int(part) for part in parts)
+
+	@staticmethod
 	def	raw_table_data_prepare(template: list[Parameter],
 								control: Literal["card", "deck"]
 								= "card") -> list:
@@ -46,7 +54,9 @@ class	CardsParser:
 			if (i == 2 and unescape(value) in ("-", "‐", "–", "—")):
 				data.append(None)
 				continue
-			if (i == 2 or (control == "deck" and i == 5)):
+			if (control == "deck" and i == 5):
+				information = CardsParser.normalize_amount(value)
+			elif (i == 2):
 				information = utils.convert_to_int(value)
 			else:
 				information = value
@@ -76,7 +86,7 @@ class	CardsParser:
 	@staticmethod
 	def	parse_card(card_ctx: CardContext, control: Literal["deck", "card"] = "card"):
 		card = card_ctx.card
-		if (card_ctx.name == "CardListV" or card_ctx.name == "CardListD"):
+		if (card_ctx.name in ("CardListV", "CardListD", "CardListV/TD")):
 			card = [param for i, param in enumerate(card) if i != 2]
 		parsed_row = CardsParser.raw_table_data_prepare(card, control)
 		if (card_ctx.table_kind == "card" and len(parsed_row) == 5):

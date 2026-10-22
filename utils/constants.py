@@ -54,7 +54,8 @@ NATIONS = {
 	"Stoicheia",
 	"Keter Sanctuary",
 	"Lyrical Monasterio",
-	'VSPO!'
+	"VSPO!",
+	"CoroCoro"
 }
 
 
@@ -186,7 +187,7 @@ CARD_TABLE_HEADERS = {
 }
 
 CARD_TABLE_FOOTERS = {"Footer", "CardList/footer"}
-CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardListD", "CardList2", "CardList2N"}
+CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardListV/TD", "CardListD", "CardList2", "CardList2N"}
 
 OPTIONS = {
 	0: "boosters",

@@ -164,7 +164,8 @@ class	VanguardParser:
 			if (name in CARD_ROW_TEMPLATES):
 				if (table_kind is None):
 					raise ValueError(f"Card outside a recognized table: {tpl}")
-				card_entries.append((table_kind, tpl))
+				row_kind = "deck" if name == "CardListV/TD" else table_kind
+				card_entries.append((row_kind, tpl))
 			elif (name.startswith("CardList")):
 				raise ValueError(f"Unknown card template: {name}")
 		cards = [tpl for _, tpl in card_entries]
