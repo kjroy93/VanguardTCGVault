@@ -137,8 +137,6 @@ class	VanguardScrapper:
 			params=ctx.tpl,
 			headers=HEADER
 		)
-		# Stop this set before requesting links if the page request failed.
-		self.obtain_wikitex(api_result)
 		await smart_sleep()
 		card_links_response = await self.api.get(
 			params=card_links_params,

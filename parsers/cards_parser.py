@@ -11,6 +11,7 @@
 # **************************************************************************** #
 
 # Imports
+import re
 from dataclasses					import dataclass
 from html							import unescape
 from typing							import Callable, Union, Literal
@@ -29,10 +30,11 @@ class	CardsParser:
 	@staticmethod
 	def normalize_amount(value: str) -> int:
 		"""Return a fixed amount or the largest endpoint of a quantity range."""
-		parts = [part.strip() for part in value.split("~")]
-		if (len(parts) not in (1, 2) or not all(part.isdecimal() for part in parts)):
+		value = value.strip()
+		if (not re.fullmatch(r"[0-9]+(?:\s*[~+\-–—]\s*[0-9]+)*")):
 			raise ValueError(f"Invalid deck amount: {value!r}")
-		return max(int(part) for part in parts)
+		parts = re.split(r"\s*[~+\-–—]\s*", value)
+		return (max(int(part) for part in parts))
 
 	@staticmethod
 	def	raw_table_data_prepare(template: list[Parameter],

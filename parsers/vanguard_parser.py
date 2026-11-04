@@ -77,23 +77,34 @@ class	VanguardParser:
 
 	def sort_unique_url(self, parsed_cardlist: list[Template], candidate_card_page_titles: list[str]):
 		card_page_titles_by_name = {}
-		card_page_titles_by_initial = make_custom_alphabet(candidate_card_page_titles)
+		by_initial = make_custom_alphabet(candidate_card_page_titles)
 
-		for _, card in enumerate(parsed_cardlist):
+		for card in parsed_cardlist:
 			card_name = clean_text(str(card.params[1].value).strip())
 			if (not card_name):
 				raise TypeError(f"Card name cannot be empty {card.params}")
-			letter = card_name[0]
-			if (letter not in card_page_titles_by_initial):
-				continue
-			matched_page_title = card_page_titles_by_initial[letter].get(card_name)
+			candidates = by_initial.get(card_name[0], {})
+			expected_title = card_name
+			template_name = str(card.name).strip()
+			if (template_name in ("CardListV", "CardListV/TD", "CardListD")):
+				variant = str(card.get("3").value).strip()
+				series = "D" if template_name == "CardListD" else "V"
+				if (variant == series):
+					expected_title = f"{card_name} ({series} Series)"
+				elif (variant):
+					expected_title = f"{card_name} ({series} Series {variant})"
+			matched_page_title = candidates.get(clean_text(expected_title))
 			if (matched_page_title is None):
+				matched_page_title = candidates.get(card_name)
+			if (matched_page_title is None):
+				# The whole card name must match; only a parenthesized suffix may differ.
 				matching_page_titles = [
 					original_page_title
-					for normalized_page_title, original_page_title in card_page_titles_by_initial[letter].items()
-					if card_name in normalized_page_title
+					for normalized_page_title, original_page_title in candidates.items()
+					if normalized_page_title.startswith(card_name + " (")
+					and normalized_page_title.endswith(")")
 				]
-				if (len(matching_page_titles)) == 1:
+				if (len(matching_page_titles) == 1):
 					matched_page_title = matching_page_titles[0]
 			if (matched_page_title is not None):
 				card_page_titles_by_name[card_name] = matched_page_title

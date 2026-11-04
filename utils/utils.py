@@ -27,6 +27,7 @@ def	remove_from_list(sets: list, to_delete: list):
 def	construct_rules(rule: str):
 	param = f"^{re.escape(rule)}"
 	rules = [
+		(r"^Fighters Collection (?:2015(?: Winter)?|2016|2017)$", "G"),
 		(r"^P Special", "V"),
 		(r"^P&V", "V"),
 		(r"^Special", "V"),
