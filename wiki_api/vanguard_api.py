@@ -121,27 +121,41 @@ class	VanguardScrapper:
 		return mwparserfromhell.parse(content)
 
 	async def	api_calls(self, ctx: SetContext):
-
-		def	define_param(tpl: dict):
-			card_links_params = {
-				"action": "parse",
-				"page": tpl.get("titles"),
-				"prop": "links",
-				"format": "json"
-			}
-			return (card_links_params)
-
-		card_links_params = define_param(ctx.tpl)
+		# Query revisions as before, following redirects when they exist.
+		parameters = {**ctx.tpl, "redirects": 1}
 		await smart_sleep()
 		api_result = await self.api.get(
-			params=ctx.tpl,
+			params=parameters,
 			headers=HEADER
 		)
+		if (not isinstance(api_result, dict)):
+			raise ValueError("Invalid Wiki API response: expected a JSON object")
+		if ("error" in api_result):
+			raise ValueError(f"Wiki API error: {api_result['error']}")
+		query = api_result.get("query")
+		pages = query.get("pages") if isinstance(query, dict) else None
+		if (not isinstance(pages, dict) or not pages):
+			raise ValueError("Wiki API returned no pages")
+		page = next(iter(pages.values()))
+		if (not isinstance(page, dict) or not page.get("title")):
+			raise ValueError("Wiki API returned a page without a title")
+		if ("missing" in page or "invalid" in page):
+			raise ValueError(f"Wiki page does not exist or is invalid: {page['title']}")
+		card_links_params = {
+			"action": "parse",
+			"page": page["title"],
+			"prop": "links",
+			"format": "json"
+		}
 		await smart_sleep()
 		card_links_response = await self.api.get(
 			params=card_links_params,
 			headers=HEADER
 		)
+		if (not isinstance(card_links_response, dict)):
+			raise ValueError("Invalid Wiki links response: expected a JSON object")
+		if ("error" in card_links_response):
+			raise ValueError(f"Wiki API links error: {card_links_response['error']}")
 
 		ctx.api_result = api_result
 		ctx.card_links_response = card_links_response

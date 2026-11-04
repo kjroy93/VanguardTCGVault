@@ -94,6 +94,7 @@ class	VanguardRoutine:
 			set_ctx.query_page,
 			*DICT_S.get(set_ctx.category)
 		])
+		deps.storage.clear_sets()
 		process_items(set_ctx.set_page_titles, deps)
 		if (set_ctx.category == "boosters"):
 			sort_storage_list(["LB", "G"], deps)

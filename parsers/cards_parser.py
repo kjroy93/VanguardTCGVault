@@ -31,7 +31,10 @@ class	CardsParser:
 	def normalize_amount(value: str) -> int:
 		"""Return a fixed amount or the largest endpoint of a quantity range."""
 		value = value.strip()
-		if (not re.fullmatch(r"[0-9]+(?:\s*[~+\-–—]\s*[0-9]+)*")):
+		if (value.isdecimal()):
+			return (int(value))
+		pattern = r"[0-9]+(?:\s*[~+\-–—]\s*[0-9]+)+"
+		if (not re.fullmatch(pattern, value)):
 			raise ValueError(f"Invalid deck amount: {value!r}")
 		parts = re.split(r"\s*[~+\-–—]\s*", value)
 		return (max(int(part) for part in parts))
@@ -49,7 +52,8 @@ class	CardsParser:
 			value = str(
 				param.value if hasattr(param, "value") else param
 			).strip()
-
+			if (i == 0):
+				value = re.sub(r"<br\s*/?\s*>", " / ", value, flags=re.IGNORECASE)
 			if (value == ""):
 				data.append(None)
 				continue
@@ -90,6 +94,15 @@ class	CardsParser:
 		card = card_ctx.card
 		if (card_ctx.name in ("CardListV", "CardListD", "CardListV/TD")):
 			card = [param for i, param in enumerate(card) if i != 2]
+		if (card_ctx.name == "CardListV/TD" and len (card) > 6):
+			card = card[:6]
+		card = list(card)
+		while (len(card) > 6):
+			last = card[-1]
+			value = str(last.value if hasattr(last, "value") else last).strip()
+			if (value):
+				break
+			card.pop()
 		parsed_row = CardsParser.raw_table_data_prepare(card, control)
 		if (card_ctx.table_kind == "card" and len(parsed_row) == 5):
 			parsed_row.append(None)

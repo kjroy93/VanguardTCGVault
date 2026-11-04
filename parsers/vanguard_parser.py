@@ -83,7 +83,8 @@ class	VanguardParser:
 			card_name = clean_text(str(card.params[1].value).strip())
 			if (not card_name):
 				raise TypeError(f"Card name cannot be empty {card.params}")
-			candidates = by_initial.get(card_name[0], {})
+			key = card_name.casefold()
+			candidates = by_initial.get(key[0], {})
 			expected_title = card_name
 			template_name = str(card.name).strip()
 			if (template_name in ("CardListV", "CardListV/TD", "CardListD")):
@@ -93,15 +94,15 @@ class	VanguardParser:
 					expected_title = f"{card_name} ({series} Series)"
 				elif (variant):
 					expected_title = f"{card_name} ({series} Series {variant})"
-			matched_page_title = candidates.get(clean_text(expected_title))
+			matched_page_title = candidates.get(clean_text(expected_title).casefold())
 			if (matched_page_title is None):
-				matched_page_title = candidates.get(card_name)
+				matched_page_title = candidates.get(key)
 			if (matched_page_title is None):
 				# The whole card name must match; only a parenthesized suffix may differ.
 				matching_page_titles = [
 					original_page_title
 					for normalized_page_title, original_page_title in candidates.items()
-					if normalized_page_title.startswith(card_name + " (")
+					if normalized_page_title.startswith(key + " (")
 					and normalized_page_title.endswith(")")
 				]
 				if (len(matching_page_titles) == 1):
@@ -175,7 +176,7 @@ class	VanguardParser:
 			if (name in CARD_ROW_TEMPLATES):
 				if (table_kind is None):
 					raise ValueError(f"Card outside a recognized table: {tpl}")
-				row_kind = "deck" if name == "CardListV/TD" else table_kind
+				row_kind = "deck" if name in ("CardListV/TD", "CardList/TD") else table_kind
 				card_entries.append((row_kind, tpl))
 			elif (name.startswith("CardList")):
 				raise ValueError(f"Unknown card template: {name}")

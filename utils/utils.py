@@ -27,6 +27,7 @@ def	remove_from_list(sets: list, to_delete: list):
 def	construct_rules(rule: str):
 	param = f"^{re.escape(rule)}"
 	rules = [
+		(r"^Revival Collection Vol\. [0-9]+$", "G"),
 		(r"^Fighters Collection (?:2015(?: Winter)?|2016|2017)$", "G"),
 		(r"^P Special", "V"),
 		(r"^P&V", "V"),
@@ -98,7 +99,7 @@ def dispatcher(set_ctx: SetContext):
 def	make_custom_alphabet(page_titles: list[str]) -> dict[str, dict[str]]:
 	page_titles_by_initial = {}
 	for page_title in page_titles:
-		normalized_page_title = clean_text(page_title)
+		normalized_page_title = clean_text(page_title).casefold()
 		if (not normalized_page_title):
 			continue
 		letter = normalized_page_title[0]

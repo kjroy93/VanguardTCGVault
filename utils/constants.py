@@ -184,10 +184,11 @@ CARD_TABLE_HEADERS = {
 	"CardList/header/D": "card",
 	"CardList/header/TD": "deck",
 	"CardList/header/TD/D": "deck",
+	"CardList/header/Buddyfight": "card"
 }
 
 CARD_TABLE_FOOTERS = {"Footer", "CardList/footer"}
-CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardListV/TD", "CardListD", "CardList2", "CardList2N"}
+CARD_ROW_TEMPLATES = {"CardList", "CardListV", "CardListV/TD", "CardList/TD", "CardListD", "CardList2", "CardList2N"}
 
 OPTIONS = {
 	0: "boosters",

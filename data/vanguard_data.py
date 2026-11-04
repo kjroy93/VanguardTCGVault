@@ -72,6 +72,11 @@ class	VanguardStorage:
 	def	_compare_dfs(self, current: DataFrame, previous: DataFrame):
 		return (Counter(current["Name"]) == Counter(previous["Name"]))
 
+	def clear_sets(self):
+		for block, seen in self._seen.items():
+			getattr(self, block.lower()).clear()
+			seen.clear()
+
 	def obtain_url(self, text: str, set_ctx: SetContext, card_ctx: CardContext):
 		url = set_ctx.card_page_titles_by_name.get(text)
 		if (url is None):
